@@ -95,21 +95,22 @@ void loadLib(PodcastMetaDataList* list){
 void on_MainWindow_destroy(){gtk_main_quit();}
 
 //  for listing search results in a GtkListBox
-//  TODO broaden this to add podcasts to any listbox
 //  TODO figure out how to multithread this image download freezes window
-void createSearchResults(GtkWidget *e,PodcastMetaDataList x){
+void createSearchResults(GtkWidget *container,PodcastMetaDataList x){
   int size = x.GetIndex();
   if(size == 0){return;}//  User Input Filtering
   currentList = x;
   //deleting old search results
-  clearContainer(GTK_CONTAINER(e));
+  clearContainer(GTK_CONTAINER(container));
 
   for (int i = 0; i < size; i++)
   {
     PodcastMetaData tmp = x.GetPodcastAtIndex(i);
     string name = tmp.title;
     GtkWidget *result = CreateSearchEntry(tmp);
-    gtk_container_add(GTK_CONTAINER(e),result);
+    
+    
+    gtk_container_add(GTK_CONTAINER(container),result);
     gtk_widget_show_all(result);
   }
 }
@@ -163,7 +164,8 @@ GdkPixbuf* createImage(string imageUrl,int scaleX,int scaleY){
 
 // get search text and give it to the itunes search function
 void PodcastSearchEntry(GtkEntry *e){
-  createSearchResults(listBox,webTools::itunesSearch(gtk_entry_get_text(e)));
+  std::future<void> loadList = std::async(std::launch::async,&createSearchResults,listBox,webTools::itunesSearch(gtk_entry_get_text(e)));
+  //createSearchResults(listBox,webTools::itunesSearch(gtk_entry_get_text(e)));
   return;
 }
 
@@ -183,7 +185,6 @@ void returnSelection(GtkWidget* e){
   podcastDataTypes::episodeList episodes = DataTools::getEpisodes(webTools::getFileInMem(currentPodcast.RssFeed));
   currentepisodes = episodes;
   clearContainer(GTK_CONTAINER(PVEpisodeList));
-  //  TODO use buttons instead of event boxes and labels
     for (int i = 0; i < episodes.getIndexSize(); i++)
     {
       GtkWidget* eventBox = gtk_event_box_new();
