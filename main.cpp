@@ -16,15 +16,15 @@ void createSearchResults(GtkWidget *e,PodcastMetaDataList x);
 void testPrint(GtkWidget* e,gpointer data);
 void returnSelection(GtkWidget*);
 void PodcastSearchEntry(GtkEntry *e);
-void selectedEpisode(GtkWidget* e);
+void getSelectedEpisode(GtkWidget* e);
 void clearContainer(GtkContainer* e);
 void loadLib(PodcastMetaDataList* list);
 GdkPixbuf* createImage(string imageUrl,int scaleX,int scaleY);
 GtkWidget* listBox;
 GtkWidget* window;
 GtkWidget* stack;
-GtkWidget* page1;
-GtkWidget* page2;
+GtkWidget* notebook;
+GtkWidget* PodcastDetailsPage;
 GtkWidget* PVImage;
 GtkWidget* PVTitle;
 GtkWidget* PVAuthor;
@@ -36,6 +36,7 @@ PodcastMetaData currentPodcast;
 PodcastMetaDataList currentList;
 PodcastMetaDataList Library;
 podcastDataTypes::episodeList currentepisodes;
+GtkWidget* stackPage = 0;
 //  GUI setup
 int main(int argc,char** argv)
 {
@@ -48,8 +49,8 @@ int main(int argc,char** argv)
   //  ? might be worth multithreading?
   listBox = GTK_WIDGET(gtk_builder_get_object(builder,"SearchListBox"));
   stack = GTK_WIDGET(gtk_builder_get_object(builder,"PageSelector"));
-  page1 = GTK_WIDGET(gtk_builder_get_object(builder,"Lib/Search"));
-  page2 = GTK_WIDGET(gtk_builder_get_object(builder,"PodcastDetails"));
+  notebook = GTK_WIDGET(gtk_builder_get_object(builder,"Lib/Search"));
+  PodcastDetailsPage = GTK_WIDGET(gtk_builder_get_object(builder,"PodcastDetails"));
   LibraryUi = GTK_WIDGET(gtk_builder_get_object(builder,"Library"));
   PVImage = GTK_WIDGET(gtk_builder_get_object(builder,"PVimage"));
   PVTitle = GTK_WIDGET(gtk_builder_get_object(builder,"PVTitle"));
@@ -120,7 +121,7 @@ GtkWidget* CreateSearchEntry(PodcastMetaData podcast){
 
 
   //  Image stuff
-  GtkWidget *image = gtk_image_new_from_pixbuf(createImage(podcast.image600,50,50));
+  GtkWidget *image = gtk_image_new_from_pixbuf(createImage(podcast.image600,50,50 ));
   //  ###########
   
   //  Formatting and setting up signals
@@ -149,11 +150,12 @@ GdkPixbuf* createImage(string imageUrl,int scaleX,int scaleY){
   string imagedata = webTools::getFileInMem(imageUrl);//  getting image data from web
 
   GdkPixbufLoader *test = gdk_pixbuf_loader_new();
+  gdk_pixbuf_loader_set_size(test,scaleX,scaleY);
   gdk_pixbuf_loader_write(test,(const guchar*)imagedata.c_str(),imagedata.size(),nullptr);
+  
 
   GdkPixbuf *pixbuf = gdk_pixbuf_loader_get_pixbuf(test);
   gdk_pixbuf_loader_close(test,nullptr);
-  pixbuf = gdk_pixbuf_scale_simple(pixbuf,scaleX,scaleY,GDK_INTERP_BILINEAR);
 
   return pixbuf;
 }
@@ -172,10 +174,18 @@ void PodcastSearchEntry(GtkEntry *e){
 //  gets the returned selection from search results
 //  TODO broaden this to work with any Podcast ListBox
 void returnSelection(GtkWidget* e){
-  gtk_stack_set_visible_child(GTK_STACK(stack),page2);
+  gtk_stack_set_visible_child(GTK_STACK(stack),PodcastDetailsPage);
   int index = atoi(gtk_widget_get_name(e));
 
   currentList.GetPodcastAtIndex(index,currentPodcast);
+  if ((int)gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook)) == 0)
+  {
+    Library.GetPodcastAtIndex(index,currentPodcast);
+  }
+  if ((int)gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook)) == 1)
+  {
+    currentList.GetPodcastAtIndex(index,currentPodcast);
+  }
 
   gtk_label_set_text(GTK_LABEL(PVTitle),currentPodcast.title.c_str());
   gtk_label_set_text(GTK_LABEL(PVAuthor),currentPodcast.artist.c_str());
@@ -196,7 +206,7 @@ void returnSelection(GtkWidget* e){
       gtk_container_add(GTK_CONTAINER(eventBox),box);
       gtk_widget_show_all(eventBox);
       gtk_widget_set_name(eventBox,(gchar*)to_string(i).c_str());
-      g_signal_connect(eventBox,"button-press-event",(GCallback)selectedEpisode,(gpointer)"button");
+      g_signal_connect(eventBox,"button-press-event",(GCallback)getSelectedEpisode,(gpointer)"button");
       gtk_container_add(GTK_CONTAINER(PVEpisodeList),eventBox);
     }
     }
@@ -210,14 +220,17 @@ void testPrint(GtkWidget* e,gpointer data){
 
 //  simply goes to the main page
 void goMainPage(){
-  gtk_stack_set_visible_child(GTK_STACK(stack),page1);
+  gtk_stack_set_visible_child(GTK_STACK(stack),notebook);
+  stackPage = notebook;
+
 }
 
 
 //  Download Selected Episode
 //  TODO use more descriptive name
-void selectedEpisode(GtkWidget* e){
+void getSelectedEpisode(GtkWidget* e){
   podcastDataTypes::PodcastEpisode current = currentepisodes.getEpisodeAtIndex(atoi(gtk_widget_get_name(e)));
+  
   e = gtk_widget_get_parent(e);
   clearContainer(GTK_CONTAINER(e));
   GtkWidget* box = gtk_box_new(GTK_ORIENTATION_VERTICAL,0);
