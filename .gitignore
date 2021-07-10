@@ -1,0 +1,5 @@
+Podcasts/MyPodcasts.xml
+main.sh
+# glade commmonly forgets to delete it's lock file
+PodcastWindow.glade~
+itunes.json
