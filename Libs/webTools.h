@@ -80,9 +80,7 @@ class webTools
     
     string itunesQuery = "https://itunes.apple.com/search?media=podcast&term=" + search;
     cout << itunesQuery <<"\n"<< endl;
-    //getWebFile(itunesQuery,"itunes.json");
     std::string data;
-    //data = DataTools::getFile("itunes.json");
     data = webTools::getFileInMem(itunesQuery);
     // how to parse Json
     int items = std::stoi(DataTools::GetField(data,"\"resultCount\":",","));
