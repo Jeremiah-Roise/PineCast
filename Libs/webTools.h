@@ -113,28 +113,20 @@ class webTools
 };
 
 
-  double* tmp;
-  static double progressFunc(double dltotal,   double dlnow,   double ultotal,   double ulnow){
-    double check= dlnow/dltotal;
-    if (check >= 0)
-    {
-      *tmp = check;
-      return 0;
-    }
-    return 0;
-  };
+  
 
 void DownloadPodcast(string url,string filename,double* Pprogress){
     cout << "downloading podcast" << endl;
     try
   {
+    double* tmp;
     tmp = Pprogress;
     FILE *fp;
     fp = fopen(filename.c_str(),"wb");
     cout << "created file" << endl;
     cURLpp::Easy handle;
     handle.setOpt(cURLpp::options::NoProgress(false));
-    handle.setOpt(cURLpp::options::ProgressFunction([](double dltotal,   double dlnow,   double ultotal,   double ulnow){
+    handle.setOpt(cURLpp::options::ProgressFunction([=](double dltotal,   double dlnow,   double ultotal,   double ulnow){
     double check= dlnow/dltotal;
     if (check >= 0)
     {
