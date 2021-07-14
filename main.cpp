@@ -177,11 +177,12 @@ void returnSelection(GtkWidget* e){
   int index = atoi(gtk_widget_get_name(e));
 
   currentList.GetPodcastAtIndex(index,currentPodcast);
-  if ((int)gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook)) == 0)
+  int page = (int)gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook));
+  if (page == 0)
   {
     Library.GetPodcastAtIndex(index,currentPodcast);
   }
-  if ((int)gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook)) == 1)
+  if (page == 1)
   {
     currentList.GetPodcastAtIndex(index,currentPodcast);
   }
@@ -211,43 +212,44 @@ void returnSelection(GtkWidget* e){
     }
 
 //  ! this doesn't work completley selecting multiple different podcasts in a row causes a segmentation fault
-//void _returnSelection(GtkWidget* e){
-//  gtk_stack_set_visible_child(GTK_STACK(stack),PodcastDetailsPage);
-//  int index = atoi(gtk_widget_get_name(e));
-//
-//  currentList.GetPodcastAtIndex(index,currentPodcast);
-//  if ((int)gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook)) == 0)
-//  {
-//    Library.GetPodcastAtIndex(index,currentPodcast);
-//  }
-//  if ((int)gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook)) == 1)
-//  {
-//    currentList.GetPodcastAtIndex(index,currentPodcast);
-//  }
-//
-//  gtk_label_set_text(GTK_LABEL(PVTitle),currentPodcast.title.c_str());
-//  gtk_label_set_text(GTK_LABEL(PVAuthor),currentPodcast.artist.c_str());
-//  gtk_image_set_from_pixbuf(GTK_IMAGE(PVImage),createImage(currentPodcast.image600,200,200));
-//
-//  //  list episodes
-//  podcastDataTypes::episodeList episodes = DataTools::getEpisodes(webTools::getFileInMem(currentPodcast.RssFeed));
-//  currentepisodes = episodes;
-//  clearContainer(GTK_CONTAINER(PVEpisodeList));
-//    for (int i = 0; i < episodes.getIndexSize(); i++)
-//    {
-//      GtkWidget* eventBox = gtk_event_box_new();
-//      GtkWidget* label = gtk_label_new(episodes.getEpisodeAtIndex(i).title.c_str());
-//      GtkWidget* box = gtk_box_new(GtkOrientation::GTK_ORIENTATION_VERTICAL,0);
-//      gtk_label_set_line_wrap(GTK_LABEL(label),true);
-//      gtk_label_set_xalign (GTK_LABEL(label), 0.0);
-//      gtk_container_add(GTK_CONTAINER(box),label);
-//      gtk_container_add(GTK_CONTAINER(eventBox),box);
-//      gtk_widget_show_all(eventBox);
-//      gtk_widget_set_name(eventBox,(gchar*)to_string(i).c_str());
-//      g_signal_connect(eventBox,"button-press-event",(GCallback)getSelectedEpisode,(gpointer)"button");
-//      gtk_container_add(GTK_CONTAINER(PVEpisodeList),eventBox);
-//    }
-//    }
+void _returnSelection(GtkWidget* e){
+  gtk_stack_set_visible_child(GTK_STACK(stack),PodcastDetailsPage);
+  int index = atoi(gtk_widget_get_name(e));
+
+  currentList.GetPodcastAtIndex(index,currentPodcast);
+  int page = (int)gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook));
+  if (page == 0)
+  {
+    Library.GetPodcastAtIndex(index,currentPodcast);
+  }
+  if (page == 1)
+  {
+    currentList.GetPodcastAtIndex(index,currentPodcast);
+  }
+
+  gtk_label_set_text(GTK_LABEL(PVTitle),currentPodcast.title.c_str());
+  gtk_label_set_text(GTK_LABEL(PVAuthor),currentPodcast.artist.c_str());
+  gtk_image_set_from_pixbuf(GTK_IMAGE(PVImage),createImage(currentPodcast.image600,200,200));
+
+  //  list episodes
+  podcastDataTypes::episodeList episodes = DataTools::getEpisodes(webTools::getFileInMem(currentPodcast.RssFeed));
+  currentepisodes = episodes;
+  clearContainer(GTK_CONTAINER(PVEpisodeList));
+    for (int i = 0; i < episodes.getIndexSize(); i++)
+    {
+      GtkWidget* eventBox = gtk_event_box_new();
+      GtkWidget* label = gtk_label_new(episodes.getEpisodeAtIndex(i).title.c_str());
+      GtkWidget* box = gtk_box_new(GtkOrientation::GTK_ORIENTATION_VERTICAL,0);
+      gtk_label_set_line_wrap(GTK_LABEL(label),true);
+      gtk_label_set_xalign (GTK_LABEL(label), 0.0);
+      gtk_container_add(GTK_CONTAINER(box),label);
+      gtk_container_add(GTK_CONTAINER(eventBox),box);
+      gtk_widget_show_all(eventBox);
+      gtk_widget_set_name(eventBox,(gchar*)to_string(i).c_str());
+      g_signal_connect(eventBox,"button-press-event",(GCallback)getSelectedEpisode,(gpointer)"button");
+      gtk_container_add(GTK_CONTAINER(PVEpisodeList),eventBox);
+    }
+    }
 
 //void returnSelection(GtkWidget* e){
 //  std::thread thread(&_returnSelection,e);
