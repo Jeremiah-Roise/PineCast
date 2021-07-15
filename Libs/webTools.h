@@ -50,10 +50,10 @@ class webTools
       cURLpp::Easy handle;
       std::stringbuf str;
       std::ostream test(&str);
-      handle.setOpt(cURLpp::options::NoProgress(false));
+      handle.setOpt(cURLpp::options::NoProgress(true));
       handle.setOpt(cURLpp::Options::Url(url));
       handle.setOpt(cURLpp::options::FollowLocation(true));
-      handle.setOpt(cURLpp::options::WriteStream(&test));//   FIX THIS STUPID THING!!!!!!!
+      handle.setOpt(cURLpp::options::WriteStream(&test));
       handle.perform();
       string tmp = str.str();
       return tmp;
