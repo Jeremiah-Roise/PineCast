@@ -245,25 +245,22 @@ void getSelectedEpisode(GtkWidget* e){
 void DownloadAndPlayPodcast(string mp3Url,string name,GtkProgressBar* bar){
 
  name+=".mp3";
-  while(true){
-    size_t index = name.find(' ');
-    if (index == string::npos){break;}
-    name.erase(index,1);
-  }
+
   double progress = 0;
   const std::future<void> thread = std::async(std::launch::async ,DownloadPodcast,mp3Url,name,&progress);
   cout << "created thread" << endl;
 
-  while (thread.wait_for(0ms) != std::future_status::ready)
+  while (thread.wait_for(0ms) != std::future_status::ready)// wait for download to finish
   {
-    cout << "Download progress: " << progress << endl;
     sleep(1);
+    cout << "Download progress: " << progress << endl;
     gtk_progress_bar_set_fraction(bar,progress);
   }
   thread.wait();
 
   cout << progress << endl;
   gtk_widget_destroy(GTK_WIDGET(bar));
+
   string FName = "xdg-open \""+ name+"\"";
   FName+=" &";
   cout << "the name is: "<< FName<<endl;
