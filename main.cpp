@@ -7,6 +7,7 @@
 #include"Libs/webTools.h"
 #include"Libs/podcastDataTypes.h"
 #include"Libs/PodcastMetaDataLists.h"
+#include"Libs/UINAMES.h"
 using namespace std;
 
 extern "C"{
@@ -14,11 +15,12 @@ void DownloadAndPlayPodcast(string mp3Url,string name,GtkProgressBar* bar);
 GtkWidget* CreateSearchEntry(PodcastMetaData);
 void createSearchResults(GtkWidget *e,PodcastMetaDataList x);
 void testPrint(GtkWidget* e,gpointer data);
-void returnSelection(GtkWidget*);
+void returnSelection(GtkWidget*,gpointer);
 void PodcastSearchEntry(GtkEntry *e);
-void getSelectedEpisode(GtkWidget* e);
+void getSelectedPodcastEpisode(GtkWidget* e);
 void clearContainer(GtkContainer* e);
 void loadLib(PodcastMetaDataList* list);
+void removeFromLibrary();
 GdkPixbuf* createImage(string imageUrl,int scaleX,int scaleY);
 GtkWidget* listBox;
 GtkWidget* window;
@@ -34,10 +36,11 @@ GtkWidget* LibraryUi;
 GtkWidget* addToLibraryButton;
 GtkBuilder* builder;
 PodcastMetaData currentPodcast;
-PodcastMetaDataList currentList;
+PodcastMetaDataList searchList;
 PodcastMetaDataList Library;
 podcastDataTypes::episodeList currentepisodes;
 GtkWidget* stackPage = 0;
+bool deleteMode = false;
 //  GUI setup
 int main(int argc,char** argv)
 {
@@ -91,7 +94,15 @@ void loadLib(PodcastMetaDataList* list){
     cout << "finished" << endl;
 }
 
-
+void deleteModeON(){
+  deleteMode = true;
+}
+void deleteModeOFF(){
+  deleteMode = false;
+}
+void deleteModeSwitch(){
+  deleteMode = !deleteMode;
+}
 
 //  Destroy Function For GUI
 void on_MainWindow_destroy(){gtk_main_quit();}
@@ -101,7 +112,7 @@ void on_MainWindow_destroy(){gtk_main_quit();}
 void createSearchResults(GtkWidget *container,PodcastMetaDataList x){
   int size = x.GetIndex();
   if(size == 0){return;}//  User Input Filtering
-  currentList = x;
+  searchList = x;
   //deleting old search results
   clearContainer(GTK_CONTAINER(container));
 
@@ -131,8 +142,9 @@ GtkWidget* CreateSearchEntry(PodcastMetaData podcast){
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,10);
   GtkWidget *event = gtk_event_box_new();
   gtk_label_set_line_wrap(GTK_LABEL(label),true);
-  g_signal_connect(event,"button-press-event",(GCallback)returnSelection,(gpointer)"button");
-  gtk_widget_set_name(GTK_WIDGET(event),(const gchar*)to_string(podcast.index).c_str());
+
+  g_signal_connect(event,"button-press-event",(GCallback)returnSelection,(gpointer)nullptr);
+  gtk_widget_set_name(GTK_WIDGET(event),(const gchar*)to_string(podcast.index).c_str());  //  setting the name to the index of the podcast
   gtk_box_pack_start(GTK_BOX(box),image,false,true,0);
   gtk_box_pack_start(GTK_BOX(box),label,true,true,0);
   gtk_container_add(GTK_CONTAINER(event),GTK_WIDGET(box));
@@ -161,6 +173,11 @@ GdkPixbuf* createImage(string imageUrl,int scaleX,int scaleY){
   return pixbuf;
 }
 
+
+
+
+
+
 /*
   ## Signal Functions Go beyond this comment ##
 */
@@ -172,22 +189,10 @@ void PodcastSearchEntry(GtkEntry *e){
   return;
 }
 
-//  gets the returned selection from search results
-void returnSelection(GtkWidget* e){
+
+void setPreviewPage()
+{
   gtk_stack_set_visible_child(GTK_STACK(stack),PodcastDetailsPage);
-  int index = atoi(gtk_widget_get_name(e));
-
-  currentList.GetPodcastAtIndex(index,currentPodcast);
-  int page = (int)gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook));
-  if (page == 0)
-  {
-    Library.GetPodcastAtIndex(index,currentPodcast);
-  }
-  if (page == 1)
-  {
-    currentList.GetPodcastAtIndex(index,currentPodcast);
-  }
-
   gtk_label_set_text(GTK_LABEL(PVTitle),currentPodcast.title.c_str());
   gtk_label_set_text(GTK_LABEL(PVAuthor),currentPodcast.artist.c_str());
   gtk_image_set_from_pixbuf(GTK_IMAGE(PVImage),createImage(currentPodcast.image600,200,200));
@@ -207,24 +212,45 @@ void returnSelection(GtkWidget* e){
       gtk_container_add(GTK_CONTAINER(eventBox),box);
       gtk_widget_show_all(eventBox);
       gtk_widget_set_name(eventBox,(gchar*)to_string(i).c_str());
-      g_signal_connect(eventBox,"button-press-event",(GCallback)getSelectedEpisode,(gpointer)"button");
+      g_signal_connect(eventBox,"button-press-event",(GCallback)getSelectedPodcastEpisode,(gpointer)"button");
       gtk_container_add(GTK_CONTAINER(PVEpisodeList),eventBox);
     }
-    }
+}
 
+//  gets the returned selection from search results
+void returnSelection(GtkWidget* e,gpointer data){
+  
+  int index = atoi(gtk_widget_get_name(e));
+
+  searchList.GetPodcastAtIndex(index,currentPodcast);
+  int page = (int)gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook));
+  if (page == 0)
+  {
+    Library.GetPodcastAtIndex(index,currentPodcast);
+  }
+  if (page == 1)
+  {
+    searchList.GetPodcastAtIndex(index,currentPodcast);
+  }
+
+  if(page == 0 && deleteMode == true){
+    removeFromLibrary();
+  }
+  if(deleteMode == false){
+    setPreviewPage();
+  }
+}
 
 
 //  simply goes to the main page
 void goMainPage(){
-  gtk_stack_set_visible_child(GTK_STACK(stack),notebook);
-  stackPage = notebook;
-
+  gtk_stack_set_visible_child_name(GTK_STACK(stack),(const gchar*)mainPageName);
 }
 
 
 //  Download Selected Episode
 //  TODO use more descriptive name
-void getSelectedEpisode(GtkWidget* e){
+void getSelectedPodcastEpisode(GtkWidget* e){
   podcastDataTypes::PodcastEpisode current = currentepisodes.getEpisodeAtIndex(atoi(gtk_widget_get_name(e)));
   
   e = gtk_widget_get_parent(e);
@@ -295,4 +321,10 @@ void addToLibrary(){
   loadLib(&Library);
   createSearchResults(LibraryUi,Library);
 }
+}
+void removeFromLibrary(){
+  string XML;
+  //XML = DataTools::getFile("Podcasts/MyPodcasts.xml");
+  //XML.find("");
+  cout << "removed from lib" << endl;
 }
