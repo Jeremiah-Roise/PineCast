@@ -4,3 +4,4 @@ main.sh
 PodcastWindow.glade~
 # no need to push your podcast preferences
 *.mp3
+*.gch
