@@ -322,9 +322,22 @@ void addToLibrary(){
   createSearchResults(LibraryUi,Library);
 }
 }
+
 void removeFromLibrary(){
   string XML;
-  //XML = DataTools::getFile("Podcasts/MyPodcasts.xml");
-  //XML.find("");
+  XML = DataTools::getFile("Podcasts/MyPodcasts.xml");
+  int index;
+  int end;
+  index = XML.find("<Title=\""+ currentPodcast.title +"\">");
+  index -= sizeof("<Podcast>");
+  end = XML.find("</Podcast>");
+  end += sizeof("</Podcast>");
+  XML.erase(index,end);
+  cout << XML.substr(index,end - index) << endl;
+
+  fstream file;
+  file.open("Podcasts/MyPodcasts.xml",fstream::out);
+  file.write(XML.c_str(),XML.size());
+  
   cout << "removed from lib" << endl;
 }
