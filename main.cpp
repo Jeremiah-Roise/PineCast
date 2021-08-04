@@ -326,18 +326,30 @@ void addToLibrary(){
 void removeFromLibrary(){
   string XML;
   XML = DataTools::getFile("Podcasts/MyPodcasts.xml");
-  int index;
-  int end;
+  size_t index;
+  size_t end;
   index = XML.find("<Title=\""+ currentPodcast.title +"\">");
+  if (index == string::npos)
+  {
+    return;
+  }
+  
   index -= sizeof("<Podcast>");
   end = XML.find("</Podcast>");
+    if (end == string::npos)
+  {
+    return;
+  }
   end += sizeof("</Podcast>");
   XML.erase(index,end);
-  cout << XML.substr(index,end - index) << endl;
 
   fstream file;
   file.open("Podcasts/MyPodcasts.xml",fstream::out);
   file.write(XML.c_str(),XML.size());
   
   cout << "removed from lib" << endl;
+  Library.clear();
+  clearContainer(GTK_CONTAINER(LibraryUi));
+  loadLib(&Library);
+  createSearchResults(LibraryUi,Library);
 }
