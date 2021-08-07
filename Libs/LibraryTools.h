@@ -36,13 +36,15 @@ void removeFromLibrary(PodcastMetaData currentPodcast){
   size_t index;
   size_t end;
   index = XML.find("<Title=\""+ currentPodcast.title +"\">");
+  cout << "<Title=\""+ currentPodcast.title +"\">" << endl;
   if (index == string::npos)
   {
+    cout << "failed" << endl;
     return;
   }
   index -= sizeof("<Podcast>");
 
-  end = XML.find("</Podcast>");
+  end = XML.find("</Podcast>",index);
     if (end == string::npos)
   {
     return;
