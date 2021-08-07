@@ -8,6 +8,7 @@
 #include"Libs/podcastDataTypes.h"
 #include"Libs/PodcastMetaDataLists.h"
 #include"Libs/UINAMES.h"
+#include"Libs/LibraryTools.h"
 using namespace std;
 
 extern "C"{
@@ -19,8 +20,7 @@ void returnSelection(GtkWidget*,gpointer);
 void PodcastSearchEntry(GtkEntry *e);
 void getSelectedPodcastEpisode(GtkWidget* e);
 void clearContainer(GtkContainer* e);
-void loadLib(PodcastMetaDataList* list);
-void removeFromLibrary();
+void loadLib(PodcastMetaDataList& list);
 GdkPixbuf* createImage(string imageUrl,int scaleX,int scaleY);
 GtkWidget* listBox;
 GtkWidget* window;
@@ -64,7 +64,7 @@ int main(int argc,char** argv)
 
   gtk_builder_connect_signals(builder,NULL);
   g_object_unref(builder);
-  loadLib(&Library);
+  loadLib(Library);
   gtk_widget_show(window);
   createSearchResults(LibraryUi,Library);
   gtk_main();
@@ -72,8 +72,7 @@ int main(int argc,char** argv)
 }
 
 //  update podcasts in library
-void loadLib(PodcastMetaDataList* list){
-    list->clear();
+void loadLib(PodcastMetaDataList& list){
     cout << "LoadingLibrary" << endl;
     // open file To read
     string fileData  = DataTools::getFile("Podcasts/MyPodcasts.xml");
@@ -83,7 +82,7 @@ void loadLib(PodcastMetaDataList* list){
 
         string Podcast = DataTools::GetFieldP(fileData,"<Podcast>","</Podcast>",index,index);
         if(Podcast == ""){break;}
-        list->addPodcast(DataTools::GetField(Podcast,"<Artist=\"","\">"),
+        list.addPodcast(DataTools::GetField(Podcast,"<Artist=\"","\">"),
         DataTools::GetField(Podcast,"<RssFeed=\"","\">"),
         DataTools::GetField(Podcast,"<Title=\"","\">"),
         DataTools::GetField(Podcast,"<Image30=\"","\">"),
@@ -234,12 +233,36 @@ void returnSelection(GtkWidget* e,gpointer data){
   }
 
   if(page == 0 && deleteMode == true){
-    removeFromLibrary();
+    removeFromLibrary(currentPodcast);
+    clearContainer(GTK_CONTAINER(LibraryUi));
+    Library.clear();
+    loadLib(Library);
+    createSearchResults(LibraryUi,Library);
   }
   if(deleteMode == false){
     setPreviewPage();
   }
 }
+
+void addPodcastToLibButton(){
+  addToLibrary(currentPodcast);
+  clearContainer(GTK_CONTAINER(LibraryUi));
+  Library.clear();
+  loadLib(Library);
+  createSearchResults(LibraryUi,Library);
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 //  simply goes to the main page
@@ -301,55 +324,5 @@ void streamPodcast(string mp3Url,string name){
   //  wait for a second or wait until theres a certain amount of progress
 } 
 
-void addToLibrary(){
-  cout << "adding to library" << endl;
-  string XML;
-  XML = "\n<Podcast>";
-  XML += "\n<Title=\""+currentPodcast.title+"\">";
-  XML += "\n<RssFeed=\""+currentPodcast.RssFeed+"\">";
-  XML += "\n<Image600=\""+currentPodcast.image600+"\">";
-  XML += "\n<Image100=\""+currentPodcast.image100+"\">";
-  XML += "\n<Image60=\""+currentPodcast.image60+"\">";
-  XML += "\n<Image30=\""+currentPodcast.image30+"\">";
-  XML += "\n</Podcast>";
-  ofstream file;
-  file.open("Podcasts/MyPodcasts.xml",std::ios::app);
-  cout << "created file" << endl;
-  file.write(XML.data(),XML.size());
-  cout << "wrote to file" << endl;
-  file.close();
-  loadLib(&Library);
-  createSearchResults(LibraryUi,Library);
-}
 }
 
-void removeFromLibrary(){
-  string XML;
-  XML = DataTools::getFile("Podcasts/MyPodcasts.xml");
-  size_t index;
-  size_t end;
-  index = XML.find("<Title=\""+ currentPodcast.title +"\">");
-  if (index == string::npos)
-  {
-    return;
-  }
-  
-  index -= sizeof("<Podcast>");
-  end = XML.find("</Podcast>");
-    if (end == string::npos)
-  {
-    return;
-  }
-  end += sizeof("</Podcast>");
-  XML.erase(index,end);
-
-  fstream file;
-  file.open("Podcasts/MyPodcasts.xml",fstream::out);
-  file.write(XML.c_str(),XML.size());
-  
-  cout << "removed from lib" << endl;
-  Library.clear();
-  clearContainer(GTK_CONTAINER(LibraryUi));
-  loadLib(&Library);
-  createSearchResults(LibraryUi,Library);
-}
