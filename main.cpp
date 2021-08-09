@@ -47,7 +47,7 @@ bool deleteMode = false;
 int main(int argc,char** argv)
 {
 
-  struct stat tmp;
+struct stat tmp;
 if(stat("Podcasts",&tmp) != 0 && S_ISDIR(tmp.st_mode) != 1){
   mkdir("Podcasts",ACCESSPERMS);
 }
