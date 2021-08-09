@@ -41,16 +41,26 @@ PodcastMetaDataList Library;
 podcastDataTypes::episodeList currentepisodes;
 GtkWidget* stackPage = 0;
 bool deleteMode = false;
+#include<sys/stat.h>
+#include<sys/types.h>
 //  GUI setup
 int main(int argc,char** argv)
 {
+
+  struct stat tmp;
+if(stat("Podcasts",&tmp) != 0 && S_ISDIR(tmp.st_mode) != 1){
+  mkdir("Podcasts",ACCESSPERMS);
+}
+
+
+
+
   //  TODO create thread with loadLib and mutexes for locking
   gtk_init(&argc,&argv);
   builder = gtk_builder_new();
   gtk_builder_add_from_file (builder, "PodcastWindow.glade", NULL);
   window = GTK_WIDGET(gtk_builder_get_object(builder,"MainWindow"));
 
-  //  ? might be worth multithreading?
   listBox = GTK_WIDGET(gtk_builder_get_object(builder,"SearchListBox"));
   stack = GTK_WIDGET(gtk_builder_get_object(builder,"PageSelector"));
   notebook = GTK_WIDGET(gtk_builder_get_object(builder,"Lib/Search"));
