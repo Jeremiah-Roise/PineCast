@@ -22,7 +22,7 @@ void addToLibrary(PodcastMetaData currentPodcast){
   XML += "\n</Podcast>";
   ofstream file;
   file.open("Podcasts/MyPodcasts.xml",std::ios::app);
-  cout << "created file" << endl;
+  if(file.fail()){cout << "file write failed" << endl;}
   file.write(XML.data(),XML.size());
   cout << "wrote to file" << endl;
   file.close();
