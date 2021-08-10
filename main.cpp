@@ -300,7 +300,7 @@ void getSelectedPodcastEpisode(GtkWidget* e){
   play.detach();
 }
 
-
+void playMp3(string name);
 void DownloadAndPlayPodcast(string mp3Url,string name,GtkProgressBar* bar){
 
  name+=".mp3";
