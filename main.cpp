@@ -3,6 +3,7 @@
 #include<stdio.h>
 #include<future>
 #include<stdlib.h> 
+#include<algorithm>
 #include"Libs/DataTools.h"
 #include"Libs/webTools.h"
 #include"Libs/podcastDataTypes.h"
@@ -199,7 +200,7 @@ void PodcastSearchEntry(GtkEntry *e){
 }
 
 
-void setPreviewPage()
+void setPreviewPage(podcastDataTypes::episodeList episodes)
 {
   gtk_stack_set_visible_child(GTK_STACK(stack),PodcastDetailsPage);
   gtk_label_set_text(GTK_LABEL(PVTitle),currentPodcast.title.c_str());
@@ -207,7 +208,6 @@ void setPreviewPage()
   gtk_image_set_from_pixbuf(GTK_IMAGE(PVImage),createImage(currentPodcast.image600,200,200));
 
   //  list episodes
-  podcastDataTypes::episodeList episodes = DataTools::getEpisodes(webTools::getFileInMem(currentPodcast.RssFeed));
   currentepisodes = episodes;
   clearContainer(GTK_CONTAINER(PVEpisodeList));
     for (int i = 0; i < episodes.getIndexSize(); i++)
@@ -250,7 +250,37 @@ void returnSelection(GtkWidget* e,gpointer data){
     createSearchResults(LibraryUi,Library);
   }
   if(deleteMode == false){
-    setPreviewPage();
+    string rss;
+    struct stat tmp;
+    string path = "/tmp/"+currentPodcast.title+".rss";
+    std::remove(path.begin(),path.end(),' ');
+    int cacheFile = stat(path.c_str(),&tmp);
+
+
+    if (cacheFile != 0)
+    {
+      rss = webTools::getFileInMem(currentPodcast.RssFeed);
+      cout << "downloaded file" << endl;
+    }
+    else
+    {
+      rss = DataTools::getFile(path);
+      cout << "used cache" << endl;
+    }
+
+
+    setPreviewPage(DataTools::getEpisodes(rss));
+
+    
+    
+    
+    if(cacheFile == 0){
+      return;
+    }
+    fstream file;
+    file.open(path.c_str(),ios::out);
+    file.write(rss.c_str(),rss.size());
+    file.close();
   }
 }
 
