@@ -320,12 +320,14 @@ void DownloadAndPlayPodcast(string mp3Url,string name,GtkProgressBar* bar){
   cout << progress << endl;
   gtk_widget_destroy(GTK_WIDGET(bar));
 
+  playMp3(name);
+}
+void playMp3(string name){
   string FName = "xdg-open \""+ name+"\"";
   FName+=" &";
   cout << "the name is: "<< FName<<endl;
   system(FName.data());
 }
-
 
 // TODO make this actually work
 void streamPodcast(string mp3Url,string name){
