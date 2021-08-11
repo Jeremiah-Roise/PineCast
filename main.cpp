@@ -253,27 +253,24 @@ void returnSelection(GtkWidget* e,gpointer data){
     string rss;
     struct stat tmp;
     string path = "/tmp/"+currentPodcast.title+".rss";
+    //  remove spaces from the path
     std::remove(path.begin(),path.end(),' ');
+    //  check the state of the cachefile
     int cacheFile = stat(path.c_str(),&tmp);
+    cout << tmp.st_atim.tv_sec + 86400 << endl;
 
 
-    if (cacheFile != 0)
-    {
-      rss = webTools::getFileInMem(currentPodcast.RssFeed);
-      cout << "downloaded file" << endl;
-    }
+    // getting epoch time for comparison against the cache file creation date incremented by one day
+    double now = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    
+    if (cacheFile != 0 || tmp.st_atim.tv_sec + 86400 > now)
+    {rss = webTools::getFileInMem(currentPodcast.RssFeed);}
     else
-    {
-      rss = DataTools::getFile(path);
-      cout << "used cache" << endl;
-    }
-
+    {rss = DataTools::getFile(path);}
 
     setPreviewPage(DataTools::getEpisodes(rss));
 
-    
-    
-    
+    //  if the cache file exists don't write it again
     if(cacheFile == 0){
       return;
     }
