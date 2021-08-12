@@ -22,7 +22,7 @@ bool Downloading = false;
 class PodcastMetaDataList
 {
 public:
-    int addPodcast(string author,string RssFeed,string title,string thumbnail30,string thumbnail60,string thumbnail100,string thumbnail600){
+    int createAndAddPodcast(string author,string RssFeed,string title,string thumbnail30,string thumbnail60,string thumbnail100,string thumbnail600){
         PodcastMetaData tmp;
         tmp.artist = author;
         tmp.RssFeed = RssFeed;
