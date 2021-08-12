@@ -280,7 +280,7 @@ void returnSelection(GtkWidget* e,gpointer data){
       return;
     }
     fstream file;
-    file.open(path.c_str(),ios::out);
+    file.open(path.c_str(),ios_base::out);
     file.write(rss.c_str(),rss.size());
     file.close();
   }
