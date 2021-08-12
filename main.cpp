@@ -8,7 +8,7 @@
 #include"Libs/webTools.h"
 #include"Libs/podcastDataTypes.h"
 #include"Libs/PodcastMetaDataLists.h"
-#include"Libs/UINAMES.h"
+#include"UINAMES.h"
 #include"Libs/LibraryTools.h"
 using namespace std;
 
@@ -23,9 +23,9 @@ void getSelectedPodcastEpisode(GtkWidget* e);
 void clearContainer(GtkContainer* e);
 void loadLib(PodcastMetaDataList& list);
 GdkPixbuf* createImage(string imageUrl,int scaleX,int scaleY);
-GtkWidget* listBox;
+GtkWidget* searchListBox;
 GtkWidget* window;
-GtkWidget* stack;
+GtkWidget* mainStack;
 GtkWidget* notebook;
 GtkWidget* PodcastDetailsPage;
 //  PV means Preview
@@ -35,10 +35,12 @@ GtkWidget* PVAuthor;
 GtkWidget* PVEpisodeList;
 GtkWidget* LibraryUi;
 GtkWidget* addToLibraryButton;
+GtkWidget* DownloadsList;
 GtkBuilder* builder;
 PodcastMetaData currentPodcast;
 PodcastMetaDataList searchList;
 PodcastMetaDataList Library;
+vector<podcastDataTypes::PodcastEpisode> Downloading;
 podcastDataTypes::episodeList currentepisodes;
 GtkWidget* stackPage = 0;
 bool deleteMode = false;
@@ -61,17 +63,18 @@ if(stat("Podcasts",&tmp) != 0 && S_ISDIR(tmp.st_mode) != 1){
   builder = gtk_builder_new();
   gtk_builder_add_from_file (builder, "PodcastWindow.glade", NULL);
   window = GTK_WIDGET(gtk_builder_get_object(builder,"MainWindow"));
-
-  listBox = GTK_WIDGET(gtk_builder_get_object(builder,"SearchListBox"));
-  stack = GTK_WIDGET(gtk_builder_get_object(builder,"PageSelector"));
-  notebook = GTK_WIDGET(gtk_builder_get_object(builder,"Lib/Search"));
-  PodcastDetailsPage = GTK_WIDGET(gtk_builder_get_object(builder,"PodcastDetails"));
-  LibraryUi = GTK_WIDGET(gtk_builder_get_object(builder,"Library"));
-  PVImage = GTK_WIDGET(gtk_builder_get_object(builder,"PVimage"));
-  PVTitle = GTK_WIDGET(gtk_builder_get_object(builder,"PVTitle"));
-  PVAuthor = GTK_WIDGET(gtk_builder_get_object(builder,"PVAuthor"));
-  PVEpisodeList = GTK_WIDGET(gtk_builder_get_object(builder,"PVEpisodeList"));
-  addToLibraryButton = GTK_WIDGET(gtk_builder_get_object(builder,"addToLib"));
+  //                                                            | these are macros|
+  //                                                            | in UINAMES.h    |
+  searchListBox =      GTK_WIDGET(gtk_builder_get_object(builder,searchListBoxName));
+  mainStack =          GTK_WIDGET(gtk_builder_get_object(builder,mainStackName));
+  notebook =           GTK_WIDGET(gtk_builder_get_object(builder,notebookName));
+  PodcastDetailsPage = GTK_WIDGET(gtk_builder_get_object(builder,podcastDetailsPageName));
+  LibraryUi =          GTK_WIDGET(gtk_builder_get_object(builder,LibraryUiName));
+  PVImage =            GTK_WIDGET(gtk_builder_get_object(builder,PVImageName));
+  PVTitle =            GTK_WIDGET(gtk_builder_get_object(builder,PVTitleName));
+  PVAuthor =           GTK_WIDGET(gtk_builder_get_object(builder,PVAuthorName));
+  PVEpisodeList =      GTK_WIDGET(gtk_builder_get_object(builder,PVEpisodeListName));
+  addToLibraryButton = GTK_WIDGET(gtk_builder_get_object(builder,addToLibraryButtonName));
 
   gtk_builder_connect_signals(builder,NULL);
   g_object_unref(builder);
@@ -93,7 +96,7 @@ void loadLib(PodcastMetaDataList& list){
 
         string Podcast = DataTools::GetFieldP(fileData,"<Podcast>","</Podcast>",index,index);
         if(Podcast == ""){break;}
-        list.addPodcast(DataTools::GetField(Podcast,"<Artist=\"","\">"),
+        list.createAndAddPodcast(DataTools::GetField(Podcast,"<Artist=\"","\">"),
         DataTools::GetField(Podcast,"<RssFeed=\"","\">"),
         DataTools::GetField(Podcast,"<Title=\"","\">"),
         DataTools::GetField(Podcast,"<Image30=\"","\">"),
@@ -194,7 +197,7 @@ GdkPixbuf* createImage(string imageUrl,int scaleX,int scaleY){
 
 // get search text and give it to the itunes search function
 void PodcastSearchEntry(GtkEntry *e){
-  std::future<void> loadList = std::async(std::launch::async,&createSearchResults,listBox,webTools::itunesSearch(gtk_entry_get_text(e)));
+  std::future<void> loadList = std::async(std::launch::async,&createSearchResults,searchListBox,webTools::itunesSearch(gtk_entry_get_text(e)));
   //createSearchResults(listBox,webTools::itunesSearch(gtk_entry_get_text(e)));
   return;
 }
@@ -202,7 +205,7 @@ void PodcastSearchEntry(GtkEntry *e){
 
 void setPreviewPage(podcastDataTypes::episodeList episodes)
 {
-  gtk_stack_set_visible_child(GTK_STACK(stack),PodcastDetailsPage);
+  gtk_stack_set_visible_child(GTK_STACK(mainStack),PodcastDetailsPage);
   gtk_label_set_text(GTK_LABEL(PVTitle),currentPodcast.title.c_str());
   gtk_label_set_text(GTK_LABEL(PVAuthor),currentPodcast.artist.c_str());
   gtk_image_set_from_pixbuf(GTK_IMAGE(PVImage),createImage(currentPodcast.image600,200,200));
@@ -234,7 +237,7 @@ void returnSelection(GtkWidget* e,gpointer data){
 
   searchList.GetPodcastAtIndex(index,currentPodcast);
   int page = (int)gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook));
-  if (page == 0)
+  if (page == 0 || page == 1)
   {
     Library.GetPodcastAtIndex(index,currentPodcast);
   }
@@ -250,7 +253,9 @@ void returnSelection(GtkWidget* e,gpointer data){
     loadLib(Library);
     createSearchResults(LibraryUi,Library);
   }
-  if(deleteMode == false){
+
+
+  if(deleteMode == false && page == 0){
     string rss;
     struct stat tmp;
     string path = "/tmp/"+currentPodcast.title+".rss";
@@ -280,8 +285,13 @@ void returnSelection(GtkWidget* e,gpointer data){
     }
 
     setPreviewPage(DataTools::getEpisodes(rss));
+  }
+  if(deleteMode == false && page == 1){
+    string rss;
+    //  check the state of the cachefile
+    rss = webTools::getFileInMem(currentPodcast.RssFeed);
 
-
+    setPreviewPage(DataTools::getEpisodes(rss));
   }
 }
 
@@ -308,7 +318,7 @@ void addPodcastToLibButton(){
 
 //  simply goes to the main page
 void goMainPage(){
-  gtk_stack_set_visible_child_name(GTK_STACK(stack),(const gchar*)mainPageName);
+  gtk_stack_set_visible_child_name(GTK_STACK(mainStack),(const gchar*)mainPageName);
 }
 
 
@@ -316,7 +326,10 @@ void goMainPage(){
 //  TODO use more descriptive name
 void getSelectedPodcastEpisode(GtkWidget* e){
   podcastDataTypes::PodcastEpisode current = currentepisodes.getEpisodeAtIndex(atoi(gtk_widget_get_name(e)));
-  
+  Downloading.push_back(current);
+
+
+
   e = gtk_widget_get_parent(e);
   clearContainer(GTK_CONTAINER(e));
   GtkWidget* box = gtk_box_new(GTK_ORIENTATION_VERTICAL,0);
@@ -326,6 +339,24 @@ void getSelectedPodcastEpisode(GtkWidget* e){
   gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar),0.0f);
   gtk_container_add(GTK_CONTAINER(e),box);
   gtk_widget_show_all(e);
+
+
+  //  this is for the downloads page
+  e = gtk_widget_get_parent(e);
+  clearContainer(GTK_CONTAINER(e));
+  GtkWidget* box = gtk_box_new(GTK_ORIENTATION_VERTICAL,0);
+  gtk_container_add(GTK_CONTAINER(box),gtk_label_new(current.title.data()));
+  GtkWidget* progressBar = gtk_progress_bar_new();
+  gtk_container_add(GTK_CONTAINER(box),progressBar);
+  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar),0.0f);
+  gtk_container_add(GTK_CONTAINER(e),box);
+  gtk_widget_show_all(e);
+
+
+
+
+
+
   cout << current.title << endl;
   std::thread play(DownloadAndPlayPodcast,current.mp3Link,current.title,GTK_PROGRESS_BAR(progressBar));
   play.detach();
