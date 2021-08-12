@@ -169,10 +169,107 @@
               </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkBox" id="Downloads1">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="homogeneous">True</property>
+                    <child>
+                      <object class="GtkButton">
+                        <property name="label">gtk-clear</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="use-stock">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="shadow-type">in</property>
+                    <child>
+                      <object class="GtkViewport">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <child>
+                          <object class="GtkListBox" id="DownloadsList1">
+                            <property name="name">DownloadsList</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <child>
+                              <object class="GtkListBoxRow">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="ypad">5</property>
+                                    <property name="label" translatable="yes">some Podcast</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkListBoxRow">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="ypad">5</property>
+                                    <property name="label" translatable="yes">some Other Podcast</property>
+                                    <property name="wrap">True</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="menu-label">Downloads</property>
+                <property name="position">2</property>
+                <property name="tab-expand">True</property>
+              </packing>
             </child>
             <child type="tab">
-              <placeholder/>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Downloads</property>
+              </object>
+              <packing>
+                <property name="position">2</property>
+                <property name="tab-expand">True</property>
+              </packing>
             </child>
           </object>
           <packing>
@@ -317,123 +414,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkBox" id="Downloads">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="orientation">vertical</property>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Downloads</property>
-                <property name="justify">center</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkBox">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="homogeneous">True</property>
-                <child>
-                  <object class="GtkButton">
-                    <property name="label">gtk-go-back</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">True</property>
-                    <property name="use-stock">True</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton">
-                    <property name="label">gtk-refresh</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">True</property>
-                    <property name="use-stock">True</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkScrolledWindow">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="shadow-type">in</property>
-                <child>
-                  <object class="GtkViewport">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <child>
-                      <object class="GtkListBox" id="DownloadsList">
-                        <property name="name">DownloadsList</property>
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <child>
-                          <object class="GtkListBoxRow">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <child>
-                              <object class="GtkLabel">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="ypad">5</property>
-                                <property name="label" translatable="yes">some Podcast</property>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkListBoxRow">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <child>
-                              <object class="GtkLabel">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="ypad">5</property>
-                                <property name="label" translatable="yes">some Other Podcast</property>
-                                <property name="wrap">True</property>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">2</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="name">Downloads</property>
-            <property name="title" translatable="yes">page2</property>
-            <property name="position">2</property>
-          </packing>
+          <placeholder/>
         </child>
       </object>
     </child>
