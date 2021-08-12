@@ -264,10 +264,14 @@ void returnSelection(GtkWidget* e,gpointer data){
     // getting epoch time for comparison against the cache file creation date incremented by one day
     cout << cacheFile << endl;
     double now = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-    if (cacheFile != 0 || (tmp.st_atim.tv_sec != 0 && tmp.st_atim.tv_sec + 86400 <= now))
+    if (cacheFile == -1 || (cacheFile == 0 && tmp.st_atim.tv_sec + 86400 <= now))
     {
       rss = webTools::getFileInMem(currentPodcast.RssFeed);
       cout << "from web" << endl;
+      fstream file;
+      file.open(path.c_str(),ios_base::out);
+      file.write(rss.c_str(),rss.size());
+      file.close();
     }
     else
     {
@@ -277,14 +281,7 @@ void returnSelection(GtkWidget* e,gpointer data){
 
     setPreviewPage(DataTools::getEpisodes(rss));
 
-    //  if the cache file exists don't write it again
-    if(cacheFile == 0 || tmp.st_atim.tv_sec + 86400 <= now){
-      return;
-    }
-    fstream file;
-    file.open(path.c_str(),ios_base::out);
-    file.write(rss.c_str(),rss.size());
-    file.close();
+
   }
 }
 
