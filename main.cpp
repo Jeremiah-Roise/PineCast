@@ -214,6 +214,7 @@ void setPreviewPage(podcastDataTypes::episodeList episodes)
     {
       GtkWidget* eventBox = gtk_event_box_new();
       GtkWidget* label = gtk_label_new(episodes.getEpisodeAtIndex(i).title.c_str());
+      gtk_widget_set_margin_top(GTK_WIDGET(label),10);
       GtkWidget* box = gtk_box_new(GtkOrientation::GTK_ORIENTATION_VERTICAL,0);
       gtk_label_set_line_wrap(GTK_LABEL(label),true);
       gtk_label_set_xalign (GTK_LABEL(label), 0.0);
