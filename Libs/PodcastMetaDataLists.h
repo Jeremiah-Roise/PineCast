@@ -13,6 +13,7 @@ string image100;
 string image600;
 string RssFeed;
 int index=0;
+bool Downloading = false;
 };
 
 
