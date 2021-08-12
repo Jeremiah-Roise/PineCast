@@ -169,7 +169,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkBox" id="Downloads1">
+              <object class="GtkBox" id="Downloads">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
