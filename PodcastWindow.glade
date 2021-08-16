@@ -209,39 +209,10 @@
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkListBox" id="DownloadsList1">
+                          <object class="GtkListBox" id="DownloadsList">
                             <property name="name">DownloadsList</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <child>
-                              <object class="GtkListBoxRow">
-                                <property name="visible">True</property>
-                                <property name="can-focus">True</property>
-                                <child>
-                                  <object class="GtkLabel">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">False</property>
-                                    <property name="ypad">5</property>
-                                    <property name="label" translatable="yes">some Podcast</property>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkListBoxRow">
-                                <property name="visible">True</property>
-                                <property name="can-focus">True</property>
-                                <child>
-                                  <object class="GtkLabel">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">False</property>
-                                    <property name="ypad">5</property>
-                                    <property name="label" translatable="yes">some Other Podcast</property>
-                                    <property name="wrap">True</property>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
                           </object>
                         </child>
                       </object>
@@ -269,6 +240,7 @@
               <packing>
                 <property name="position">2</property>
                 <property name="tab-expand">True</property>
+                <property name="tab-fill">False</property>
               </packing>
             </child>
           </object>
@@ -412,9 +384,6 @@
             <property name="title" translatable="yes">page1</property>
             <property name="position">1</property>
           </packing>
-        </child>
-        <child>
-          <placeholder/>
         </child>
       </object>
     </child>
