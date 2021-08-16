@@ -13,7 +13,7 @@
 using namespace std;
 
 extern "C"{
-void DownloadAndPlayPodcast(string mp3Url,string name,GtkProgressBar* bar);
+void DownloadAndPlayPodcast(podcastDataTypes::PodcastEpisode podcast,GtkWidget* e);
 GtkWidget* CreateSearchEntry(PodcastMetaData);
 void createSearchResults(GtkWidget *e,PodcastMetaDataList x);
 void testPrint(GtkWidget* e,gpointer data);
@@ -304,36 +304,64 @@ void addPodcastToLibButton(){
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 //  simply goes to the main page
 void goMainPage(){
   gtk_stack_set_visible_child_name(GTK_STACK(mainStack),(const gchar*)mainPageName);
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //  Download Selected Episode
 //  TODO use more descriptive name
 void getSelectedPodcastEpisode(GtkWidget* e){
   podcastDataTypes::PodcastEpisode current = currentepisodes.getEpisodeAtIndex(atoi(gtk_widget_get_name(e)));
-  Downloading.push_back(current);
+  if (/*some nonexistant variable*/ true)
+  {
+    thread th = thread(DownloadAndPlayPodcast,current,e);
+    th.detach();
+    return;
+  }
+  else
+  {
+    return;
+  }
+  
+  
+
+}
+
+void playMp3(string name);
+void DownloadAndPlayPodcast(podcastDataTypes::PodcastEpisode podcast,GtkWidget* e){
+
+
+
+
+  
+  Downloading.push_back(podcast);
 
 
 
   e = gtk_widget_get_parent(e);
+  gtk_widget_hide(e);
   clearContainer(GTK_CONTAINER(e));
+
   GtkWidget* box = gtk_box_new(GTK_ORIENTATION_VERTICAL,0);
-  gtk_container_add(GTK_CONTAINER(box),gtk_label_new(current.title.data()));
+  gtk_container_add(GTK_CONTAINER(box),gtk_label_new(podcast.title.data()));
   GtkWidget* progressBar = gtk_progress_bar_new();
   gtk_container_add(GTK_CONTAINER(box),progressBar);
   gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar),0.0f);
@@ -341,47 +369,23 @@ void getSelectedPodcastEpisode(GtkWidget* e){
   gtk_widget_show_all(e);
 
 
-  //  this is for the downloads page
-  
-  GtkWidget* box1 = gtk_box_new(GTK_ORIENTATION_VERTICAL,0);
-  gtk_container_add(GTK_CONTAINER(box1),gtk_label_new(current.title.data()));
-  GtkWidget* progressBar1 = gtk_progress_bar_new();
-  gtk_container_add(GTK_CONTAINER(box),progressBar1);
-  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar1),0.0f);
-  gtk_container_add(GTK_CONTAINER(DownloadsList),box1);
-  gtk_widget_show_all(DownloadsList);
 
-
-
-
-
-
-  cout << current.title << endl;
-  std::thread play(DownloadAndPlayPodcast,current.mp3Link,current.title,GTK_PROGRESS_BAR(progressBar));
-  play.detach();
-}
-
-void playMp3(string name);
-void DownloadAndPlayPodcast(string mp3Url,string name,GtkProgressBar* bar){
-
- name+=".mp3";
+ podcast.title+=".mp3";
 
   double progress = 0;
-  const std::future<void> thread = std::async(std::launch::async ,DownloadPodcast,mp3Url,name,&progress);
-  cout << "created thread" << endl;
+  const std::future<void> thread = std::async(std::launch::async ,DownloadPodcast,podcast.mp3Link,podcast.title,&progress);
 
   while (thread.wait_for(0ms) != std::future_status::ready)// wait for download to finish
   {
     sleep(1);
     cout << "Download progress: " << progress << endl;
-    gtk_progress_bar_set_fraction(bar,progress);
+    // some function
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar),progress);
   }
   thread.wait();
 
-  cout << progress << endl;
-  gtk_widget_destroy(GTK_WIDGET(bar));
 
-  playMp3(name);
+  playMp3(podcast.title);
 }
 void playMp3(string name){
   string FName = "xdg-open \""+ name+"\"";
@@ -389,6 +393,22 @@ void playMp3(string name){
   cout << "the name is: "<< FName<<endl;
   system(FName.data());
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // TODO make this actually work
 void streamPodcast(string mp3Url,string name){
