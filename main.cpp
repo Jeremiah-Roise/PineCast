@@ -19,7 +19,7 @@ void createSearchResults(GtkWidget *e,PodcastMetaDataList x);
 void testPrint(GtkWidget* e,gpointer data);
 void returnSelection(GtkWidget*,gpointer);
 void PodcastSearchEntry(GtkEntry *e);
-void getSelectedPodcastEpisode(GtkWidget* e);
+void getSelectedPodcastEpisodeButton(GtkWidget* e);
 void clearContainer(GtkContainer* e);
 void loadLib(PodcastMetaDataList& list);
 GdkPixbuf* createImage(string imageUrl,int scaleX,int scaleY);
@@ -225,7 +225,7 @@ void setPreviewPage(podcastDataTypes::episodeList episodes)
       gtk_container_add(GTK_CONTAINER(eventBox),box);
       gtk_widget_show_all(eventBox);
       gtk_widget_set_name(eventBox,(gchar*)to_string(i).c_str());
-      g_signal_connect(eventBox,"button-press-event",(GCallback)getSelectedPodcastEpisode,(gpointer)"button");
+      g_signal_connect(eventBox,"button-press-event",(GCallback)getSelectedPodcastEpisodeButton,(gpointer)"button");
       gtk_container_add(GTK_CONTAINER(PVEpisodeList),eventBox);
     }
 }
@@ -328,7 +328,7 @@ void goMainPage(){
 
 //  Download Selected Episode
 //  TODO use more descriptive name
-void getSelectedPodcastEpisode(GtkWidget* e){
+void getSelectedPodcastEpisodeButton(GtkWidget* e){
   podcastDataTypes::PodcastEpisode current = currentepisodes.getEpisodeAtIndex(atoi(gtk_widget_get_name(e)));
   if (/*some nonexistant variable*/ true)
   {
@@ -347,11 +347,6 @@ void getSelectedPodcastEpisode(GtkWidget* e){
 
 void playMp3(string name);
 void DownloadAndPlayPodcast(podcastDataTypes::PodcastEpisode podcast,GtkWidget* e){
-
-
-
-
-  
   Downloading.push_back(podcast);
 
 
