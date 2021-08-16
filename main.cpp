@@ -75,7 +75,7 @@ if(stat("Podcasts",&tmp) != 0 && S_ISDIR(tmp.st_mode) != 1){
   PVAuthor =           GTK_WIDGET(gtk_builder_get_object(builder,PVAuthorName));
   PVEpisodeList =      GTK_WIDGET(gtk_builder_get_object(builder,PVEpisodeListName));
   addToLibraryButton = GTK_WIDGET(gtk_builder_get_object(builder,addToLibraryButtonName));
-
+  DownloadsList =      GTK_WIDGET(gtk_builder_get_object(builder,"DownloadsList"));
   gtk_builder_connect_signals(builder,NULL);
   g_object_unref(builder);
   loadLib(Library);
@@ -342,15 +342,14 @@ void getSelectedPodcastEpisode(GtkWidget* e){
 
 
   //  this is for the downloads page
-  e = gtk_widget_get_parent(e);
-  clearContainer(GTK_CONTAINER(e));
-  GtkWidget* box = gtk_box_new(GTK_ORIENTATION_VERTICAL,0);
-  gtk_container_add(GTK_CONTAINER(box),gtk_label_new(current.title.data()));
-  GtkWidget* progressBar = gtk_progress_bar_new();
-  gtk_container_add(GTK_CONTAINER(box),progressBar);
-  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar),0.0f);
-  gtk_container_add(GTK_CONTAINER(e),box);
-  gtk_widget_show_all(e);
+  
+  GtkWidget* box1 = gtk_box_new(GTK_ORIENTATION_VERTICAL,0);
+  gtk_container_add(GTK_CONTAINER(box1),gtk_label_new(current.title.data()));
+  GtkWidget* progressBar1 = gtk_progress_bar_new();
+  gtk_container_add(GTK_CONTAINER(box),progressBar1);
+  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar1),0.0f);
+  gtk_container_add(GTK_CONTAINER(DownloadsList),box1);
+  gtk_widget_show_all(DownloadsList);
 
 
 
