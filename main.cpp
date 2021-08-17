@@ -328,9 +328,10 @@ void goMainPage(){
 
 //  Download Selected Episode
 //  TODO use more descriptive name
+void streamPodcast(string mp3Url,string name);
 void getSelectedPodcastEpisodeButton(GtkWidget* e){
   podcastDataTypes::PodcastEpisode current = currentepisodes.getEpisodeAtIndex(atoi(gtk_widget_get_name(e)));
-  if (/*some nonexistant variable*/ true)
+  if (/*some nonexistant variable*/ false)
   {
     thread th = thread(DownloadAndPlayPodcast,current,e);
     th.detach();
@@ -338,6 +339,9 @@ void getSelectedPodcastEpisodeButton(GtkWidget* e){
   }
   else
   {
+    
+    thread th = thread(streamPodcast,current.mp3Link,current.title);
+    th.detach();
     return;
   }
   
@@ -405,11 +409,23 @@ void playMp3(string name){
 
 
 
-// TODO make this actually work
+/// streams a podcast by waiting until it is %0.05 finished and then opens the audioplayer.
+///
+/// uses playMp3 to start the audio player checks download progress once per second
 void streamPodcast(string mp3Url,string name){
-  //  TODO make this a thread
-  getWebFile(mp3Url,name);//  use DownloadPodcast here
-  //  wait for a second or wait until theres a certain amount of progress
+  double progress;
+  const std::future<void> thread = std::async(std::launch::async ,DownloadPodcast,mp3Url,name + ".mp3",&progress);
+    while (thread.wait_for(0ms) != std::future_status::ready)// wait for download to finish
+  {
+    sleep(1);
+    cout << "Download progress: " << progress << endl;
+      if (progress >= 0.05)
+      {
+        playMp3(name+".mp3");
+        break;
+      }
+  }
+  thread.wait();
 } 
 
 }
