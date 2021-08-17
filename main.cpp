@@ -328,19 +328,20 @@ void goMainPage(){
 
 //  Download Selected Episode
 //  TODO use more descriptive name
-void streamPodcast(string mp3Url,string name);
+void streamPodcast(podcastDataTypes::PodcastEpisode podcast,GtkWidget* e);
 void getSelectedPodcastEpisodeButton(GtkWidget* e){
   podcastDataTypes::PodcastEpisode current = currentepisodes.getEpisodeAtIndex(atoi(gtk_widget_get_name(e)));
   if (/*some nonexistant variable*/ false)
   {
+    Downloading.push_back(current);
     thread th = thread(DownloadAndPlayPodcast,current,e);
     th.detach();
     return;
   }
   else
   {
-    
-    thread th = thread(streamPodcast,current.mp3Link,current.title);
+    Downloading.push_back(current);
+    thread th = thread(streamPodcast,current,e);
     th.detach();
     return;
   }
@@ -351,9 +352,6 @@ void getSelectedPodcastEpisodeButton(GtkWidget* e){
 
 void playMp3(string name);
 void DownloadAndPlayPodcast(podcastDataTypes::PodcastEpisode podcast,GtkWidget* e){
-  Downloading.push_back(podcast);
-
-
 
   e = gtk_widget_get_parent(e);
   gtk_widget_hide(e);
@@ -412,19 +410,43 @@ void playMp3(string name){
 /// streams a podcast by waiting until it is %0.05 finished and then opens the audioplayer.
 ///
 /// uses playMp3 to start the audio player checks download progress once per second
-void streamPodcast(string mp3Url,string name){
+void streamPodcast(podcastDataTypes::PodcastEpisode podcast,GtkWidget* e){
+
+    e = gtk_widget_get_parent(e);
+  gtk_widget_hide(e);
+  clearContainer(GTK_CONTAINER(e));
+
+  GtkWidget* box = gtk_box_new(GTK_ORIENTATION_VERTICAL,0);
+  gtk_container_add(GTK_CONTAINER(box),gtk_label_new(podcast.title.data()));
+  GtkWidget* progressBar = gtk_progress_bar_new();
+  gtk_container_add(GTK_CONTAINER(box),progressBar);
+  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar),0.0f);
+  gtk_container_add(GTK_CONTAINER(e),box);
+  gtk_widget_show_all(e);
+
+
+
+
+
   double progress;
-  const std::future<void> thread = std::async(std::launch::async ,DownloadPodcast,mp3Url,name + ".mp3",&progress);
-    while (thread.wait_for(0ms) != std::future_status::ready)// wait for download to finish
+  const std::future<void> thread = std::async(std::launch::async ,DownloadPodcast,podcast.mp3Link,podcast.title + ".mp3",&progress);
+    while (!(progress >= 0.05))// wait for download to finish
   {
     sleep(1);
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar),progress);
     cout << "Download progress: " << progress << endl;
-      if (progress >= 0.05)
-      {
-        playMp3(name+".mp3");
-        break;
-      }
+        
   }
+  playMp3(podcast.title+".mp3");
+
+  while (thread.wait_for(0ms) != std::future_status::ready)// wait for download to finish
+  {
+    sleep(1);
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar),progress);
+    cout << "Download progress: " << progress << endl;
+  }
+  
+  
   thread.wait();
 } 
 
