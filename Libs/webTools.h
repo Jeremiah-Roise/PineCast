@@ -119,8 +119,8 @@ void DownloadPodcast(string url,string filename,double* Pprogress){
     cout << "downloading podcast" << endl;
     try
   {
-    double* tmp;
-    tmp = Pprogress;
+
+    
     FILE *fp;
     fp = fopen(filename.c_str(),"wb");
     cout << "created file" << endl;
@@ -130,7 +130,7 @@ void DownloadPodcast(string url,string filename,double* Pprogress){
     double check= dlnow/dltotal;
     if (check >= 0)
     {
-      *tmp = check;
+      *Pprogress = check;
       return 0;
     }
     return 0;
