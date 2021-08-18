@@ -18,6 +18,7 @@ class podcastDataTypes
         string duration;
         string RssFeed;
         int index=0;
+        float Download = 0;
     };
 
     class episodeList
