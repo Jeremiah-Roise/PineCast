@@ -4,10 +4,12 @@
 #include <future>
 #include <stdlib.h>
 #include <algorithm>
-#include "Libs/DataTools.h"
+#include <sys/stat.h>
+#include <sys/types.h>
 #include "Libs/webTools.h"
 #include "Libs/podcastDataTypes.h"
 #include "Libs/PodcastMetaDataLists.h"
+#include "Libs/DataTools.h"
 #include "UINAMES.h"
 #include "Libs/LibraryTools.h"
 using namespace std;
@@ -45,8 +47,6 @@ extern "C"
   podcastDataTypes::episodeList currentepisodes;
   GtkWidget *stackPage = 0;
   bool deleteMode = false;
-#include <sys/stat.h>
-#include <sys/types.h>
   //  GUI setup
   int main(int argc, char **argv)
   {
@@ -64,17 +64,17 @@ extern "C"
     window = GTK_WIDGET(gtk_builder_get_object(builder, "MainWindow"));
     //                                                            | these are macros|
     //                                                            | in UINAMES.h    |
-    searchListBox = GTK_WIDGET(gtk_builder_get_object(builder, searchListBoxName));
-    mainStack = GTK_WIDGET(gtk_builder_get_object(builder, mainStackName));
-    notebook = GTK_WIDGET(gtk_builder_get_object(builder, notebookName));
+    searchListBox =      GTK_WIDGET(gtk_builder_get_object(builder, searchListBoxName));
+    mainStack =          GTK_WIDGET(gtk_builder_get_object(builder, mainStackName));
+    notebook =           GTK_WIDGET(gtk_builder_get_object(builder, notebookName));
     PodcastDetailsPage = GTK_WIDGET(gtk_builder_get_object(builder, podcastDetailsPageName));
-    LibraryUi = GTK_WIDGET(gtk_builder_get_object(builder, LibraryUiName));
-    PVImage = GTK_WIDGET(gtk_builder_get_object(builder, PVImageName));
-    PVTitle = GTK_WIDGET(gtk_builder_get_object(builder, PVTitleName));
-    PVAuthor = GTK_WIDGET(gtk_builder_get_object(builder, PVAuthorName));
-    PVEpisodeList = GTK_WIDGET(gtk_builder_get_object(builder, PVEpisodeListName));
+    LibraryUi =          GTK_WIDGET(gtk_builder_get_object(builder, LibraryUiName));
+    PVImage =            GTK_WIDGET(gtk_builder_get_object(builder, PVImageName));
+    PVTitle =            GTK_WIDGET(gtk_builder_get_object(builder, PVTitleName));
+    PVAuthor =           GTK_WIDGET(gtk_builder_get_object(builder, PVAuthorName));
+    PVEpisodeList =      GTK_WIDGET(gtk_builder_get_object(builder, PVEpisodeListName));
     addToLibraryButton = GTK_WIDGET(gtk_builder_get_object(builder, addToLibraryButtonName));
-    DownloadsList = GTK_WIDGET(gtk_builder_get_object(builder, "DownloadsList"));
+    DownloadsList =      GTK_WIDGET(gtk_builder_get_object(builder, "DownloadsList"));
     gtk_builder_connect_signals(builder, NULL);
     g_object_unref(builder);
     loadLib(Library);
@@ -197,7 +197,7 @@ extern "C"
 
   /*
   ## Signal Functions Go beyond this comment ##
-*/
+  */
 
   // get search text and give it to the itunes search function
   void PodcastSearchEntry(GtkEntry *e)
@@ -206,9 +206,23 @@ extern "C"
     //createSearchResults(listBox,webTools::itunesSearch(gtk_entry_get_text(e)));
     return;
   }
-
+  void tmpFunc(podcastDataTypes::episodeList episodes,int i){
+    GtkWidget *eventBox = gtk_event_box_new();
+        GtkWidget *label = gtk_label_new(episodes.getEpisodeAtIndex(i).title.c_str());
+        gtk_widget_set_margin_top(GTK_WIDGET(label), 10);
+        GtkWidget *box = gtk_box_new(GtkOrientation::GTK_ORIENTATION_VERTICAL, 0);
+        gtk_label_set_line_wrap(GTK_LABEL(label), true);
+        gtk_label_set_xalign(GTK_LABEL(label), 0.0);
+        gtk_container_add(GTK_CONTAINER(box), label);
+        gtk_container_add(GTK_CONTAINER(eventBox), box);
+        gtk_widget_set_name(eventBox, (gchar *)to_string(i).c_str());
+        gtk_widget_show_all(eventBox);
+        g_signal_connect(eventBox, "button-press-event", (GCallback)getSelectedPodcastEpisodeButton, (gpointer) "button");
+        gtk_container_add(GTK_CONTAINER(PVEpisodeList), eventBox);
+      }
   void setPreviewPage(podcastDataTypes::episodeList episodes)
   {
+    
     gtk_stack_set_visible_child(GTK_STACK(mainStack), PodcastDetailsPage);
     gtk_label_set_text(GTK_LABEL(PVTitle), currentPodcast.title.c_str());
     gtk_label_set_text(GTK_LABEL(PVAuthor), currentPodcast.artist.c_str());
@@ -219,20 +233,27 @@ extern "C"
     clearContainer(GTK_CONTAINER(PVEpisodeList));
     for (int i = 0; i < episodes.getIndexSize(); i++)
     {
-      GtkWidget *eventBox = gtk_event_box_new();
-      GtkWidget *label = gtk_label_new(episodes.getEpisodeAtIndex(i).title.c_str());
-      gtk_widget_set_margin_top(GTK_WIDGET(label), 10);
-      GtkWidget *box = gtk_box_new(GtkOrientation::GTK_ORIENTATION_VERTICAL, 0);
-      gtk_label_set_line_wrap(GTK_LABEL(label), true);
-      gtk_label_set_xalign(GTK_LABEL(label), 0.0);
-      gtk_container_add(GTK_CONTAINER(box), label);
-      gtk_container_add(GTK_CONTAINER(eventBox), box);
-      gtk_widget_show_all(eventBox);
-      gtk_widget_set_name(eventBox, (gchar *)to_string(i).c_str());
-      g_signal_connect(eventBox, "button-press-event", (GCallback)getSelectedPodcastEpisodeButton, (gpointer) "button");
-      gtk_container_add(GTK_CONTAINER(PVEpisodeList), eventBox);
+      bool download = true;
+      if (Downloading.size() > 0)
+      {
+      for (auto tmpPod : Downloading)
+      {
+        if (tmpPod.mp3Link == episodes.getEpisodeAtIndex(i).mp3Link)
+        {
+          download = false;
+        }
+      }
+      }
+      if (download == true)
+      {
+        tmpFunc(episodes,i);
+      }
+      
+      
+
+      
     }
-  }
+}
 
   //  gets the returned selection from search results
   void returnSelection(GtkWidget *e, gpointer data)
@@ -316,8 +337,7 @@ extern "C"
     gtk_stack_set_visible_child_name(GTK_STACK(mainStack), (const gchar *)mainPageName);
   }
 
-  //  Download Selected Episode
-  //  TODO use more descriptive name
+  /// function that gets called when an episode is clicked.
   void streamPodcast(podcastDataTypes::PodcastEpisode podcast, GtkWidget *e);
   void getSelectedPodcastEpisodeButton(GtkWidget *e)
   {
@@ -325,23 +345,26 @@ extern "C"
     if (/*some nonexistant variable*/ false)
     {
       Downloading.push_back(current);
-      thread th = thread(DownloadAndPlayPodcast, current, e);
+       
+      thread th = thread(DownloadAndPlayPodcast,Downloading.back(), e);
       th.detach();
       return;
     }
     else
     {
       Downloading.push_back(current);
-      thread th = thread(streamPodcast, current, e);
+      thread th = thread(streamPodcast,Downloading.back(), e);
       th.detach();
       return;
     }
   }
 
   void playMp3(string name);
+  /// Downloads entirely and then plays a podcast
   void DownloadAndPlayPodcast(podcastDataTypes::PodcastEpisode podcast, GtkWidget *e)
   {
 
+    
     e = gtk_widget_get_parent(e);
     gtk_widget_hide(e);
     clearContainer(GTK_CONTAINER(e));
@@ -362,14 +385,21 @@ extern "C"
     while (thread.wait_for(0ms) != std::future_status::ready) // wait for download to finish
     {
       sleep(1);
+      if (GTK_IS_PROGRESS_BAR(progressBar))
+      {
+        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
+      }
+      podcast.Download = progress;
       cout << "Download progress: " << progress << endl;
-      // some function
-      gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
+
     }
     thread.wait();
 
     playMp3(podcast.title);
   }
+
+
+  /// uses system command to start podcast with default application should be able to tolerate spaces.
   void playMp3(string name)
   {
     string FName = "xdg-open \"" + name + "\"";
@@ -378,12 +408,12 @@ extern "C"
     system(FName.data());
   }
 
+
   /// streams a podcast by waiting until it is %0.05 finished and then opens the audioplayer.
   ///
-  /// uses playMp3 to start the audio player checks download progress once per second
+  /// uses playMp3 to start the audio player checks download progress once per second.
   void streamPodcast(podcastDataTypes::PodcastEpisode podcast, GtkWidget *e)
   {
-
     e = gtk_widget_get_parent(e);
     gtk_widget_hide(e);
     clearContainer(GTK_CONTAINER(e));
@@ -401,15 +431,23 @@ extern "C"
     while (!(progress >= 0.05)) // wait for download to finish
     {
       sleep(1);
-      gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
+      if (GTK_IS_PROGRESS_BAR(progressBar))
+      {
+        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
+      }
+      
+      podcast.Download = progress;
       cout << "Download progress: " << progress << endl;
     }
     playMp3(podcast.title + ".mp3");
-
     while (thread.wait_for(0ms) != std::future_status::ready) // wait for download to finish
     {
       sleep(1);
-      gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
+      if (GTK_IS_PROGRESS_BAR(progressBar))
+      {
+        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
+      }
+      podcast.Download = progress;
       cout << "Download progress: " << progress << endl;
     }
 
