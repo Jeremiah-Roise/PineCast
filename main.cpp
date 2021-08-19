@@ -19,7 +19,6 @@ extern "C"
   void DownloadAndPlayPodcast(podcastDataTypes::PodcastEpisode podcast, GtkWidget *e);
   GtkWidget *CreateSearchEntry(PodcastMetaData);
   void createSearchResults(GtkWidget *e, PodcastMetaDataList x);
-  void testPrint(GtkWidget *e, gpointer data);
   void returnSelection(GtkWidget *, gpointer);
   void PodcastSearchEntry(GtkEntry *e);
   void getSelectedPodcastEpisodeButton(GtkWidget *e);
@@ -206,9 +205,12 @@ extern "C"
     //createSearchResults(listBox,webTools::itunesSearch(gtk_entry_get_text(e)));
     return;
   }
-  void tmpFunc(podcastDataTypes::episodeList episodes,int i){
-    GtkWidget *eventBox = gtk_event_box_new();
-        GtkWidget *label = gtk_label_new(episodes.getEpisodeAtIndex(i).title.c_str());
+
+  void setPreviewPage(podcastDataTypes::episodeList episodes)
+  {
+    auto tmpFunc = [] (podcastDataTypes::episodeList data,int i) {
+      GtkWidget *eventBox = gtk_event_box_new();
+        GtkWidget *label = gtk_label_new(data.getEpisodeAtIndex(i).title.c_str());
         gtk_widget_set_margin_top(GTK_WIDGET(label), 10);
         GtkWidget *box = gtk_box_new(GtkOrientation::GTK_ORIENTATION_VERTICAL, 0);
         gtk_label_set_line_wrap(GTK_LABEL(label), true);
@@ -217,11 +219,10 @@ extern "C"
         gtk_container_add(GTK_CONTAINER(eventBox), box);
         gtk_widget_set_name(eventBox, (gchar *)to_string(i).c_str());
         gtk_widget_show_all(eventBox);
-        g_signal_connect(eventBox, "button-press-event", (GCallback)getSelectedPodcastEpisodeButton, (gpointer) "button");
-        gtk_container_add(GTK_CONTAINER(PVEpisodeList), eventBox);
-      }
-  void setPreviewPage(podcastDataTypes::episodeList episodes)
-  {
+        return eventBox;
+    };
+
+
     
     gtk_stack_set_visible_child(GTK_STACK(mainStack), PodcastDetailsPage);
     gtk_label_set_text(GTK_LABEL(PVTitle), currentPodcast.title.c_str());
@@ -246,12 +247,16 @@ extern "C"
       }
       if (download == true)
       {
-        tmpFunc(episodes,i);
+        GtkWidget* eventBox = tmpFunc(episodes,i);
+        g_signal_connect(eventBox, "button-press-event", (GCallback)getSelectedPodcastEpisodeButton, (gpointer) "button");
+        gtk_container_add(GTK_CONTAINER(PVEpisodeList), eventBox);
       }
-      
-      
-
-      
+      if (download == false)
+      {
+        GtkWidget* eventBox = tmpFunc(episodes,i);
+        g_signal_connect(eventBox, "button-press-event", (GCallback)[](){cout<<"already downloading"<<endl;}, (gpointer) "button");
+        gtk_container_add(GTK_CONTAINER(PVEpisodeList), eventBox);
+      }
     }
 }
 
@@ -344,14 +349,15 @@ extern "C"
     podcastDataTypes::PodcastEpisode current = currentepisodes.getEpisodeAtIndex(atoi(gtk_widget_get_name(e)));
     if (/*some nonexistant variable*/ false)
     {
+      
       Downloading.push_back(current);
-       
       thread th = thread(DownloadAndPlayPodcast,Downloading.back(), e);
       th.detach();
       return;
     }
     else
     {
+      
       Downloading.push_back(current);
       thread th = thread(streamPodcast,Downloading.back(), e);
       th.detach();
@@ -375,10 +381,10 @@ extern "C"
     gtk_container_add(GTK_CONTAINER(box), progressBar);
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), 0.0f);
     gtk_container_add(GTK_CONTAINER(e), box);
+    g_signal_connect(e, "button-press-event", (GCallback)[](){cout<<"already downloading"<<endl;}, (gpointer) "button");
     gtk_widget_show_all(e);
-
+    
     podcast.title += ".mp3";
-
     double progress = 0;
     const std::future<void> thread = std::async(std::launch::async, DownloadPodcast, podcast.mp3Link, podcast.title, &progress);
 
@@ -424,7 +430,10 @@ extern "C"
     gtk_container_add(GTK_CONTAINER(box), progressBar);
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), 0.0f);
     gtk_container_add(GTK_CONTAINER(e), box);
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar),0);
+    g_signal_connect(e, "button-press-event", (GCallback)[](){cout<<"already downloading"<<endl;}, (gpointer) "button");
     gtk_widget_show_all(e);
+
 
     double progress;
     const std::future<void> thread = std::async(std::launch::async, DownloadPodcast, podcast.mp3Link, podcast.title + ".mp3", &progress);
