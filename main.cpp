@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <utime.h>
 #include "Libs/webTools.h"
 #include "Libs/podcastDataTypes.h"
 #include "Libs/PodcastMetaDataLists.h"
@@ -308,6 +309,7 @@ extern "C"
         file.open(path.c_str(), ios_base::out);
         file.write(rss.c_str(), rss.size());
         file.close();
+        utime(path.c_str(),NULL);
       }
       else
       {
