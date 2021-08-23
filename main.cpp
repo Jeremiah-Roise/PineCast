@@ -422,7 +422,7 @@ extern "C"
   /// uses playMp3 to start the audio player checks download progress once per second.
   void streamPodcast(podcastDataTypes::PodcastEpisode podcast, GtkWidget *e)
   {
-    e = gtk_widget_get_parent(e);
+    //e = gtk_widget_get_parent(e);
     gtk_widget_hide(e);
     clearContainer(GTK_CONTAINER(e));
 
@@ -433,9 +433,11 @@ extern "C"
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), 0.0f);
     gtk_container_add(GTK_CONTAINER(e), box);
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar),0);
-    g_signal_connect(e, "button-press-event", (GCallback)[](){cout<<"already downloading"<<endl;}, (gpointer) "button");
+    
     gtk_widget_show_all(e);
-
+    g_signal_handlers_destroy(e);
+    g_signal_connect(e, "button-press-event", (GCallback)[](){cout<<"already downloading"<<endl;}, (gpointer) "button");
+    
 
     double progress;
     const std::future<void> thread = std::async(std::launch::async, DownloadPodcast, podcast.mp3Link, podcast.title + ".mp3", &progress);
