@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <utime.h>
+#include <gio/gio.h>
 #include "Libs/webTools.h"
 #include "Libs/podcastDataTypes.h"
 #include "Libs/PodcastMetaDataLists.h"
@@ -202,6 +203,7 @@ extern "C"
   // get search text and give it to the itunes search function
   void PodcastSearchEntry(GtkEntry *e)
   {
+    g_dbus_message_new_method_call(NULL,"/sm/puri/OSK0","sm.puri.OSK0 ","SetVisible");
     std::future<void> loadList = std::async(std::launch::async, &createSearchResults, searchListBox, webTools::itunesSearch(gtk_entry_get_text(e)));
     //createSearchResults(listBox,webTools::itunesSearch(gtk_entry_get_text(e)));
     return;
