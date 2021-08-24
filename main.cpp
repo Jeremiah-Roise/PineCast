@@ -7,7 +7,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <utime.h>
-#include <gio/gio.h>
+#include <dbus/dbus.h>
+#include <stdlib.h>
 #include "Libs/webTools.h"
 #include "Libs/podcastDataTypes.h"
 #include "Libs/PodcastMetaDataLists.h"
@@ -199,11 +200,51 @@ extern "C"
   /*
   ## Signal Functions Go beyond this comment ##
   */
-
+static void check_and_abort(DBusError *error) {
+    if (!dbus_error_is_set(error)) return;
+    puts(error->message);
+    abort();
+}
   // get search text and give it to the itunes search function
   void PodcastSearchEntry(GtkEntry *e)
   {
-    g_dbus_message_new_method_call(NULL,"/sm/puri/OSK0","sm.puri.OSK0 ","SetVisible");
+    DBusConnection *connection = NULL;
+    DBusError error;
+    DBusMessage *msgQuery = NULL;
+    DBusMessage *msgReply = NULL;
+    const char *interfaceName = NULL;
+    const char *versionValue = NULL;
+ 
+    dbus_error_init(&error);
+    connection = dbus_bus_get(DBUS_BUS_SESSION, &error);
+    check_and_abort(&error);
+ 
+    interfaceName = "sm.puri.OSK0";
+ 
+    msgQuery = dbus_message_new_method_call(
+        interfaceName,
+        "/sm/puri/OSK0",
+        "sm.puri.OSK0",
+        "SetVisible");
+        DBusMessageIter iter,subIter;
+        dbus_message_iter_init_append(msgQuery, &iter);
+
+        //HOW TO CALL VARIANT?:
+        dbus_message_iter_open_container(&iter, DBUS_TYPE_BOOLEAN, DBUS_TYPE_BOOLEAN_AS_STRING, &subIter);
+        dbus_message_iter_append_basic(&subIter, DBUS_TYPE_BOOLEAN,(void*)true);
+        dbus_message_iter_close_container(&iter, &subIter);
+
+    msgReply = dbus_connection_send_with_reply_and_block(connection, msgQuery, 1000, &error);
+    check_and_abort(&error);
+    dbus_message_unref(msgQuery);
+ 
+    dbus_message_get_args(msgReply, &error, DBUS_TYPE_STRING, &versionValue, DBUS_TYPE_INVALID);
+ 
+    printf("The critical action is: %s\n", versionValue);
+     
+    dbus_message_unref(msgReply);
+     
+
     std::future<void> loadList = std::async(std::launch::async, &createSearchResults, searchListBox, webTools::itunesSearch(gtk_entry_get_text(e)));
     //createSearchResults(listBox,webTools::itunesSearch(gtk_entry_get_text(e)));
     return;
