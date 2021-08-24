@@ -166,7 +166,7 @@ extern "C"
     GtkWidget *event = gtk_event_box_new();
     gtk_label_set_line_wrap(GTK_LABEL(label), true);
 
-    g_signal_connect(event, "button-press-event", (GCallback)returnSelection, (gpointer) nullptr);
+    g_signal_connect(event, "button-release-event", (GCallback)returnSelection, (gpointer) nullptr);
     gtk_widget_set_name(GTK_WIDGET(event), (const gchar *)to_string(podcast.index).c_str()); //  setting the name to the index of the podcast
     gtk_box_pack_start(GTK_BOX(box), image, false, true, 0);
     gtk_box_pack_start(GTK_BOX(box), label, true, true, 0);
@@ -251,13 +251,13 @@ extern "C"
       if (download == true)
       {
         GtkWidget* eventBox = tmpFunc(episodes,i);
-        g_signal_connect(eventBox, "button-press-event", (GCallback)getSelectedPodcastEpisodeButton, (gpointer) "button");
+        g_signal_connect(eventBox, "button-release-event", (GCallback)getSelectedPodcastEpisodeButton, (gpointer) "button");
         gtk_container_add(GTK_CONTAINER(PVEpisodeList), eventBox);
       }
       if (download == false)
       {
         GtkWidget* eventBox = tmpFunc(episodes,i);
-        g_signal_connect(eventBox, "button-press-event", (GCallback)[](){cout<<"already downloading"<<endl;}, (gpointer) "button");
+        g_signal_connect(eventBox, "button-release-event", (GCallback)[](){cout<<"already downloading"<<endl;}, (gpointer) "button");
         gtk_container_add(GTK_CONTAINER(PVEpisodeList), eventBox);
       }
     }
