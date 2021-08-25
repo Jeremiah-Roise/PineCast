@@ -57,32 +57,13 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkListBox" id="Library">
+                  <object class="GtkFlowBox" id="Library">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <child>
-                      <object class="GtkListBoxRow">
-                        <property name="width-request">100</property>
-                        <property name="height-request">80</property>
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">&lt;big&gt;Add Podcasts to your library to get started&lt;/big
-&gt;</property>
-                            <property name="use-markup">True</property>
-                            <property name="justify">center</property>
-                            <property name="wrap">True</property>
-                            <property name="track-visited-links">False</property>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
+                    <property name="max-children-per-line">1</property>
                   </object>
                   <packing>
-                    <property name="expand">True</property>
+                    <property name="expand">False</property>
                     <property name="fill">True</property>
                     <property name="position">1</property>
                   </packing>
@@ -130,15 +111,17 @@
                   <object class="GtkScrolledWindow">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
+                    <property name="vscrollbar-policy">always</property>
                     <property name="shadow-type">in</property>
                     <child>
                       <object class="GtkViewport">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkListBox" id="SearchListBox">
+                          <object class="GtkFlowBox" id="SearchListBox">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="max-children-per-line">1</property>
                           </object>
                         </child>
                       </object>
@@ -210,8 +193,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkListBox" id="DownloadsList">
-                            <property name="name">DownloadsList</property>
+                          <object class="GtkFlowBox" id="DownloadsList">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                           </object>
@@ -364,7 +346,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <child>
-                      <object class="GtkListBox" id="PVEpisodeList">
+                      <object class="GtkFlowBox" id="PVEpisodeList">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                       </object>
