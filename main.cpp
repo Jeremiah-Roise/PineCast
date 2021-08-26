@@ -49,6 +49,7 @@ extern "C"
   podcastDataTypes::episodeList currentepisodes;
   GtkWidget *stackPage = 0;
   bool deleteMode = false;
+  bool downloadPodcast = false;
   //  GUI setup
   int main(int argc, char **argv)
   {
@@ -158,6 +159,7 @@ extern "C"
     GtkWidget* topBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
     GtkWidget* thumbImage = gtk_image_new_from_pixbuf(createImage(podcast.image600, 50, 50));
     GtkWidget* titleLabel = gtk_label_new(podcast.title.c_str());
+    gtk_label_set_xalign(GTK_LABEL(titleLabel), 0.0);
     gtk_label_set_line_wrap(GTK_LABEL(titleLabel), true);
     GtkWidget* previewButton = gtk_button_new();
     gtk_widget_set_name(GTK_WIDGET(previewButton), (const gchar *)to_string(podcast.index).c_str());
@@ -224,22 +226,40 @@ extern "C"
   void setPreviewPage(podcastDataTypes::episodeList episodes)
   {
     auto tmpFunc = [] (podcastDataTypes::episodeList data,int i) {
+
+      string title = data.getEpisodeAtIndex(i).title.c_str();
+      string duration = "<span size=\"medium\"><i>" + data.getEpisodeAtIndex(i).duration + "</i></span>";
+
+
+
       GtkWidget* topBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,2);
       GtkWidget* infoBox = gtk_box_new(GTK_ORIENTATION_VERTICAL,0);
       GtkWidget* buttonBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,2);
-      GtkWidget* playButton = gtk_button_new();
-      g_signal_connect(playButton, "pressed", (GCallback)getSelectedPodcastEpisodeButton, (gpointer) "button");
-      GtkWidget* downloadButton = gtk_button_new();
-      GtkWidget* titleLabel = gtk_label_new(data.getEpisodeAtIndex(i).title.c_str());
+      GtkWidget* playButton = gtk_button_new_from_icon_name("media-playback-start",GTK_ICON_SIZE_BUTTON);
+      GtkWidget* downloadButton = gtk_button_new_from_icon_name("emblem-downloads",GTK_ICON_SIZE_BUTTON);
+      GtkWidget* titleLabel = gtk_label_new(title.c_str());
+      GtkWidget* durationLabel = gtk_label_new(duration.c_str());
+
+      void(*downloadfunc)(GtkWidget*) = [](GtkWidget* e){downloadPodcast=true;getSelectedPodcastEpisodeButton(e);};
+      void(*streamfunc)(GtkWidget*) = [](GtkWidget* e){downloadPodcast=false;getSelectedPodcastEpisodeButton(e);};
+
+
+
+      g_signal_connect(playButton, "pressed", (GCallback)streamfunc, (gpointer) "button");
+      g_signal_connect(downloadButton, "pressed", (GCallback)downloadfunc, (gpointer) "button");
+
       gtk_label_set_line_wrap(GTK_LABEL(titleLabel), true);
       gtk_label_set_xalign(GTK_LABEL(titleLabel), 0.0);
-      GtkWidget* authorLabel = gtk_label_new(data.getEpisodeAtIndex(i).artist.c_str());
-      gtk_label_set_line_wrap(GTK_LABEL(authorLabel), true);
-      gtk_label_set_xalign(GTK_LABEL(authorLabel), 0.0);
+      
+
+      gtk_label_set_line_wrap(GTK_LABEL(durationLabel), true);
+      gtk_label_set_xalign(GTK_LABEL(durationLabel), 0.0);
+      gtk_label_set_use_markup(GTK_LABEL(durationLabel),true);
+      gtk_label_set_markup(GTK_LABEL(durationLabel),duration.c_str());
 
 
       gtk_box_pack_start(GTK_BOX(infoBox),titleLabel,false,false,0);
-      gtk_box_pack_end(GTK_BOX(infoBox),authorLabel,false,false,0);
+      gtk_box_pack_start(GTK_BOX(infoBox),durationLabel,false,false,0);
 
       gtk_box_pack_start(GTK_BOX(buttonBox),playButton,false,false,0);
       gtk_box_pack_end(GTK_BOX(buttonBox),downloadButton,false,false,0);
@@ -249,20 +269,6 @@ extern "C"
       gtk_box_pack_end(GTK_BOX(topBox),buttonBox,false,false,0);
       gtk_widget_show_all(topBox);
       return topBox;
-
-
-
-      //GtkWidget *eventBox = gtk_event_box_new();
-      //GtkWidget *label = gtk_label_new(data.getEpisodeAtIndex(i).title.c_str());
-      //gtk_widget_set_margin_top(GTK_WIDGET(label), 10);
-      //GtkWidget *box = gtk_box_new(GtkOrientation::GTK_ORIENTATION_VERTICAL, 0);
-      //gtk_label_set_line_wrap(GTK_LABEL(label), true);
-      //gtk_label_set_xalign(GTK_LABEL(label), 0.0);
-      //gtk_container_add(GTK_CONTAINER(box), label);
-      //gtk_container_add(GTK_CONTAINER(eventBox), box);
-      //gtk_widget_set_name(eventBox, (gchar *)to_string(i).c_str());
-      //gtk_widget_show_all(eventBox);
-      //return eventBox;
     };
 
 
@@ -393,7 +399,7 @@ extern "C"
   void getSelectedPodcastEpisodeButton(GtkWidget *e)
   {
     podcastDataTypes::PodcastEpisode current = currentepisodes.getEpisodeAtIndex(atoi(gtk_widget_get_name(e)));
-    if (/*some nonexistant variable*/ false)
+    if (downloadPodcast)
     {
       
       Downloading.push_back(current);
