@@ -168,26 +168,6 @@ extern "C"
     gtk_box_pack_end(GTK_BOX(topBox),previewButton,false,false,0);
     g_signal_connect(previewButton, "pressed", (GCallback)returnSelection, (gpointer) nullptr);
     return topBox;
-
-    ////  Image stuff
-    //GtkWidget *image = gtk_image_new_from_pixbuf(createImage(podcast.image600, 50, 50));
-    ////  ###########
-//
-    ////  Formatting and setting up signals
-    //GtkWidget *label = gtk_label_new(podcast.title.c_str());
-    //gtk_label_set_xalign(GTK_LABEL(label), 0.0);
-    //GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
-    //GtkWidget *event = gtk_event_box_new();
-    //gtk_label_set_line_wrap(GTK_LABEL(label), true);
-//
-    ////g_signal_connect(event, "button-release-event", (GCallback)returnSelection, (gpointer) nullptr);
-    //gtk_widget_set_name(GTK_WIDGET(event), (const gchar *)to_string(podcast.index).c_str()); //  setting the name to the index of the podcast
-    //gtk_box_pack_start(GTK_BOX(box), image, false, true, 0);
-    //gtk_box_pack_start(GTK_BOX(box), label, true, true, 0);
-    //gtk_container_add(GTK_CONTAINER(event), GTK_WIDGET(box));
-    //gtk_widget_show_all(event);
-    ////  #################################
-    //return event;
   }
 
   //  clears the given container of all children
