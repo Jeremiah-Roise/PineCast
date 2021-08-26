@@ -155,25 +155,37 @@ extern "C"
   GtkWidget *CreateSearchEntry(PodcastMetaData podcast)
   {
 
-    //  Image stuff
-    GtkWidget *image = gtk_image_new_from_pixbuf(createImage(podcast.image600, 50, 50));
-    //  ###########
+    GtkWidget* topBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
+    GtkWidget* thumbImage = gtk_image_new_from_pixbuf(createImage(podcast.image600, 50, 50));
+    GtkWidget* titleLabel = gtk_label_new(podcast.title.c_str());
+    gtk_label_set_line_wrap(GTK_LABEL(titleLabel), true);
+    GtkWidget* previewButton = gtk_button_new();
+    gtk_widget_set_name(GTK_WIDGET(previewButton), (const gchar *)to_string(podcast.index).c_str());
+    gtk_box_pack_start(GTK_BOX(topBox),thumbImage,false,false,0);
+    gtk_box_pack_start(GTK_BOX(topBox),titleLabel,false,false,0);
+    gtk_box_pack_end(GTK_BOX(topBox),previewButton,false,false,0);
+    g_signal_connect(previewButton, "pressed", (GCallback)returnSelection, (gpointer) nullptr);
+    return topBox;
 
-    //  Formatting and setting up signals
-    GtkWidget *label = gtk_label_new(podcast.title.c_str());
-    gtk_label_set_xalign(GTK_LABEL(label), 0.0);
-    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
-    GtkWidget *event = gtk_event_box_new();
-    gtk_label_set_line_wrap(GTK_LABEL(label), true);
-
-    //g_signal_connect(event, "button-release-event", (GCallback)returnSelection, (gpointer) nullptr);
-    gtk_widget_set_name(GTK_WIDGET(event), (const gchar *)to_string(podcast.index).c_str()); //  setting the name to the index of the podcast
-    gtk_box_pack_start(GTK_BOX(box), image, false, true, 0);
-    gtk_box_pack_start(GTK_BOX(box), label, true, true, 0);
-    gtk_container_add(GTK_CONTAINER(event), GTK_WIDGET(box));
-    gtk_widget_show_all(event);
-    //  #################################
-    return event;
+    ////  Image stuff
+    //GtkWidget *image = gtk_image_new_from_pixbuf(createImage(podcast.image600, 50, 50));
+    ////  ###########
+//
+    ////  Formatting and setting up signals
+    //GtkWidget *label = gtk_label_new(podcast.title.c_str());
+    //gtk_label_set_xalign(GTK_LABEL(label), 0.0);
+    //GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+    //GtkWidget *event = gtk_event_box_new();
+    //gtk_label_set_line_wrap(GTK_LABEL(label), true);
+//
+    ////g_signal_connect(event, "button-release-event", (GCallback)returnSelection, (gpointer) nullptr);
+    //gtk_widget_set_name(GTK_WIDGET(event), (const gchar *)to_string(podcast.index).c_str()); //  setting the name to the index of the podcast
+    //gtk_box_pack_start(GTK_BOX(box), image, false, true, 0);
+    //gtk_box_pack_start(GTK_BOX(box), label, true, true, 0);
+    //gtk_container_add(GTK_CONTAINER(event), GTK_WIDGET(box));
+    //gtk_widget_show_all(event);
+    ////  #################################
+    //return event;
   }
 
   //  clears the given container of all children
@@ -212,17 +224,45 @@ extern "C"
   void setPreviewPage(podcastDataTypes::episodeList episodes)
   {
     auto tmpFunc = [] (podcastDataTypes::episodeList data,int i) {
-      GtkWidget *eventBox = gtk_event_box_new();
-        GtkWidget *label = gtk_label_new(data.getEpisodeAtIndex(i).title.c_str());
-        gtk_widget_set_margin_top(GTK_WIDGET(label), 10);
-        GtkWidget *box = gtk_box_new(GtkOrientation::GTK_ORIENTATION_VERTICAL, 0);
-        gtk_label_set_line_wrap(GTK_LABEL(label), true);
-        gtk_label_set_xalign(GTK_LABEL(label), 0.0);
-        gtk_container_add(GTK_CONTAINER(box), label);
-        gtk_container_add(GTK_CONTAINER(eventBox), box);
-        gtk_widget_set_name(eventBox, (gchar *)to_string(i).c_str());
-        gtk_widget_show_all(eventBox);
-        return eventBox;
+      GtkWidget* topBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,2);
+      GtkWidget* infoBox = gtk_box_new(GTK_ORIENTATION_VERTICAL,0);
+      GtkWidget* buttonBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,2);
+      GtkWidget* playButton = gtk_button_new();
+      g_signal_connect(playButton, "pressed", (GCallback)getSelectedPodcastEpisodeButton, (gpointer) "button");
+      GtkWidget* downloadButton = gtk_button_new();
+      GtkWidget* titleLabel = gtk_label_new(data.getEpisodeAtIndex(i).title.c_str());
+      gtk_label_set_line_wrap(GTK_LABEL(titleLabel), true);
+      gtk_label_set_xalign(GTK_LABEL(titleLabel), 0.0);
+      GtkWidget* authorLabel = gtk_label_new(data.getEpisodeAtIndex(i).artist.c_str());
+      gtk_label_set_line_wrap(GTK_LABEL(authorLabel), true);
+      gtk_label_set_xalign(GTK_LABEL(authorLabel), 0.0);
+
+
+      gtk_box_pack_start(GTK_BOX(infoBox),titleLabel,false,false,0);
+      gtk_box_pack_end(GTK_BOX(infoBox),authorLabel,false,false,0);
+
+      gtk_box_pack_start(GTK_BOX(buttonBox),playButton,false,false,0);
+      gtk_box_pack_end(GTK_BOX(buttonBox),downloadButton,false,false,0);
+
+
+      gtk_box_pack_start(GTK_BOX(topBox),infoBox,false,false,0);
+      gtk_box_pack_end(GTK_BOX(topBox),buttonBox,false,false,0);
+      gtk_widget_show_all(topBox);
+      return topBox;
+
+
+
+      //GtkWidget *eventBox = gtk_event_box_new();
+      //GtkWidget *label = gtk_label_new(data.getEpisodeAtIndex(i).title.c_str());
+      //gtk_widget_set_margin_top(GTK_WIDGET(label), 10);
+      //GtkWidget *box = gtk_box_new(GtkOrientation::GTK_ORIENTATION_VERTICAL, 0);
+      //gtk_label_set_line_wrap(GTK_LABEL(label), true);
+      //gtk_label_set_xalign(GTK_LABEL(label), 0.0);
+      //gtk_container_add(GTK_CONTAINER(box), label);
+      //gtk_container_add(GTK_CONTAINER(eventBox), box);
+      //gtk_widget_set_name(eventBox, (gchar *)to_string(i).c_str());
+      //gtk_widget_show_all(eventBox);
+      //return eventBox;
     };
 
 
@@ -251,13 +291,13 @@ extern "C"
       if (download == true)
       {
         GtkWidget* eventBox = tmpFunc(episodes,i);
-        //g_signal_connect(eventBox, "button-release-event", (GCallback)getSelectedPodcastEpisodeButton, (gpointer) "button");
+        
         gtk_container_add(GTK_CONTAINER(PVEpisodeList), eventBox);
       }
       if (download == false)
       {
         GtkWidget* eventBox = tmpFunc(episodes,i);
-        //g_signal_connect(eventBox, "button-release-event", (GCallback)[](){cout<<"already downloading"<<endl;}, (gpointer) "button");
+        g_signal_connect(eventBox, "pressed", (GCallback)[](){cout<<"already downloading"<<endl;}, (gpointer) "button");
         gtk_container_add(GTK_CONTAINER(PVEpisodeList), eventBox);
       }
     }
@@ -266,14 +306,15 @@ extern "C"
   //  gets the returned selection from search results
   void returnSelection(GtkWidget *e, gpointer data)
   {
-
+    
     int index = atoi(gtk_widget_get_name(e));
 
     searchList.GetPodcastAtIndex(index, currentPodcast);
     int page = (int)gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook));
-    if (page == 0 || page == 1)
+    
+    if (page == 0)
     {
-      Library.GetPodcastAtIndex(index, currentPodcast);
+      Library.GetPodcastAtIndex(index, currentPodcast); 
     }
     if (page == 1)
     {
@@ -323,6 +364,7 @@ extern "C"
     }
     if (deleteMode == false && page == 1)
     {
+      cout << "loading" << endl;
       string rss;
       //  check the state of the cachefile
       rss = webTools::getFileInMem(currentPodcast.RssFeed);
