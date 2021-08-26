@@ -21,7 +21,7 @@ extern "C"
 {
   void DownloadAndPlayPodcast(podcastDataTypes::PodcastEpisode podcast, GtkWidget *e);
   GtkWidget *CreateSearchEntry(PodcastMetaData);
-  void createSearchResults(GtkWidget *e, PodcastMetaDataList x);
+  void createSearchResults(GtkWidget* container, PodcastMetaDataList x);
   void returnSelection(GtkWidget *, gpointer);
   void PodcastSearchEntry(GtkEntry *e);
   void getSelectedPodcastEpisodeButton(GtkWidget *e);
@@ -250,9 +250,9 @@ extern "C"
       gtk_widget_show_all(topBox);
       return topBox;
     };
-
-
-    
+    int page = (int)gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook));
+    if(page == 0){gtk_widget_hide(addToLibraryButton);}
+    if(page == 1){gtk_widget_show(addToLibraryButton);}
     gtk_stack_set_visible_child(GTK_STACK(mainStack), PodcastDetailsPage);
     gtk_label_set_text(GTK_LABEL(PVTitle), currentPodcast.title.c_str());
     gtk_label_set_text(GTK_LABEL(PVAuthor), currentPodcast.artist.c_str());
