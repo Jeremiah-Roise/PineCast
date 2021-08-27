@@ -161,12 +161,12 @@ extern "C"
     GtkWidget* titleLabel = gtk_label_new(podcast.title.c_str());
     gtk_label_set_xalign(GTK_LABEL(titleLabel), 0.0);
     gtk_label_set_line_wrap(GTK_LABEL(titleLabel), true);
-    GtkWidget* previewButton = gtk_button_new();
+    GtkWidget* previewButton = gtk_button_new_from_icon_name("open-menu-symbolic",GTK_ICON_SIZE_BUTTON);
     gtk_widget_set_name(GTK_WIDGET(previewButton), (const gchar *)to_string(podcast.index).c_str());
     gtk_box_pack_start(GTK_BOX(topBox),thumbImage,false,false,0);
     gtk_box_pack_start(GTK_BOX(topBox),titleLabel,false,false,0);
     gtk_box_pack_end(GTK_BOX(topBox),previewButton,false,false,0);
-    g_signal_connect(previewButton, "pressed", (GCallback)returnSelection, (gpointer) nullptr);
+    g_signal_connect(previewButton, "released", (GCallback)returnSelection, (gpointer) nullptr);
     return topBox;
   }
 
