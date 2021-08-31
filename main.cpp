@@ -262,29 +262,9 @@ extern "C"
     clearContainer(GTK_CONTAINER(PVEpisodeList));
     for (int i = 0; i < episodes.getIndexSize(); i++)
     {
-      bool download = true;
-      if (Downloading.size() > 0)
-      {
-      for (auto tmpPod : Downloading)
-      {
-        if (tmpPod.mp3Link == episodes.getEpisodeAtIndex(i).mp3Link)
-        {
-          download = false;
-        }
-      }
-      }
-      if (download == true)
-      {
         GtkWidget* eventBox = tmpFunc(episodes,i);
         
         gtk_container_add(GTK_CONTAINER(PVEpisodeList), eventBox);
-      }
-      if (download == false)
-      {
-        GtkWidget* eventBox = tmpFunc(episodes,i);
-        g_signal_connect(eventBox, "pressed", (GCallback)[](){cout<<"already downloading"<<endl;}, (gpointer) "button");
-        gtk_container_add(GTK_CONTAINER(PVEpisodeList), eventBox);
-      }
     }
 }
 
