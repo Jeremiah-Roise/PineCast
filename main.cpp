@@ -207,8 +207,8 @@ extern "C"
   void PodcastSearchEntry(GtkEntry* e)
   {
 
-    std::future<void> loadList = std::async(std::launch::async, &createSearchResults, searchListBox, webTools::itunesSearch(gtk_entry_get_text(e)));
-    //createSearchResults(listBox,webTools::itunesSearch(gtk_entry_get_text(e)));
+    createSearchResults(searchListBox,webTools::itunesSearch(gtk_entry_get_text(e)));
+    cout << "after create search results" << endl;
     return;
   }
 
@@ -227,14 +227,14 @@ extern "C"
       GtkWidget* titleLabel = gtk_label_new(title.c_str());
       GtkWidget* durationLabel = gtk_label_new(duration.c_str());
 
-      void (*downloadfunc)(GtkWidget*) = [](GtkWidget* e)
-      {
-        downloadPodcast = true;
-        getSelectedPodcastEpisodeButton(e);
-      };
       void (*streamfunc)(GtkWidget*) = [](GtkWidget* e)
       {
         downloadPodcast = false;
+        getSelectedPodcastEpisodeButton(e);
+      };
+      void (*downloadfunc)(GtkWidget*) = [](GtkWidget* e)
+      {
+        downloadPodcast = true;
         getSelectedPodcastEpisodeButton(e);
       };
 
@@ -263,7 +263,7 @@ extern "C"
       return topBox;
     };
 
-
+    //  hide the add to library button if in the library
     int page = (int)gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook));
     if (page == 0)
     {
@@ -289,6 +289,7 @@ extern "C"
       GtkWidget* eventBox = widgetBuilder(episodes, i);
       gtk_container_add(GTK_CONTAINER(PVEpisodeList), eventBox);
     }
+    cout << "finished set previewPage function" << endl;
   }
 
   //  gets the returned selection from search results
@@ -317,6 +318,7 @@ extern "C"
       Library.clear();
       loadLib(Library);
       createSearchResults(LibraryUi, Library);
+      return;
     }
 
     if (deleteMode == false && page == 0)
@@ -343,13 +345,16 @@ extern "C"
         file.write(rss.c_str(), rss.size());
         file.close();
         utime(path.c_str(), NULL);
+        setPreviewPage(DataTools::getEpisodes(rss));
+        return;
       }
       else
       {
         rss = DataTools::getFile(path);
         cout << "from cache" << endl;
+        setPreviewPage(DataTools::getEpisodes(rss));
+        return;
       }
-      setPreviewPage(DataTools::getEpisodes(rss));
     }
 
     if (deleteMode == false && page == 1)
@@ -360,7 +365,9 @@ extern "C"
       //  check the state of the cachefile
       rss = webTools::getFileInMem(currentPodcast.RssFeed);
       setPreviewPage(DataTools::getEpisodes(rss));
+      return;
     }
+    cout << "after set preview" << endl;
   }
 
   void addPodcastToLibButton()
