@@ -357,7 +357,7 @@ extern "C"
       }
     }
 
-    if (deleteMode == false && page == 1)
+    if (page == 1)
     {
       cout << "loading" << endl;
       string rss;
@@ -422,6 +422,7 @@ extern "C"
   void DownloadAndPlayPodcast(podcastDataTypes::PodcastEpisode podcast, GtkWidget* e)
   {
 
+    g_signal_connect(e, "pressed", (GCallback)[]() { cout << "already downloading" << endl; }, (gpointer) "button");
     e = gtk_widget_get_parent(e);
     gtk_widget_hide(e);
     clearContainer(GTK_CONTAINER(e));
@@ -432,7 +433,6 @@ extern "C"
     gtk_container_add(GTK_CONTAINER(box), progressBar);
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), 0.0f);
     gtk_container_add(GTK_CONTAINER(e), box);
-    g_signal_connect(e, "pressed", (GCallback)[]() { cout << "already downloading" << endl; }, (gpointer) "button");
     gtk_widget_show_all(e);
 
     podcast.title += ".mp3";
@@ -442,10 +442,10 @@ extern "C"
     while (thread.wait_for(0ms) != std::future_status::ready) // wait for download to finish
     {
       sleep(1);
-      if (GTK_IS_PROGRESS_BAR(progressBar))
-      {
-        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
-      }
+      //if (GTK_IS_PROGRESS_BAR(progressBar)) // for some reason this was crashing the program when the download button was pressed in a particular podcast called "pinetalk" and then you switched to a different podcast preview
+      //{
+      //  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
+      //}
       podcast.Download = progress;
       cout << "Download progress: " << podcast.Download << endl;
     }
@@ -489,10 +489,10 @@ extern "C"
     while (!(progress >= 0.05)) // wait for download to finish
     {
       sleep(1);
-      if (GTK_IS_PROGRESS_BAR(progressBar))
-      {
-        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
-      }
+      //if (GTK_IS_PROGRESS_BAR(progressBar))
+      //{
+      //  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
+      //}
 
       podcast.Download = progress;
       cout << "Download progress: " << podcast.Download << endl;
@@ -501,10 +501,10 @@ extern "C"
     while (thread.wait_for(0ms) != std::future_status::ready) // wait for download to finish
     {
       sleep(1);
-      if (GTK_IS_PROGRESS_BAR(progressBar))
-      {
-        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
-      }
+      //if (GTK_IS_PROGRESS_BAR(progressBar)) // for some reason this was crashing the program when the stream button was pressed in a particular podcast called "pinetalk" and then you switched to a different podcast preview
+      //{
+      //  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
+      //}
       podcast.Download = progress;
       cout << "Download progress: " << progress << endl;
     }
