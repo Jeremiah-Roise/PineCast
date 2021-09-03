@@ -14,6 +14,7 @@
 #include "Libs/DataTools.h"
 #include "UINAMES.h"
 #include "Libs/LibraryTools.h"
+#define goto  //please don't.
 using namespace std;
 
 extern "C"
