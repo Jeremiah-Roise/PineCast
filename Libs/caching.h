@@ -31,7 +31,7 @@ public:
     static bool isCacheFileValid(const char* filename,size_t refreshTime){
         
         string filepath = "/tmp/";
-        
+        filepath += filename;
 
         //  remove spaces from the path
         std::remove(filepath.begin(), filepath.end(), ' ');
@@ -39,7 +39,7 @@ public:
         //  check the state of the cachefile
         struct stat tmp;
         int cacheFile = stat(filepath.c_str(), &tmp);
-
+        cout << cacheFile << endl;
         // getting epoch time for comparison against the cache file creation date incremented by one day
         double now = caching::timeSinceEpoch();
 
