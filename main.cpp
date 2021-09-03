@@ -339,8 +339,8 @@ extern "C"
       }
       else
       {
+        cout << "from cache" << endl;
         string filepath = caching::getCachePath(fileName.c_str());
-        cout << filepath << endl;
         rss = DataTools::getFile(filepath);
         setPreviewPage(DataTools::getEpisodes(rss));
         return;
