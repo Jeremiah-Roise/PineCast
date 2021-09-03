@@ -7,16 +7,16 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <utime.h>
-#include <stdlib.h>
 #include "Libs/webTools.h"
 #include "Libs/podcastDataTypes.h"
 #include "Libs/PodcastMetaDataLists.h"
 #include "Libs/DataTools.h"
 #include "UINAMES.h"
 #include "Libs/LibraryTools.h"
+#include "Libs/caching.h"
 #define goto  //please don't.
 using namespace std;
-
+#define oneDayInSeconds 86400
 extern "C"
 {
   void streamPodcast(podcastDataTypes::PodcastEpisode podcast, GtkWidget* e);
@@ -325,34 +325,23 @@ extern "C"
     if (deleteMode == false && page == 0)
     {
       string rss;
-      struct stat tmp;
-      string path = "/tmp/" + currentPodcast.title + ".rss";
-      //  remove spaces from the path
-      std::remove(path.begin(), path.end(), ' ');
-      //  check the state of the cachefile
-      int cacheFile = stat(path.c_str(), &tmp);
-      cout << tmp.st_atim.tv_sec + 86400 << endl;
+      string fileName = currentPodcast.title + ".rss";
 
-      // getting epoch time for comparison against the cache file creation date incremented by one day
-      cout << cacheFile << endl;
-      double now = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-
-      if (cacheFile == -1 || (cacheFile == 0 && tmp.st_atim.tv_sec + 86400 <= now))
+      //  get RSS file if cache does not exist or is out of date.
+      bool isCacheOutOfDate = not (caching::isCacheFileValid(fileName.c_str(),oneDayInSeconds));
+      if (isCacheOutOfDate)
       {
         rss = webTools::getFileInMem(currentPodcast.RssFeed);
         cout << "from web" << endl;
-        fstream file;
-        file.open(path.c_str(), ios_base::out);
-        file.write(rss.c_str(), rss.size());
-        file.close();
-        utime(path.c_str(), NULL);
+        caching::createCacheFile(fileName.c_str(),rss.c_str(),rss.size());
         setPreviewPage(DataTools::getEpisodes(rss));
         return;
       }
       else
       {
-        rss = DataTools::getFile(path);
-        cout << "from cache" << endl;
+        string filepath = caching::getCachePath(fileName.c_str());
+        cout << filepath << endl;
+        rss = DataTools::getFile(filepath);
         setPreviewPage(DataTools::getEpisodes(rss));
         return;
       }
