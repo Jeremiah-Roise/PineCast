@@ -22,7 +22,7 @@ extern "C"
   void streamPodcast(podcastDataTypes::PodcastEpisode podcast, GtkWidget* e);
   void DownloadAndPlayPodcast(podcastDataTypes::PodcastEpisode podcast, GtkWidget* e);
   void createSearchResults(GtkWidget* container, PodcastMetaDataList x);
-  void returnSelection(GtkWidget*, gpointer);
+  void returnSelectionFromSearchResults(GtkWidget*, gpointer);
   void PodcastSearchEntry(GtkEntry* e);
   void getSelectedPodcastEpisodeButton(GtkWidget* e);
   void clearContainer(GtkContainer* e);
@@ -176,7 +176,7 @@ extern "C"
     gtk_box_pack_start(GTK_BOX(topBox), thumbImage, false, false, 0);
     gtk_box_pack_start(GTK_BOX(topBox), titleLabel, false, false, 0);
     gtk_box_pack_end(GTK_BOX(topBox), previewButton, false, false, 0);
-    g_signal_connect(previewButton, "released", (GCallback)returnSelection, (gpointer) nullptr);
+    g_signal_connect(previewButton, "released", (GCallback)returnSelectionFromSearchResults, (gpointer) nullptr);
     return topBox;
   }
 
@@ -294,7 +294,7 @@ extern "C"
   }
 
   //  gets the returned selection from search results
-  void returnSelection(GtkWidget* e, gpointer data)
+  void returnSelectionFromSearchResults(GtkWidget* e, gpointer data)
   {
 
     int index = atoi(gtk_widget_get_name(e));
