@@ -31,7 +31,7 @@ public:
     static bool isCacheFileValid(const char* filename,size_t refreshTime){
         
         string filepath = "/tmp/";
-        filepath += filename;
+        
 
         //  remove spaces from the path
         std::remove(filepath.begin(), filepath.end(), ' ');
@@ -48,5 +48,12 @@ public:
             return false;
         }
         return true;
+    }
+    //  given the name of the file it returns the correct path with the name of the file
+    static string getCachePath(const char* filename){
+        string filepath = "/tmp/";
+        filepath += filename;
+        std::remove(filepath.begin(), filepath.end(), ' ');
+        return filepath;
     }
 };
