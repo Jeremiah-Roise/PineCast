@@ -23,7 +23,7 @@ extern "C"
   void DownloadAndPlayPodcast(podcastDataTypes::PodcastEpisode podcast, GtkWidget* e);
   void createSearchResults(GtkWidget* container, PodcastMetaDataList x);
   void returnSelectionFromSearchResults(GtkWidget*, gpointer);
-  void PodcastSearchEntry(GtkEntry* e);
+  void searchItunesWithText(GtkEntry* e);
   void getSelectedPodcastEpisodeButton(GtkWidget* e);
   void clearContainer(GtkContainer* e);
   void loadLib(PodcastMetaDataList& list);
@@ -205,7 +205,7 @@ extern "C"
   ## Signal Functions Go beyond this comment ##
   */
   // get search text and give it to the itunes search function
-  void PodcastSearchEntry(GtkEntry* e)
+  void searchItunesWithText(GtkEntry* e)
   {
 
     createSearchResults(searchListBox,webTools::itunesSearch(gtk_entry_get_text(e)));
