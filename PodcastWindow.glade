@@ -19,6 +19,7 @@
           <object class="GtkNotebook" id="Lib/Search">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
+            <signal name="switch-page" handler="tabChanged" swapped="no"/>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
