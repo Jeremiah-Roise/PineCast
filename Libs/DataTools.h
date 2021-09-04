@@ -49,7 +49,7 @@ class DataTools
     }
 
 
-    static podcastDataTypes::PodcastEpisode GetPodcastData(string aRSSFile){
+    static podcastDataTypes::PodcastEpisode GetPodcastData(const string& aRSSFile){
 
         podcastDataTypes::PodcastEpisode MostRecent;
         // get title
