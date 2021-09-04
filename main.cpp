@@ -47,6 +47,7 @@ extern "C"
   GtkWidget* DownloadsList;
   GtkBuilder* builder;
   GtkWidget* stackPage;
+  GtkWidget* searchEntry;
   PodcastMetaData currentPodcast;
   PodcastMetaDataList searchList;
   PodcastMetaDataList Library;
@@ -75,6 +76,7 @@ extern "C"
     //                                                            | these are macros|
     //                                                            | in UINAMES.h    |
     searchListBox =      GTK_WIDGET(gtk_builder_get_object(builder, searchListBoxName));
+    searchEntry =        GTK_WIDGET(gtk_builder_get_object(builder, searchEntryName));
     mainStack =          GTK_WIDGET(gtk_builder_get_object(builder, mainStackName));
     notebook =           GTK_WIDGET(gtk_builder_get_object(builder, notebookName));
     PodcastDetailsPage = GTK_WIDGET(gtk_builder_get_object(builder, podcastDetailsPageName));
@@ -374,6 +376,17 @@ extern "C"
   {
     gtk_stack_set_visible_child_name(GTK_STACK(mainStack), (const gchar *)mainPageName);
   }
+
+  void tabChanged(  GtkNotebook* self, GtkWidget* page, guint page_num, gpointer user_data){
+    cout << page_num << endl;
+    if (page_num == 1)
+    {
+      gtk_widget_grab_focus(searchEntry);
+      cout << "run" << endl;
+    }
+  }
+
+
 
   /// function that gets called when an episode is clicked.
   void getSelectedPodcastEpisodeButton(GtkWidget* e)
