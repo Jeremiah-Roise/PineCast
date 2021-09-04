@@ -11,3 +11,4 @@
 #define PVAuthorName "PVAuthor"
 #define PVEpisodeListName "PVEpisodeList"
 #define addToLibraryButtonName "addToLib"
+#define searchEntryName "PodcastSearch"
