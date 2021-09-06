@@ -208,8 +208,8 @@ extern "C"
   // get search text and give it to the itunes search function
   void searchItunesWithText(GtkEntry* e)
   {
-
-    createSearchResults(searchListBox,webTools::itunesSearch(gtk_entry_get_text(e)));
+    searchList = webTools::itunesSearch(gtk_entry_get_text(e));
+    createSearchResults(searchListBox,searchList);
     cout << "after create search results" << endl;
     return;
   }
@@ -300,7 +300,6 @@ extern "C"
 
     int index = atoi(gtk_widget_get_name(e));
 
-    currentPodcast = searchList.GetPodcastAtIndex(index);
     int page = (int)gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook));
 
     if (page == 0)
