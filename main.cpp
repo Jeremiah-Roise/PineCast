@@ -27,10 +27,8 @@ extern "C"
   void getSelectedPodcastEpisodeButton(GtkWidget* e);
   void clearContainer(GtkContainer* e);
   void loadLib(PodcastMetaDataList& list);
-
+  
   GtkWidget* CreateSearchEntry(PodcastMetaData);
-  GdkPixbuf* createImage(string imageUrl, int scaleX, int scaleY);
-
   GtkWidget* searchListBox;
   GtkWidget* window;
   GtkWidget* mainStack;
@@ -123,23 +121,6 @@ extern "C"
     cout << "finished" << endl;
   }
 
-  void deleteModeON()
-  {
-    deleteMode = true;
-  }
-
-  void deleteModeOFF()
-  {
-    deleteMode = false;
-  }
-
-  void deleteModeSwitch()
-  {
-    deleteMode = !deleteMode;
-  }
-
-  //  Destroy Function For GUI
-  void on_MainWindow_destroy() { gtk_main_quit(); }
 
   //  for listing search results in a GtkListBox
   //  TODO figure out how to multithread this image download freezes window
@@ -168,7 +149,7 @@ extern "C"
   {
 
     GtkWidget* topBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    GtkWidget* thumbImage = gtk_image_new_from_pixbuf(createImage(podcast.image600, 50, 50));
+    GtkWidget* thumbImage = gtk_image_new_from_pixbuf(webTools::createImage(podcast.image600, 50, 50));
     GtkWidget* titleLabel = gtk_label_new(podcast.title.c_str());
     gtk_label_set_xalign(GTK_LABEL(titleLabel), 0.0);
     gtk_label_set_line_wrap(GTK_LABEL(titleLabel), true);
@@ -181,36 +162,12 @@ extern "C"
     return topBox;
   }
 
-  //  clears the given container of all children
-  void clearContainer(GtkContainer* e)
-  {
-    gtk_container_foreach(e, (GtkCallback)gtk_widget_destroy, NULL);
-  }
 
-  //  create's an image from a url
-  GdkPixbuf* createImage(string imageUrl, int scaleX, int scaleY)
-  {
-    string imagedata = webTools::getFileInMem(imageUrl); //  getting image data from web
-
-    GdkPixbufLoader *test = gdk_pixbuf_loader_new();
-    gdk_pixbuf_loader_set_size(test, scaleX, scaleY);
-    gdk_pixbuf_loader_write(test, (const guchar*)imagedata.c_str(), imagedata.size(), nullptr);
-
-    GdkPixbuf* pixbuf = gdk_pixbuf_loader_get_pixbuf(test);
-    gdk_pixbuf_loader_close(test, nullptr);
-
-    return pixbuf;
-  }
-
-  /*
-  ## Signal Functions Go beyond this comment ##
-  */
   // get search text and give it to the itunes search function
   void searchItunesWithText(GtkEntry* e)
   {
     searchList = webTools::itunesSearch(gtk_entry_get_text(e));
     createSearchResults(searchListBox,searchList);
-    cout << "after create search results" << endl;
     return;
   }
 
@@ -279,7 +236,7 @@ extern "C"
     gtk_stack_set_visible_child(GTK_STACK(mainStack), PodcastDetailsPage);
     gtk_label_set_text(GTK_LABEL(PVTitle), currentPodcast.title.c_str());
     gtk_label_set_text(GTK_LABEL(PVAuthor), currentPodcast.artist.c_str());
-    gtk_image_set_from_pixbuf(GTK_IMAGE(PVImage), createImage(currentPodcast.image600, 200, 200));
+    gtk_image_set_from_pixbuf(GTK_IMAGE(PVImage), webTools::createImage(currentPodcast.image600, 200, 200));
 
     //  list episodes
     currentepisodes = episodes;
@@ -291,7 +248,6 @@ extern "C"
       GtkWidget* eventBox = widgetBuilder(episodes, i);
       gtk_container_add(GTK_CONTAINER(PVEpisodeList), eventBox);
     }
-    cout << "finished set previewPage function" << endl;
   }
 
   //  gets the returned selection from search results
@@ -360,31 +316,6 @@ extern "C"
     cout << "after set preview" << endl;
   }
 
-  void addPodcastToLibButton()
-  {
-    addToLibrary(currentPodcast);
-    clearContainer(GTK_CONTAINER(LibraryUi));
-    Library.clear();
-    loadLib(Library);
-    createSearchResults(LibraryUi, Library);
-  }
-
-  //  simply goes to the main page
-  void goMainPage()
-  {
-    gtk_stack_set_visible_child_name(GTK_STACK(mainStack), (const gchar *)mainPageName);
-  }
-
-  void tabChanged(  GtkNotebook* self, GtkWidget* page, guint page_num, gpointer user_data){
-    cout << page_num << endl;
-    if (page_num == 1)
-    {
-      gtk_widget_grab_focus(searchEntry);
-      cout << "run" << endl;
-    }
-  }
-
-
 
   /// function that gets called when an episode is clicked.
   void getSelectedPodcastEpisodeButton(GtkWidget* e)
@@ -438,7 +369,7 @@ extern "C"
 
     podcast.title += ".mp3";
     double progress = 0;
-    const std::future<void> thread = std::async(std::launch::async, DownloadPodcast, podcast.mp3Link, podcast.title, &progress);
+    const std::future<void> thread = std::async(std::launch::async, webTools::DownloadPodcast, podcast.mp3Link, podcast.title, &progress);
 
     while (thread.wait_for(0ms) != std::future_status::ready) // wait for download to finish
     {
@@ -455,14 +386,7 @@ extern "C"
     playMp3(podcast.title);
   }
 
-  /// uses system command to start podcast with default application should be able to tolerate spaces.
-  void playMp3(string name)
-  {
-    string FName = "xdg-open \"" + name + "\"";
-    FName += " &";
-    cout << "the name is: " << FName << endl;
-    system(FName.data());
-  }
+
 
   /// streams a podcast by waiting until it is %0.05 finished and then opens the audioplayer.
   ///
@@ -486,7 +410,7 @@ extern "C"
     g_signal_connect(e, "pressed", (GCallback)[]() { cout << "already downloading" << endl; }, (gpointer) "button");
 
     double progress;
-    const std::future<void> thread = std::async(std::launch::async, DownloadPodcast, podcast.mp3Link, podcast.title + ".mp3", &progress);
+    const std::future<void> thread = std::async(std::launch::async, webTools::DownloadPodcast, podcast.mp3Link, podcast.title + ".mp3", &progress);
     while (!(progress >= 0.05)) // wait for download to finish
     {
       sleep(1);
@@ -512,4 +436,62 @@ extern "C"
 
     thread.wait();
   }
+
+
+
+
+  void deleteModeON()
+  {
+    deleteMode = true;
+  }
+
+  void deleteModeOFF()
+  {
+    deleteMode = false;
+  }
+
+  void deleteModeSwitch()
+  {
+    deleteMode = !deleteMode;
+  }
+
+  /// uses system command to start podcast with default application should be able to tolerate spaces.
+  void playMp3(string name)
+  {
+    string FName = "xdg-open \"" + name + "\"";
+    FName += " &";
+    cout << "the command is: " << FName << endl;
+    system(FName.data());
+  }
+
+  //  simply goes to the main page
+  void goMainPage()
+  {
+    gtk_stack_set_visible_child_name(GTK_STACK(mainStack), (const gchar *)mainPageName);
+  }
+
+  void tabChanged(  GtkNotebook* self, GtkWidget* page, guint page_num, gpointer user_data){
+    cout << page_num << endl;
+    if (page_num == 1)
+    {
+      gtk_widget_grab_focus(searchEntry);
+      cout << "setting focus to search bar" << endl;
+    }
+  }
+
+  void addPodcastToLibButton()
+  {
+    addToLibrary(currentPodcast);
+    clearContainer(GTK_CONTAINER(LibraryUi));
+    Library.clear();
+    loadLib(Library);
+    createSearchResults(LibraryUi, Library);
+  }
+
+  //  clears the given container of all children
+  void clearContainer(GtkContainer* e)
+  {
+    gtk_container_foreach(e, (GtkCallback)gtk_widget_destroy, NULL);
+  }
+
 }
