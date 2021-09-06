@@ -10,7 +10,7 @@
     <property name="default-width">230</property>
     <property name="default-height">400</property>
     <property name="destroy-with-parent">True</property>
-    <signal name="destroy" handler="on_MainWindow_destroy" swapped="no"/>
+    <signal name="destroy" handler="gtk_main_quit" swapped="no"/>
     <child>
       <object class="GtkStack" id="PageSelector">
         <property name="visible">True</property>
