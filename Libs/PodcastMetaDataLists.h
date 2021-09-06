@@ -36,6 +36,11 @@ public:
         return index-1;
     }
     PodcastMetaData GetPodcastAtIndex(int index){
+        if (podcasts.empty())
+        {
+            cout << "list is empty" << endl;
+        }
+        
         return podcasts[index];
     }
     int GetIndexSize(){return index;}
