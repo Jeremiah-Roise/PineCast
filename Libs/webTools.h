@@ -14,33 +14,6 @@ using std::endl;
 using std::string;
 size_t writeCallback(char* buf, size_t size, size_t nmemb, void* up);
 void getWebFile(string,string);
-void getWebFile(string url,string filename){
-
-    try
-  {
-    //CURL *webhandle;
-    FILE *fp;
-    fp = fopen(filename.c_str(),"wb");
-    cURLpp::Easy handle;
-    handle.setOpt(cURLpp::options::NoProgress(false));
-    handle.setOpt(cURLpp::Options::Url(url));
-    handle.setOpt(cURLpp::options::FollowLocation(true));
-    handle.setOpt(cURLpp::options::WriteFile(fp));
-    handle.perform();
-    fclose(fp);
-  }
-  catch(curlpp::RuntimeError & e)
-	{
-		std::cout << e.what() << std::endl;
-    cout << "no connection" << endl;
-	}
-
-	catch(curlpp::LogicError & e)
-	{
-		std::cout << e.what() << std::endl;
-    cout << "no connection" << endl;
-	}
-}
 class webTools
 {
   public:
@@ -110,12 +83,50 @@ class webTools
     }
     return tmp;
   }
-};
+  //  create's an image from a url
+  static GdkPixbuf* createImage(string imageUrl, int scaleX, int scaleY)
+  {
+    string imagedata = webTools::getFileInMem(imageUrl); //  getting image data from web
 
+    GdkPixbufLoader *test = gdk_pixbuf_loader_new();
+    gdk_pixbuf_loader_set_size(test, scaleX, scaleY);
+    gdk_pixbuf_loader_write(test, (const guchar*)imagedata.c_str(), imagedata.size(), nullptr);
 
-  
+    GdkPixbuf* pixbuf = gdk_pixbuf_loader_get_pixbuf(test);
+    gdk_pixbuf_loader_close(test, nullptr);
 
-void DownloadPodcast(string url,string filename,double* Pprogress){
+    return pixbuf;
+  }
+
+  static void getWebFile(string url,string filename){
+
+    try
+  {
+    //CURL *webhandle;
+    FILE *fp;
+    fp = fopen(filename.c_str(),"wb");
+    cURLpp::Easy handle;
+    handle.setOpt(cURLpp::options::NoProgress(false));
+    handle.setOpt(cURLpp::Options::Url(url));
+    handle.setOpt(cURLpp::options::FollowLocation(true));
+    handle.setOpt(cURLpp::options::WriteFile(fp));
+    handle.perform();
+    fclose(fp);
+  }
+  catch(curlpp::RuntimeError & e)
+	{
+		std::cout << e.what() << std::endl;
+    cout << "no connection" << endl;
+	}
+
+	catch(curlpp::LogicError & e)
+	{
+		std::cout << e.what() << std::endl;
+    cout << "no connection" << endl;
+	}
+}
+
+  static void DownloadPodcast(string url,string filename,double* Pprogress){
     cout << "downloading podcast" << endl;
     try
   {
@@ -153,3 +164,4 @@ void DownloadPodcast(string url,string filename,double* Pprogress){
   }
 }
 
+};
