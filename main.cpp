@@ -145,12 +145,11 @@ extern "C"
   //  TODO figure out how to multithread this image download freezes window
   void createSearchResults(GtkWidget *container, PodcastMetaDataList x)
   {
-    int size = x.GetIndex();
+    int size = x.GetIndexSize();
     if (size == 0)
     {
       return;
     } //  User Input Filtering
-    searchList = x;
     //deleting old search results
     clearContainer(GTK_CONTAINER(container));
 
