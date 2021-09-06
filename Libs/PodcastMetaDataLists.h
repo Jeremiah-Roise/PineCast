@@ -38,10 +38,7 @@ public:
     PodcastMetaData GetPodcastAtIndex(int index){
         return podcasts[index];
     }
-    void GetPodcastAtIndex(int index,PodcastMetaData& ret){
-        ret = podcasts[index];
-    }
-    int GetIndex(){return index;}
+    int GetIndexSize(){return index;}
     void clear(){
         podcasts.clear();
         index = 0;
