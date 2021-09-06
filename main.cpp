@@ -300,17 +300,17 @@ extern "C"
 
     int index = atoi(gtk_widget_get_name(e));
 
-    searchList.GetPodcastAtIndex(index, currentPodcast);
+    currentPodcast = searchList.GetPodcastAtIndex(index);
     int page = (int)gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook));
 
     if (page == 0)
     {
-      Library.GetPodcastAtIndex(index, currentPodcast);
+      currentPodcast = Library.GetPodcastAtIndex(index);
     }
 
     if (page == 1)
     {
-      searchList.GetPodcastAtIndex(index, currentPodcast);
+      currentPodcast = searchList.GetPodcastAtIndex(index);
     }
 
     if (page == 0 && deleteMode == true)
