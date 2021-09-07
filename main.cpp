@@ -374,10 +374,11 @@ extern "C"
     while (thread.wait_for(0ms) != std::future_status::ready) // wait for download to finish
     {
       sleep(1);
-      //if (GTK_IS_PROGRESS_BAR(progressBar)) // for some reason this was crashing the program when the download button was pressed in a particular podcast called "pinetalk" and then you switched to a different podcast preview
-      //{
-      //  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
-      //}
+      
+      if (GTK_IS_WIDGET(progressBar)) // for some reason this was crashing the program when the download button was pressed in a particular podcast called "pinetalk" and then you switched to a different podcast preview
+      {
+        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
+      }
       podcast.Download = progress;
       cout << "Download progress: " << podcast.Download << endl;
     }
@@ -414,10 +415,10 @@ extern "C"
     while (!(progress >= 0.05)) // wait for download to finish
     {
       sleep(1);
-      //if (GTK_IS_PROGRESS_BAR(progressBar))
-      //{
-      //  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
-      //}
+      if (GTK_IS_WIDGET(progressBar))
+      {
+        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
+      }
 
       podcast.Download = progress;
       cout << "Download progress: " << podcast.Download << endl;
@@ -426,10 +427,10 @@ extern "C"
     while (thread.wait_for(0ms) != std::future_status::ready) // wait for download to finish
     {
       sleep(1);
-      //if (GTK_IS_PROGRESS_BAR(progressBar)) // for some reason this was crashing the program when the stream button was pressed in a particular podcast called "pinetalk" and then you switched to a different podcast preview
-      //{
-      //  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
-      //}
+      if (GTK_IS_WIDGET(progressBar)) // for some reason this was crashing the program when the stream button was pressed in a particular podcast called "pinetalk" and then you switched to a different podcast preview
+      {
+        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
+      }
       podcast.Download = progress;
       cout << "Download progress: " << progress << endl;
     }
