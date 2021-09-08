@@ -51,18 +51,18 @@ extern "C"
   PodcastMetaDataList Library;
   vector<podcastDataTypes::PodcastEpisode> Downloading;
   podcastDataTypes::episodeList currentepisodes;
-
+  string PodcastsPath = getenv("HOME");
   bool deleteMode = false;  /// whether the library is set to delete selected podcast.
   bool downloadPodcast = false; /// select whether to download or stream podcasts.
 
   ///  GUI setup.
   int main(int argc, char **argv)
   {
-
+    PodcastsPath += "/.Podcasts";
     struct stat tmp;
-    if (stat("Podcasts", &tmp) != 0 && S_ISDIR(tmp.st_mode) != 1)
+    if (stat(PodcastsPath.c_str(), &tmp) != 0 && S_ISDIR(tmp.st_mode) != 1)
     {
-      mkdir("Podcasts", ACCESSPERMS);
+      mkdir(PodcastsPath.c_str(), ACCESSPERMS);
     }
 
     //  TODO create thread with loadLib and mutexes for locking
@@ -100,7 +100,7 @@ extern "C"
   {
     cout << "LoadingLibrary" << endl;
     // open file To read
-    string fileData = DataTools::getFile("Podcasts/MyPodcasts.xml");
+    string fileData = DataTools::getFile(PodcastsPath+"/MyPodcasts.xml");
     int index = 0;
     for (size_t i = 0; i < fileData.length(); i++)
     {
@@ -383,7 +383,7 @@ extern "C"
 
     podcast.title += ".mp3";
     double progress = 0;
-    const std::future<void> thread = std::async(std::launch::async, webTools::DownloadPodcast, podcast.mp3Link, podcast.title, &progress);
+    const std::future<void> thread = std::async(std::launch::async, webTools::DownloadPodcast, podcast.mp3Link, PodcastsPath+"/"+podcast.title + ".mp3", &progress);
 
     while (thread.wait_for(0ms) != std::future_status::ready) // wait for download to finish.
     {
@@ -398,7 +398,7 @@ extern "C"
     }
     thread.wait();
 
-    playMp3(podcast.title);
+    playMp3(PodcastsPath+"/"+podcast.title + ".mp3");
   }
 
 
@@ -424,7 +424,7 @@ extern "C"
     g_signal_connect(e, "pressed", (GCallback)[]() { cout << "already downloading" << endl; }, (gpointer) "button");
 
     double progress;
-    const std::future<void> thread = std::async(std::launch::async, webTools::DownloadPodcast, podcast.mp3Link, podcast.title + ".mp3", &progress);
+    const std::future<void> thread = std::async(std::launch::async, webTools::DownloadPodcast,podcast.mp3Link, PodcastsPath+"/"+podcast.title + ".mp3", &progress);
     while (!(progress >= 0.05)) // wait for download to finish.
     {
       sleep(1);
@@ -436,7 +436,7 @@ extern "C"
       podcast.Download = progress;
       cout << "Download progress: " << podcast.Download << endl;
     }
-    playMp3(podcast.title + ".mp3");
+    playMp3(PodcastsPath+"/"+podcast.title + ".mp3");
     while (thread.wait_for(0ms) != std::future_status::ready) // wait for download to finish.
     {
       sleep(1);
@@ -474,7 +474,7 @@ extern "C"
   // uses system command to start podcast with default application should be able to tolerate spaces.
   void playMp3(string name)
   {
-    string FName = "xdg-open \"" + name + "\"";
+    string FName = "xdg-open \""+ PodcastsPath+ "/" + name + "\"";
     FName += " &";
     cout << "the command is: " << FName << endl;
     system(FName.data());

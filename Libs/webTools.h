@@ -126,32 +126,33 @@ class webTools
 	}
 }
   /// Downloads a podcast and returns the progress through the double pointer
-  static void DownloadPodcast(string url,string filename,double* Pprogress){
+  static void DownloadPodcast(string url,string filepath,double* Pprogress){
     cout << "downloading podcast" << endl;
+    cout << filepath << endl;
     try
   {
 
     
     FILE *fp;
-    fp = fopen(filename.c_str(),"wb");
+    fp = fopen(filepath.c_str(),"wb");
     cout << "created file" << endl;
     cURLpp::Easy handle;
     handle.setOpt(cURLpp::options::NoProgress(false));
     handle.setOpt(cURLpp::options::ProgressFunction([=](double dltotal,   double dlnow,   double ultotal,   double ulnow){
-    double check= dlnow/dltotal;
-    if (check >= 0)
-    {
-      *Pprogress = check;
+      double check= dlnow/dltotal;
+      if (check >= 0)
+      {
+        *Pprogress = check;
+        return 0;
+      }
       return 0;
+      }));
+      handle.setOpt(cURLpp::Options::Url(url));
+      handle.setOpt(cURLpp::options::FollowLocation(true));
+      handle.setOpt(cURLpp::options::WriteFile(fp));
+      handle.perform();
+      fclose(fp);
     }
-    return 0;
-    }));
-    handle.setOpt(cURLpp::Options::Url(url));
-    handle.setOpt(cURLpp::options::FollowLocation(true));
-    handle.setOpt(cURLpp::options::WriteFile(fp));
-    handle.perform();
-    fclose(fp);
-  }
   catch(curlpp::RuntimeError & e)
   {
     std::cout << e.what() << std::endl;
