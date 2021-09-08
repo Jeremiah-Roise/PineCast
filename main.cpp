@@ -52,10 +52,10 @@ extern "C"
   vector<podcastDataTypes::PodcastEpisode> Downloading;
   podcastDataTypes::episodeList currentepisodes;
 
-  bool deleteMode = false;
-  bool downloadPodcast = false;
+  bool deleteMode = false;  /// whether the library is set to delete selected podcast.
+  bool downloadPodcast = false; /// select whether to download or stream podcasts.
 
-  //  GUI setup
+  ///  GUI setup.
   int main(int argc, char **argv)
   {
 
@@ -95,7 +95,7 @@ extern "C"
     return 0;
   }
 
-  //  update podcasts in library
+  ///  update podcasts in library.
   void loadLib(PodcastMetaDataList &list)
   {
     cout << "LoadingLibrary" << endl;
@@ -122,8 +122,9 @@ extern "C"
   }
 
 
-  //  for listing search results in a GtkListBox
-  //  TODO figure out how to multithread this image download freezes window
+  /// for listing search results in a GtkListBox or GtkFlowbox.
+  ///
+  /// TODO limit give this an argument for number of entries to create. 
   void createSearchResults(GtkWidget *container, PodcastMetaDataList x)
   {
     int size = x.GetIndexSize();
@@ -144,7 +145,9 @@ extern "C"
       gtk_widget_show_all(result);
     }
   }
-
+  /// minor UI builder function that creates the Podcast results in the library and search pages.
+  ///
+  /// the main reason this isn't in a lambda is because it could be used by many other systems.
   GtkWidget* CreateSearchEntry(PodcastMetaData podcast)
   {
 
@@ -163,14 +166,20 @@ extern "C"
   }
 
 
-  // get search text and give it to the itunes search function
+  /// get search text and give it to the itunes search function
+  ///
+  /// linked directly to the UI in glade
   void searchItunesWithText(GtkEntry* e)
   {
     searchList = webTools::itunesSearch(gtk_entry_get_text(e));
     createSearchResults(searchListBox,searchList);
     return;
   }
-
+  /// when this is called it initializes the preview page.
+  ///
+  /// when called it uses the global currentPodcast variable to get the Podcast title, image, artist, etc,
+  /// and iterates through the episodes argument to create the episodes,
+  /// should probably be updated to not use global variables.
   void setPreviewPage(podcastDataTypes::episodeList episodes)
   {
     auto widgetBuilder = [](podcastDataTypes::episodeList data, int i)
@@ -250,7 +259,7 @@ extern "C"
     }
   }
 
-  //  gets the returned selection from search results
+  ///  gets the returned selection from search results
   void returnSelectionFromSearchResults(GtkWidget* e, gpointer data)
   {
 
@@ -318,10 +327,12 @@ extern "C"
 
 
   /// function that gets called when an episode is clicked.
+  ///
+  /// takes in the selected episode by getting it's index from the name of the widget
   void getSelectedPodcastEpisodeButton(GtkWidget* e)
   {
     podcastDataTypes::PodcastEpisode current = currentepisodes.getEpisodeAtIndex(atoi(gtk_widget_get_name(e)));
-    //  check if the podcast is already being downloaded
+    //  check if the podcast is already being downloaded.
     for (podcastDataTypes::PodcastEpisode download : Downloading)
     {
       if (download.mp3Link == current.mp3Link)
@@ -350,7 +361,10 @@ extern "C"
   }
 
   void playMp3(string name);
-  /// Downloads entirely and then plays a podcast
+  /// Downloads entirely and then plays a podcast.
+  ///
+  /// creates the download bar widget and updates it with the current progress,
+  /// it's very jenky but it works.
   void DownloadAndPlayPodcast(podcastDataTypes::PodcastEpisode podcast, GtkWidget* e)
   {
 
@@ -371,11 +385,11 @@ extern "C"
     double progress = 0;
     const std::future<void> thread = std::async(std::launch::async, webTools::DownloadPodcast, podcast.mp3Link, podcast.title, &progress);
 
-    while (thread.wait_for(0ms) != std::future_status::ready) // wait for download to finish
+    while (thread.wait_for(0ms) != std::future_status::ready) // wait for download to finish.
     {
       sleep(1);
       
-      if (GTK_IS_WIDGET(progressBar)) // for some reason this was crashing the program when the download button was pressed in a particular podcast called "pinetalk" and then you switched to a different podcast preview
+      if (GTK_IS_WIDGET(progressBar))
       {
         gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
       }
@@ -394,7 +408,6 @@ extern "C"
   /// uses playMp3 to start the audio player checks download progress once per second.
   void streamPodcast(podcastDataTypes::PodcastEpisode podcast, GtkWidget* e)
   {
-    //e = gtk_widget_get_parent(e);
     gtk_widget_hide(e);
     clearContainer(GTK_CONTAINER(e));
 
@@ -412,7 +425,7 @@ extern "C"
 
     double progress;
     const std::future<void> thread = std::async(std::launch::async, webTools::DownloadPodcast, podcast.mp3Link, podcast.title + ".mp3", &progress);
-    while (!(progress >= 0.05)) // wait for download to finish
+    while (!(progress >= 0.05)) // wait for download to finish.
     {
       sleep(1);
       if (GTK_IS_WIDGET(progressBar))
@@ -424,10 +437,10 @@ extern "C"
       cout << "Download progress: " << podcast.Download << endl;
     }
     playMp3(podcast.title + ".mp3");
-    while (thread.wait_for(0ms) != std::future_status::ready) // wait for download to finish
+    while (thread.wait_for(0ms) != std::future_status::ready) // wait for download to finish.
     {
       sleep(1);
-      if (GTK_IS_WIDGET(progressBar)) // for some reason this was crashing the program when the stream button was pressed in a particular podcast called "pinetalk" and then you switched to a different podcast preview
+      if (GTK_IS_WIDGET(progressBar))
       {
         gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
       }
@@ -440,23 +453,25 @@ extern "C"
 
 
 
-
+  //  sets the library's delete mode to true.
   void deleteModeON()
   {
     deleteMode = true;
   }
 
+  //  sets the library's delete mode to false.
   void deleteModeOFF()
   {
     deleteMode = false;
   }
 
+  //  toggles the library's delete mode.
   void deleteModeSwitch()
   {
     deleteMode = !deleteMode;
   }
 
-  /// uses system command to start podcast with default application should be able to tolerate spaces.
+  // uses system command to start podcast with default application should be able to tolerate spaces.
   void playMp3(string name)
   {
     string FName = "xdg-open \"" + name + "\"";
@@ -465,14 +480,17 @@ extern "C"
     system(FName.data());
   }
 
-  //  simply goes to the main page
+  //  simply goes to the main page.
   void goMainPage()
   {
     gtk_stack_set_visible_child_name(GTK_STACK(mainStack), (const gchar *)mainPageName);
   }
 
+  //  monitors for when tabs change in the main notebook.
   void tabChanged(  GtkNotebook* self, GtkWidget* page, guint page_num, gpointer user_data){
     cout << page_num << endl;
+
+    //  if the page is equal to the search page focus the search bar.
     if (page_num == 1)
     {
       gtk_widget_grab_focus(searchEntry);
@@ -480,6 +498,7 @@ extern "C"
     }
   }
 
+  //  adds the podcast to the library.
   void addPodcastToLibButton()
   {
     addToLibrary(currentPodcast);

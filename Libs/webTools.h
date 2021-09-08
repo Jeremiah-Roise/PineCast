@@ -43,7 +43,7 @@ class webTools
     return "big problem";
   }
 
-  //  Searches Itunes Database of podcasts and parses the results into: Podcast name; artist; feedurl; image url.
+  /// Searches Itunes Database of podcasts and parses the results into: Podcast name; artist; feedurl; image url.
   static PodcastMetaDataList itunesSearch(string search = ""){
     if(search == "" || search.c_str() == NULL){PodcastMetaDataList test;return test;}// catch if search string is empty
     for (unsigned int i = 0; i < search.length(); i++)
@@ -83,7 +83,7 @@ class webTools
     }
     return tmp;
   }
-  //  create's an image from a url
+  /// create's an image from a url
   static GdkPixbuf* createImage(string imageUrl, int scaleX, int scaleY)
   {
     string imagedata = webTools::getFileInMem(imageUrl); //  getting image data from web
@@ -97,7 +97,7 @@ class webTools
 
     return pixbuf;
   }
-
+  /// Downloads a file from the web and writes it to the disk
   static void getWebFile(string url,string filename){
 
     try
@@ -125,7 +125,7 @@ class webTools
     cout << "no connection" << endl;
 	}
 }
-
+  /// Downloads a podcast and returns the progress through the double pointer
   static void DownloadPodcast(string url,string filename,double* Pprogress){
     cout << "downloading podcast" << endl;
     try
