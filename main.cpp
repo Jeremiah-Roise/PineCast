@@ -254,8 +254,8 @@ extern "C"
 
     for (int i = 0; i < episodes.getIndexSize(); i++)
     {
-      GtkWidget* eventBox = widgetBuilder(episodes, i);
-      gtk_container_add(GTK_CONTAINER(PVEpisodeList), eventBox);
+      GtkWidget* singleEntry = widgetBuilder(episodes, i);
+      gtk_container_add(GTK_CONTAINER(PVEpisodeList), singleEntry);
     }
   }
 
