@@ -21,7 +21,8 @@ void addToLibrary(PodcastMetaData currentPodcast){
   XML += "\n<Image30=\""+currentPodcast.image30+"\">";
   XML += "\n</Podcast>";
   ofstream file;
-  file.open("Podcasts/MyPodcasts.xml",std::ios::app);
+  string PodcastsPath = getenv("HOME");
+  file.open(PodcastsPath + "/.Podcasts/MyPodcasts.xml",std::ios::app);
   if(file.fail()){cout << "file write failed" << endl;}
   file.write(XML.data(),XML.size());
   cout << "wrote to file" << endl;
@@ -32,7 +33,8 @@ void addToLibrary(PodcastMetaData currentPodcast){
 
 void removeFromLibrary(PodcastMetaData currentPodcast){
   string XML;
-  XML = DataTools::getFile("Podcasts/MyPodcasts.xml");
+  string PodcastsPath = getenv("HOME");
+  XML = DataTools::getFile(PodcastsPath + "/.Podcasts/MyPodcasts.xml");
   size_t index;
   size_t end;
   index = XML.find("<Title=\""+ currentPodcast.title +"\">");
@@ -53,7 +55,7 @@ void removeFromLibrary(PodcastMetaData currentPodcast){
   XML.erase(index,end - index);
 
   fstream file;
-  file.open("Podcasts/MyPodcasts.xml",fstream::out);
+  file.open(PodcastsPath + "/.Podcasts/MyPodcasts.xml",fstream::out);
   file.write(XML.c_str(),XML.size());
   
   cout << "removed from lib" << endl;

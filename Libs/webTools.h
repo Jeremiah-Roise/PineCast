@@ -14,33 +14,6 @@ using std::endl;
 using std::string;
 size_t writeCallback(char* buf, size_t size, size_t nmemb, void* up);
 void getWebFile(string,string);
-void getWebFile(string url,string filename){
-
-    try
-  {
-    //CURL *webhandle;
-    FILE *fp;
-    fp = fopen(filename.c_str(),"wb");
-    cURLpp::Easy handle;
-    handle.setOpt(cURLpp::options::NoProgress(false));
-    handle.setOpt(cURLpp::Options::Url(url));
-    handle.setOpt(cURLpp::options::FollowLocation(true));
-    handle.setOpt(cURLpp::options::WriteFile(fp));
-    handle.perform();
-    fclose(fp);
-  }
-  catch(curlpp::RuntimeError & e)
-	{
-		std::cout << e.what() << std::endl;
-    cout << "no connection" << endl;
-	}
-
-	catch(curlpp::LogicError & e)
-	{
-		std::cout << e.what() << std::endl;
-    cout << "no connection" << endl;
-	}
-}
 class webTools
 {
   public:
@@ -70,7 +43,7 @@ class webTools
     return "big problem";
   }
 
-  //  Searches Itunes Database of podcasts and parses the results into: Podcast name; artist; feedurl; image url.
+  /// Searches Itunes Database of podcasts and parses the results into: Podcast name; artist; feedurl; image url.
   static PodcastMetaDataList itunesSearch(string search = ""){
     if(search == "" || search.c_str() == NULL){PodcastMetaDataList test;return test;}// catch if search string is empty
     for (unsigned int i = 0; i < search.length(); i++)
@@ -110,37 +83,76 @@ class webTools
     }
     return tmp;
   }
-};
+  /// create's an image from a url
+  static GdkPixbuf* createImage(string imageUrl, int scaleX, int scaleY)
+  {
+    string imagedata = webTools::getFileInMem(imageUrl); //  getting image data from web
 
+    GdkPixbufLoader *test = gdk_pixbuf_loader_new();
+    gdk_pixbuf_loader_set_size(test, scaleX, scaleY);
+    gdk_pixbuf_loader_write(test, (const guchar*)imagedata.c_str(), imagedata.size(), nullptr);
 
-  
+    GdkPixbuf* pixbuf = gdk_pixbuf_loader_get_pixbuf(test);
+    gdk_pixbuf_loader_close(test, nullptr);
 
-void DownloadPodcast(string url,string filename,double* Pprogress){
-    cout << "downloading podcast" << endl;
+    return pixbuf;
+  }
+  /// Downloads a file from the web and writes it to the disk
+  static void getWebFile(string url,string filename){
+
     try
   {
-
-    
+    //CURL *webhandle;
     FILE *fp;
     fp = fopen(filename.c_str(),"wb");
-    cout << "created file" << endl;
     cURLpp::Easy handle;
     handle.setOpt(cURLpp::options::NoProgress(false));
-    handle.setOpt(cURLpp::options::ProgressFunction([=](double dltotal,   double dlnow,   double ultotal,   double ulnow){
-    double check= dlnow/dltotal;
-    if (check >= 0)
-    {
-      *Pprogress = check;
-      return 0;
-    }
-    return 0;
-    }));
     handle.setOpt(cURLpp::Options::Url(url));
     handle.setOpt(cURLpp::options::FollowLocation(true));
     handle.setOpt(cURLpp::options::WriteFile(fp));
     handle.perform();
     fclose(fp);
   }
+  catch(curlpp::RuntimeError & e)
+	{
+		std::cout << e.what() << std::endl;
+    cout << "no connection" << endl;
+	}
+
+	catch(curlpp::LogicError & e)
+	{
+		std::cout << e.what() << std::endl;
+    cout << "no connection" << endl;
+	}
+}
+  /// Downloads a podcast and returns the progress through the double pointer
+  static void DownloadPodcast(string url,string filepath,double* Pprogress){
+    cout << "downloading podcast" << endl;
+    cout << filepath << endl;
+    try
+  {
+
+    
+    FILE *fp;
+    fp = fopen(filepath.c_str(),"wb");
+    cout << "created file" << endl;
+    cURLpp::Easy handle;
+    handle.setOpt(cURLpp::options::NoProgress(false));
+    handle.setOpt(cURLpp::options::ProgressFunction([=](double dltotal,   double dlnow,   double ultotal,   double ulnow){
+      double check= dlnow/dltotal;
+      if (check >= 0)
+      {
+        *Pprogress = check;
+        return 0;
+      }
+      return 0;
+      }));
+      handle.setOpt(cURLpp::Options::Url(url));
+      handle.setOpt(cURLpp::options::FollowLocation(true));
+      handle.setOpt(cURLpp::options::WriteFile(fp));
+      handle.perform();
+      fclose(fp);
+    }
   catch(curlpp::RuntimeError & e)
   {
     std::cout << e.what() << std::endl;
@@ -153,3 +165,4 @@ void DownloadPodcast(string url,string filename,double* Pprogress){
   }
 }
 
+};

@@ -11,6 +11,7 @@ using namespace std;
 class DataTools
 {
     public:
+    /// just gets the string data from a file.
     static std::string getFile(string file){
         
         ifstream myfile(file,ios::binary);// declaring file reader object opening file to read
@@ -19,7 +20,7 @@ class DataTools
         return text;
     }
 
-
+    /// gets particular values from podcast xml files and returns the index it was found at from the index reference.
     static string GetFieldP(string PodcastRSS,string startAtChars,string endAtChars,int &index,int startAtIndex = 0){
         size_t itemStart = 0;
         size_t itemEnd = 0;
@@ -34,7 +35,7 @@ class DataTools
         return textblock;
     }
 
-
+    /// gets particular values from podcast xml files.
     static string GetField(string PodcastRSS,string startAtChars,string endAtChars,int startAtIndex = 0){
         size_t itemStart = 0;
         size_t itemEnd = 0;
@@ -48,7 +49,7 @@ class DataTools
         return textblock;
     }
 
-
+    /// extracts data from save file data.
     static podcastDataTypes::PodcastEpisode GetPodcastData(const string& aRSSFile){
 
         podcastDataTypes::PodcastEpisode MostRecent;
@@ -72,6 +73,7 @@ class DataTools
 
         return MostRecent;
     }
+    /// gets all the episodes from a podcast xml file and returns them in an episode list.
     static podcastDataTypes::podcastDataTypes::episodeList getEpisodes(string RSSFile){
     RSSFile = GetField(RSSFile,"<channel>","</channel>");
     // find episodes maybe use while loop

@@ -10,7 +10,7 @@
     <property name="default-width">230</property>
     <property name="default-height">400</property>
     <property name="destroy-with-parent">True</property>
-    <signal name="destroy" handler="on_MainWindow_destroy" swapped="no"/>
+    <signal name="destroy" handler="gtk_main_quit" swapped="no"/>
     <child>
       <object class="GtkStack" id="PageSelector">
         <property name="visible">True</property>
@@ -357,10 +357,23 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <child>
-                      <object class="GtkFlowBox" id="PVEpisodeList">
+                      <object class="GtkBox">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="max-children-per-line">1</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <object class="GtkFlowBox" id="PVEpisodeList">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="row-spacing">5</property>
+                            <property name="max-children-per-line">1</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
                       </object>
                     </child>
                   </object>

@@ -27,10 +27,8 @@ extern "C"
   void getSelectedPodcastEpisodeButton(GtkWidget* e);
   void clearContainer(GtkContainer* e);
   void loadLib(PodcastMetaDataList& list);
-
+  
   GtkWidget* CreateSearchEntry(PodcastMetaData);
-  GdkPixbuf* createImage(string imageUrl, int scaleX, int scaleY);
-
   GtkWidget* searchListBox;
   GtkWidget* window;
   GtkWidget* mainStack;
@@ -53,18 +51,18 @@ extern "C"
   PodcastMetaDataList Library;
   vector<podcastDataTypes::PodcastEpisode> Downloading;
   podcastDataTypes::episodeList currentepisodes;
+  string PodcastsPath = getenv("HOME");
+  bool deleteMode = false;  /// whether the library is set to delete selected podcast.
+  bool downloadPodcast = false; /// select whether to download or stream podcasts.
 
-  bool deleteMode = false;
-  bool downloadPodcast = false;
-
-  //  GUI setup
+  ///  GUI setup.
   int main(int argc, char **argv)
   {
-
+    PodcastsPath += "/.Podcasts";
     struct stat tmp;
-    if (stat("Podcasts", &tmp) != 0 && S_ISDIR(tmp.st_mode) != 1)
+    if (stat(PodcastsPath.c_str(), &tmp) != 0 && S_ISDIR(tmp.st_mode) != 1)
     {
-      mkdir("Podcasts", ACCESSPERMS);
+      mkdir(PodcastsPath.c_str(), ACCESSPERMS);
     }
 
     //  TODO create thread with loadLib and mutexes for locking
@@ -97,12 +95,12 @@ extern "C"
     return 0;
   }
 
-  //  update podcasts in library
+  ///  update podcasts in library.
   void loadLib(PodcastMetaDataList &list)
   {
     cout << "LoadingLibrary" << endl;
     // open file To read
-    string fileData = DataTools::getFile("Podcasts/MyPodcasts.xml");
+    string fileData = DataTools::getFile(PodcastsPath+"/MyPodcasts.xml");
     int index = 0;
     for (size_t i = 0; i < fileData.length(); i++)
     {
@@ -123,26 +121,10 @@ extern "C"
     cout << "finished" << endl;
   }
 
-  void deleteModeON()
-  {
-    deleteMode = true;
-  }
 
-  void deleteModeOFF()
-  {
-    deleteMode = false;
-  }
-
-  void deleteModeSwitch()
-  {
-    deleteMode = !deleteMode;
-  }
-
-  //  Destroy Function For GUI
-  void on_MainWindow_destroy() { gtk_main_quit(); }
-
-  //  for listing search results in a GtkListBox
-  //  TODO figure out how to multithread this image download freezes window
+  /// for listing search results in a GtkListBox or GtkFlowbox.
+  ///
+  /// TODO limit give this an argument for number of entries to create. 
   void createSearchResults(GtkWidget *container, PodcastMetaDataList x)
   {
     int size = x.GetIndexSize();
@@ -163,12 +145,14 @@ extern "C"
       gtk_widget_show_all(result);
     }
   }
-
+  /// minor UI builder function that creates the Podcast results in the library and search pages.
+  ///
+  /// the main reason this isn't in a lambda is because it could be used by many other systems.
   GtkWidget* CreateSearchEntry(PodcastMetaData podcast)
   {
 
     GtkWidget* topBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    GtkWidget* thumbImage = gtk_image_new_from_pixbuf(createImage(podcast.image600, 50, 50));
+    GtkWidget* thumbImage = gtk_image_new_from_pixbuf(webTools::createImage(podcast.image600, 50, 50));
     GtkWidget* titleLabel = gtk_label_new(podcast.title.c_str());
     gtk_label_set_xalign(GTK_LABEL(titleLabel), 0.0);
     gtk_label_set_line_wrap(GTK_LABEL(titleLabel), true);
@@ -181,39 +165,21 @@ extern "C"
     return topBox;
   }
 
-  //  clears the given container of all children
-  void clearContainer(GtkContainer* e)
-  {
-    gtk_container_foreach(e, (GtkCallback)gtk_widget_destroy, NULL);
-  }
 
-  //  create's an image from a url
-  GdkPixbuf* createImage(string imageUrl, int scaleX, int scaleY)
-  {
-    string imagedata = webTools::getFileInMem(imageUrl); //  getting image data from web
-
-    GdkPixbufLoader *test = gdk_pixbuf_loader_new();
-    gdk_pixbuf_loader_set_size(test, scaleX, scaleY);
-    gdk_pixbuf_loader_write(test, (const guchar*)imagedata.c_str(), imagedata.size(), nullptr);
-
-    GdkPixbuf* pixbuf = gdk_pixbuf_loader_get_pixbuf(test);
-    gdk_pixbuf_loader_close(test, nullptr);
-
-    return pixbuf;
-  }
-
-  /*
-  ## Signal Functions Go beyond this comment ##
-  */
-  // get search text and give it to the itunes search function
+  /// get search text and give it to the itunes search function
+  ///
+  /// linked directly to the UI in glade
   void searchItunesWithText(GtkEntry* e)
   {
     searchList = webTools::itunesSearch(gtk_entry_get_text(e));
     createSearchResults(searchListBox,searchList);
-    cout << "after create search results" << endl;
     return;
   }
-
+  /// when this is called it initializes the preview page.
+  ///
+  /// when called it uses the global currentPodcast variable to get the Podcast title, image, artist, etc,
+  /// and iterates through the episodes argument to create the episodes,
+  /// should probably be updated to not use global variables.
   void setPreviewPage(podcastDataTypes::episodeList episodes)
   {
     auto widgetBuilder = [](podcastDataTypes::episodeList data, int i)
@@ -279,7 +245,7 @@ extern "C"
     gtk_stack_set_visible_child(GTK_STACK(mainStack), PodcastDetailsPage);
     gtk_label_set_text(GTK_LABEL(PVTitle), currentPodcast.title.c_str());
     gtk_label_set_text(GTK_LABEL(PVAuthor), currentPodcast.artist.c_str());
-    gtk_image_set_from_pixbuf(GTK_IMAGE(PVImage), createImage(currentPodcast.image600, 200, 200));
+    gtk_image_set_from_pixbuf(GTK_IMAGE(PVImage), webTools::createImage(currentPodcast.image600, 200, 200));
 
     //  list episodes
     currentepisodes = episodes;
@@ -288,13 +254,12 @@ extern "C"
 
     for (int i = 0; i < episodes.getIndexSize(); i++)
     {
-      GtkWidget* eventBox = widgetBuilder(episodes, i);
-      gtk_container_add(GTK_CONTAINER(PVEpisodeList), eventBox);
+      GtkWidget* singleEntry = widgetBuilder(episodes, i);
+      gtk_container_add(GTK_CONTAINER(PVEpisodeList), singleEntry);
     }
-    cout << "finished set previewPage function" << endl;
   }
 
-  //  gets the returned selection from search results
+  ///  gets the returned selection from search results
   void returnSelectionFromSearchResults(GtkWidget* e, gpointer data)
   {
 
@@ -360,37 +325,14 @@ extern "C"
     cout << "after set preview" << endl;
   }
 
-  void addPodcastToLibButton()
-  {
-    addToLibrary(currentPodcast);
-    clearContainer(GTK_CONTAINER(LibraryUi));
-    Library.clear();
-    loadLib(Library);
-    createSearchResults(LibraryUi, Library);
-  }
-
-  //  simply goes to the main page
-  void goMainPage()
-  {
-    gtk_stack_set_visible_child_name(GTK_STACK(mainStack), (const gchar *)mainPageName);
-  }
-
-  void tabChanged(  GtkNotebook* self, GtkWidget* page, guint page_num, gpointer user_data){
-    cout << page_num << endl;
-    if (page_num == 1)
-    {
-      gtk_widget_grab_focus(searchEntry);
-      cout << "run" << endl;
-    }
-  }
-
-
 
   /// function that gets called when an episode is clicked.
+  ///
+  /// takes in the selected episode by getting it's index from the name of the widget
   void getSelectedPodcastEpisodeButton(GtkWidget* e)
   {
     podcastDataTypes::PodcastEpisode current = currentepisodes.getEpisodeAtIndex(atoi(gtk_widget_get_name(e)));
-    //  check if the podcast is already being downloaded
+    //  check if the podcast is already being downloaded.
     for (podcastDataTypes::PodcastEpisode download : Downloading)
     {
       if (download.mp3Link == current.mp3Link)
@@ -419,7 +361,10 @@ extern "C"
   }
 
   void playMp3(string name);
-  /// Downloads entirely and then plays a podcast
+  /// Downloads entirely and then plays a podcast.
+  ///
+  /// creates the download bar widget and updates it with the current progress,
+  /// it's very jenky but it works.
   void DownloadAndPlayPodcast(podcastDataTypes::PodcastEpisode podcast, GtkWidget* e)
   {
 
@@ -438,38 +383,31 @@ extern "C"
 
     podcast.title += ".mp3";
     double progress = 0;
-    const std::future<void> thread = std::async(std::launch::async, DownloadPodcast, podcast.mp3Link, podcast.title, &progress);
+    const std::future<void> thread = std::async(std::launch::async, webTools::DownloadPodcast, podcast.mp3Link, PodcastsPath+"/"+podcast.title + ".mp3", &progress);
 
-    while (thread.wait_for(0ms) != std::future_status::ready) // wait for download to finish
+    while (thread.wait_for(0ms) != std::future_status::ready) // wait for download to finish.
     {
       sleep(1);
-      //if (GTK_IS_PROGRESS_BAR(progressBar)) // for some reason this was crashing the program when the download button was pressed in a particular podcast called "pinetalk" and then you switched to a different podcast preview
-      //{
-      //  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
-      //}
+      
+      if (GTK_IS_WIDGET(progressBar))
+      {
+        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
+      }
       podcast.Download = progress;
       cout << "Download progress: " << podcast.Download << endl;
     }
     thread.wait();
 
-    playMp3(podcast.title);
+    playMp3(PodcastsPath+"/"+podcast.title + ".mp3");
   }
 
-  /// uses system command to start podcast with default application should be able to tolerate spaces.
-  void playMp3(string name)
-  {
-    string FName = "xdg-open \"" + name + "\"";
-    FName += " &";
-    cout << "the name is: " << FName << endl;
-    system(FName.data());
-  }
+
 
   /// streams a podcast by waiting until it is %0.05 finished and then opens the audioplayer.
   ///
   /// uses playMp3 to start the audio player checks download progress once per second.
   void streamPodcast(podcastDataTypes::PodcastEpisode podcast, GtkWidget* e)
   {
-    //e = gtk_widget_get_parent(e);
     gtk_widget_hide(e);
     clearContainer(GTK_CONTAINER(e));
 
@@ -486,30 +424,94 @@ extern "C"
     g_signal_connect(e, "pressed", (GCallback)[]() { cout << "already downloading" << endl; }, (gpointer) "button");
 
     double progress;
-    const std::future<void> thread = std::async(std::launch::async, DownloadPodcast, podcast.mp3Link, podcast.title + ".mp3", &progress);
-    while (!(progress >= 0.05)) // wait for download to finish
+    const std::future<void> thread = std::async(std::launch::async, webTools::DownloadPodcast,podcast.mp3Link, PodcastsPath+"/"+podcast.title + ".mp3", &progress);
+    while (!(progress >= 0.05)) // wait for download to finish.
     {
       sleep(1);
-      //if (GTK_IS_PROGRESS_BAR(progressBar))
-      //{
-      //  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
-      //}
+      if (GTK_IS_WIDGET(progressBar))
+      {
+        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
+      }
 
       podcast.Download = progress;
       cout << "Download progress: " << podcast.Download << endl;
     }
-    playMp3(podcast.title + ".mp3");
-    while (thread.wait_for(0ms) != std::future_status::ready) // wait for download to finish
+    playMp3(PodcastsPath+"/"+podcast.title + ".mp3");
+    while (thread.wait_for(0ms) != std::future_status::ready) // wait for download to finish.
     {
       sleep(1);
-      //if (GTK_IS_PROGRESS_BAR(progressBar)) // for some reason this was crashing the program when the stream button was pressed in a particular podcast called "pinetalk" and then you switched to a different podcast preview
-      //{
-      //  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
-      //}
+      if (GTK_IS_WIDGET(progressBar))
+      {
+        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
+      }
       podcast.Download = progress;
       cout << "Download progress: " << progress << endl;
     }
 
     thread.wait();
   }
+
+
+
+  //  sets the library's delete mode to true.
+  void deleteModeON()
+  {
+    deleteMode = true;
+  }
+
+  //  sets the library's delete mode to false.
+  void deleteModeOFF()
+  {
+    deleteMode = false;
+  }
+
+  //  toggles the library's delete mode.
+  void deleteModeSwitch()
+  {
+    deleteMode = !deleteMode;
+  }
+
+  // uses system command to start podcast with default application should be able to tolerate spaces.
+  void playMp3(string name)
+  {
+    string FName = "xdg-open \""+ PodcastsPath+ "/" + name + "\"";
+    FName += " &";
+    cout << "the command is: " << FName << endl;
+    system(FName.data());
+  }
+
+  //  simply goes to the main page.
+  void goMainPage()
+  {
+    gtk_stack_set_visible_child_name(GTK_STACK(mainStack), (const gchar *)mainPageName);
+  }
+
+  //  monitors for when tabs change in the main notebook.
+  void tabChanged(  GtkNotebook* self, GtkWidget* page, guint page_num, gpointer user_data){
+    cout << page_num << endl;
+
+    //  if the page is equal to the search page focus the search bar.
+    if (page_num == 1)
+    {
+      gtk_widget_grab_focus(searchEntry);
+      cout << "setting focus to search bar" << endl;
+    }
+  }
+
+  //  adds the podcast to the library.
+  void addPodcastToLibButton()
+  {
+    addToLibrary(currentPodcast);
+    clearContainer(GTK_CONTAINER(LibraryUi));
+    Library.clear();
+    loadLib(Library);
+    createSearchResults(LibraryUi, Library);
+  }
+
+  //  clears the given container of all children
+  void clearContainer(GtkContainer* e)
+  {
+    gtk_container_foreach(e, (GtkCallback)gtk_widget_destroy, NULL);
+  }
+
 }
