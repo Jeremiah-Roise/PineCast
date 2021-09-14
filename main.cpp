@@ -105,7 +105,7 @@ extern "C"
     for (size_t i = 0; i < fileData.length(); i++)
     {
 
-      string Podcast = DataTools::GetFieldP(fileData, "<Podcast>", "</Podcast>", index, index);
+      string Podcast = DataTools::GetFieldAndReturnIndex(fileData, "<Podcast>", "</Podcast>", index, index);
       if (Podcast == "")
       {
         break;
@@ -367,7 +367,7 @@ extern "C"
   /// it's very jenky but it works.
   void DownloadAndPlayPodcast(podcastDataTypes::PodcastEpisode podcast, GtkWidget* e)
   {
-
+    gtk_widget_set_sensitive(e,false);
     g_signal_connect(e, "pressed", (GCallback)[]() { cout << "already downloading" << endl; }, (gpointer) "button");
     e = gtk_widget_get_parent(e);
     gtk_widget_hide(e);
@@ -381,9 +381,9 @@ extern "C"
     gtk_container_add(GTK_CONTAINER(e), box);
     gtk_widget_show_all(e);
 
-    podcast.title += ".mp3";
+    string filePath = PodcastsPath+"/"+podcast.title + ".mp3";
     double progress = 0;
-    const std::future<void> thread = std::async(std::launch::async, webTools::DownloadPodcast, podcast.mp3Link, PodcastsPath+"/"+podcast.title + ".mp3", &progress);
+    const std::future<void> thread = std::async(std::launch::async, webTools::DownloadPodcast, podcast.mp3Link, filePath, &progress);
 
     while (thread.wait_for(0ms) != std::future_status::ready) // wait for download to finish.
     {
@@ -398,7 +398,7 @@ extern "C"
     }
     thread.wait();
 
-    playMp3(PodcastsPath+"/"+podcast.title + ".mp3");
+    playMp3(filePath);
   }
 
 
@@ -421,10 +421,12 @@ extern "C"
 
     gtk_widget_show_all(e);
     g_signal_handlers_destroy(e);
+    gtk_widget_set_sensitive(e,false);
     g_signal_connect(e, "pressed", (GCallback)[]() { cout << "already downloading" << endl; }, (gpointer) "button");
 
     double progress;
-    const std::future<void> thread = std::async(std::launch::async, webTools::DownloadPodcast,podcast.mp3Link, PodcastsPath+"/"+podcast.title + ".mp3", &progress);
+    string filePath = PodcastsPath+"/"+podcast.title + ".mp3";
+    const std::future<void> thread = std::async(std::launch::async, webTools::DownloadPodcast,podcast.mp3Link, filePath, &progress);
     while (!(progress >= 0.05)) // wait for download to finish.
     {
       sleep(1);
@@ -436,7 +438,7 @@ extern "C"
       podcast.Download = progress;
       cout << "Download progress: " << podcast.Download << endl;
     }
-    playMp3(PodcastsPath+"/"+podcast.title + ".mp3");
+    playMp3(filePath);
     while (thread.wait_for(0ms) != std::future_status::ready) // wait for download to finish.
     {
       sleep(1);
@@ -453,25 +455,25 @@ extern "C"
 
 
 
-  //  sets the library's delete mode to true.
+  ///  sets the library's delete mode to true.
   void deleteModeON()
   {
     deleteMode = true;
   }
 
-  //  sets the library's delete mode to false.
+  ///  sets the library's delete mode to false.
   void deleteModeOFF()
   {
     deleteMode = false;
   }
 
-  //  toggles the library's delete mode.
+  ///  toggles the library's delete mode.
   void deleteModeSwitch()
   {
     deleteMode = !deleteMode;
   }
 
-  // uses system command to start podcast with default application should be able to tolerate spaces.
+  /// uses system command to start podcast with default application should be able to tolerate spaces.
   void playMp3(string name)
   {
     string FName = "xdg-open \""+ PodcastsPath+ "/" + name + "\"";
@@ -480,13 +482,13 @@ extern "C"
     system(FName.data());
   }
 
-  //  simply goes to the main page.
+  ///  simply goes to the main page.
   void goMainPage()
   {
     gtk_stack_set_visible_child_name(GTK_STACK(mainStack), (const gchar *)mainPageName);
   }
 
-  //  monitors for when tabs change in the main notebook.
+  ///  monitors for when tabs change in the main notebook.
   void tabChanged(  GtkNotebook* self, GtkWidget* page, guint page_num, gpointer user_data){
     cout << page_num << endl;
 
@@ -498,7 +500,7 @@ extern "C"
     }
   }
 
-  //  adds the podcast to the library.
+  ///  adds the podcast to the library.
   void addPodcastToLibButton()
   {
     addToLibrary(currentPodcast);
@@ -508,7 +510,7 @@ extern "C"
     createSearchResults(LibraryUi, Library);
   }
 
-  //  clears the given container of all children
+  ///  clears the given container of all children
   void clearContainer(GtkContainer* e)
   {
     gtk_container_foreach(e, (GtkCallback)gtk_widget_destroy, NULL);
