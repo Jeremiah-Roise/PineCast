@@ -24,23 +24,23 @@ extern "C"
   void loadLib(PodcastMetaDataList& list);
   
   GtkWidget* createResultWidget(PodcastMetaData);
-  GtkWidget* searchListBox;
-  GtkWidget* window;
-  GtkWidget* mainStack;
-  GtkWidget* notebook;
-  GtkWidget* PodcastDetailsPage;
+  GtkWidget* UIsearchListBox;
+  GtkWidget* UIwindow;
+  GtkWidget* UImainStack;
+  GtkWidget* UInotebook;
+  GtkWidget* UIPodcastDetailsPage;
 
   //  PV means Preview
-  GtkWidget* PVImage;
-  GtkWidget* PVTitle;
-  GtkWidget* PVAuthor;
-  GtkWidget* PVEpisodeList;
-  GtkWidget* LibraryUi;
-  GtkWidget* addToLibraryButton;
-  GtkWidget* DownloadsList;
+  GtkWidget* UIPVImage;
+  GtkWidget* UIPVTitle;
+  GtkWidget* UIPVAuthor;
+  GtkWidget* UIPVEpisodeList;
+  GtkWidget* UILibraryUi;
+  GtkWidget* UIaddToLibraryButton;
+  GtkWidget* UIDownloadsList;
   GtkBuilder* builder;
-  GtkWidget* stackPage;
-  GtkWidget* searchEntry;
+  GtkWidget* UIstackPage;
+  GtkWidget* UIsearchEntry;
   PodcastMetaData currentPodcast;
   PodcastMetaDataList searchList;
   PodcastMetaDataList Library;
@@ -63,28 +63,28 @@ extern "C"
     gtk_init(&argc, &argv);
     builder = gtk_builder_new();
     gtk_builder_add_from_file(builder, "PodcastWindow.glade", NULL);
-    window = GTK_WIDGET(gtk_builder_get_object(builder, "MainWindow"));
+    UIwindow = GTK_WIDGET(gtk_builder_get_object(builder, "MainWindow"));
 
     //                                                            | these are macros|
     //                                                            | in UINAMES.h    |
-    searchListBox =      GTK_WIDGET(gtk_builder_get_object(builder, searchListBoxName));
-    searchEntry =        GTK_WIDGET(gtk_builder_get_object(builder, searchEntryName));
-    mainStack =          GTK_WIDGET(gtk_builder_get_object(builder, mainStackName));
-    notebook =           GTK_WIDGET(gtk_builder_get_object(builder, notebookName));
-    PodcastDetailsPage = GTK_WIDGET(gtk_builder_get_object(builder, podcastDetailsPageName));
-    LibraryUi =          GTK_WIDGET(gtk_builder_get_object(builder, LibraryUiName));
-    PVImage =            GTK_WIDGET(gtk_builder_get_object(builder, PVImageName));
-    PVTitle =            GTK_WIDGET(gtk_builder_get_object(builder, PVTitleName));
-    PVAuthor =           GTK_WIDGET(gtk_builder_get_object(builder, PVAuthorName));
-    PVEpisodeList =      GTK_WIDGET(gtk_builder_get_object(builder, PVEpisodeListName));
-    addToLibraryButton = GTK_WIDGET(gtk_builder_get_object(builder, addToLibraryButtonName));
-    DownloadsList =      GTK_WIDGET(gtk_builder_get_object(builder, "DownloadsList"));
+    UIsearchListBox =      GTK_WIDGET(gtk_builder_get_object(builder, searchListBoxName));
+    UIsearchEntry =        GTK_WIDGET(gtk_builder_get_object(builder, searchEntryName));
+    UImainStack =          GTK_WIDGET(gtk_builder_get_object(builder, mainStackName));
+    UInotebook =           GTK_WIDGET(gtk_builder_get_object(builder, notebookName));
+    UIPodcastDetailsPage = GTK_WIDGET(gtk_builder_get_object(builder, podcastDetailsPageName));
+    UILibraryUi =          GTK_WIDGET(gtk_builder_get_object(builder, LibraryUiName));
+    UIPVImage =            GTK_WIDGET(gtk_builder_get_object(builder, PVImageName));
+    UIPVTitle =            GTK_WIDGET(gtk_builder_get_object(builder, PVTitleName));
+    UIPVAuthor =           GTK_WIDGET(gtk_builder_get_object(builder, PVAuthorName));
+    UIPVEpisodeList =      GTK_WIDGET(gtk_builder_get_object(builder, PVEpisodeListName));
+    UIaddToLibraryButton = GTK_WIDGET(gtk_builder_get_object(builder, addToLibraryButtonName));
+    UIDownloadsList =      GTK_WIDGET(gtk_builder_get_object(builder, "DownloadsList"));
 
     gtk_builder_connect_signals(builder, NULL);
     g_object_unref(builder);
     loadLib(Library);
-    gtk_widget_show(window);
-    createSearchResults(LibraryUi, Library);
+    gtk_widget_show(UIwindow);
+    createSearchResults(UILibraryUi, Library);
     gtk_main();
     return 0;
   }
@@ -164,7 +164,7 @@ extern "C"
   void searchItunesWithText(GtkEntry* e)
   {
     searchList = webTools::itunesSearch(gtk_entry_get_text(e));
-    createSearchResults(searchListBox,searchList);
+    createSearchResults(UIsearchListBox,searchList);
     return;
   }
   /// when this is called it initializes the preview page.
@@ -224,30 +224,30 @@ extern "C"
     };
 
     //  hide the add to library button if in the library
-    int page = (int)gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook));
+    int page = (int)gtk_notebook_get_current_page(GTK_NOTEBOOK(UInotebook));
     if (page == 0)
     {
-      gtk_widget_hide(addToLibraryButton);
+      gtk_widget_hide(UIaddToLibraryButton);
     }
     if (page == 1)
     {
-      gtk_widget_show(addToLibraryButton);
+      gtk_widget_show(UIaddToLibraryButton);
     }
 
-    gtk_stack_set_visible_child(GTK_STACK(mainStack), PodcastDetailsPage);
-    gtk_label_set_text(GTK_LABEL(PVTitle), currentPodcast.title.c_str());
-    gtk_label_set_text(GTK_LABEL(PVAuthor), currentPodcast.artist.c_str());
-    gtk_image_set_from_pixbuf(GTK_IMAGE(PVImage), webTools::createImage(currentPodcast.image600, 200, 200));
+    gtk_stack_set_visible_child(GTK_STACK(UImainStack), UIPodcastDetailsPage);
+    gtk_label_set_text(GTK_LABEL(UIPVTitle), currentPodcast.title.c_str());
+    gtk_label_set_text(GTK_LABEL(UIPVAuthor), currentPodcast.artist.c_str());
+    gtk_image_set_from_pixbuf(GTK_IMAGE(UIPVImage), webTools::createImage(currentPodcast.image600, 200, 200));
 
     //  list episodes
     currentepisodes = episodes;
 
-    clearContainer(GTK_CONTAINER(PVEpisodeList));
+    clearContainer(GTK_CONTAINER(UIPVEpisodeList));
 
     for (int i = 0; i < episodes.getIndexSize(); i++)
     {
       GtkWidget* singleEntry = widgetBuilder(episodes, i);
-      gtk_container_add(GTK_CONTAINER(PVEpisodeList), singleEntry);
+      gtk_container_add(GTK_CONTAINER(UIPVEpisodeList), singleEntry);
     }
   }
 
@@ -257,7 +257,7 @@ extern "C"
 
     int index = atoi(gtk_widget_get_name(e));
 
-    int page = (int)gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook));
+    int page = (int)gtk_notebook_get_current_page(GTK_NOTEBOOK(UInotebook));
 
     if (page == 0)
     {
@@ -272,10 +272,10 @@ extern "C"
     if (page == 0 && deleteMode == true)
     {
       removeFromLibrary(currentPodcast);
-      clearContainer(GTK_CONTAINER(LibraryUi));
+      clearContainer(GTK_CONTAINER(UILibraryUi));
       Library.clear();
       loadLib(Library);
-      createSearchResults(LibraryUi, Library);
+      createSearchResults(UILibraryUi, Library);
       return;
     }
 
@@ -477,17 +477,17 @@ extern "C"
   ///  simply goes to the main page.
   void goMainPage()
   {
-    gtk_stack_set_visible_child_name(GTK_STACK(mainStack), (const gchar *)mainPageName);
+    gtk_stack_set_visible_child_name(GTK_STACK(UImainStack), (const gchar *)mainPageName);
   }
 
-  ///  monitors for when tabs change in the main notebook.
+  ///  monitors for when tabs change in the main UInotebook.
   void tabChanged(  GtkNotebook* self, GtkWidget* page, guint page_num, gpointer user_data){
     cout << page_num << endl;
 
     //  if the page is equal to the search page focus the search bar.
     if (page_num == 1)
     {
-      gtk_widget_grab_focus(searchEntry);
+      gtk_widget_grab_focus(UIsearchEntry);
       cout << "setting focus to search bar" << endl;
     }
   }
@@ -496,10 +496,10 @@ extern "C"
   void addPodcastToLibButton()
   {
     addToLibrary(currentPodcast);
-    clearContainer(GTK_CONTAINER(LibraryUi));
+    clearContainer(GTK_CONTAINER(UILibraryUi));
     Library.clear();
     loadLib(Library);
-    createSearchResults(LibraryUi, Library);
+    createSearchResults(UILibraryUi, Library);
   }
 
   ///  clears the given container of all children
