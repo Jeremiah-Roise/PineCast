@@ -66,19 +66,19 @@ class webTools
     for (int i = 0; i != items; i++)
     {
       // get image url's
-      string image30 = DataTools::GetFieldP(data,"\"artworkUrl30\":\"","\"",tmp0,tmp0);
-      string image60 = DataTools::GetFieldP(data,"\"artworkUrl60\":\"","\"",tmp0,tmp0);
-      string image100 = DataTools::GetFieldP(data,"\"artworkUrl100\":\"","\"",tmp0,tmp0);
-      string image600 = DataTools::GetFieldP(data,"\"artworkUrl600\":\"","\"",tmp0,tmp0);
+      string image30 = DataTools::GetFieldAndReturnIndex(data,"\"artworkUrl30\":\"","\"",tmp0,tmp0);
+      string image60 = DataTools::GetFieldAndReturnIndex(data,"\"artworkUrl60\":\"","\"",tmp0,tmp0);
+      string image100 = DataTools::GetFieldAndReturnIndex(data,"\"artworkUrl100\":\"","\"",tmp0,tmp0);
+      string image600 = DataTools::GetFieldAndReturnIndex(data,"\"artworkUrl600\":\"","\"",tmp0,tmp0);
 
       // get feed url
-      string feedUrl = DataTools::GetFieldP(data,"\"feedUrl\":\"","\"",tmp1,tmp1);
+      string feedUrl = DataTools::GetFieldAndReturnIndex(data,"\"feedUrl\":\"","\"",tmp1,tmp1);
 
       // get collection Name
-      string collectionName = DataTools::GetFieldP(data,"\"collectionName\":\"","\"",tmp2,tmp2);
+      string collectionName = DataTools::GetFieldAndReturnIndex(data,"\"collectionName\":\"","\"",tmp2,tmp2);
 
       // get artist
-      string artist = DataTools::GetFieldP(data,"\"artistName\":\"","\"",tmp3,tmp3);
+      string artist = DataTools::GetFieldAndReturnIndex(data,"\"artistName\":\"","\"",tmp3,tmp3);
       tmp.createAndAddPodcast(artist,feedUrl,collectionName,image30,image60,image100,image600);
     }
     return tmp;
