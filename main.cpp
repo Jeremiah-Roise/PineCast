@@ -21,7 +21,6 @@ extern "C"
   void searchItunesWithText(GtkEntry* e);
   void getSelectedPodcastEpisodeButton(GtkWidget* e);
   void clearContainer(GtkContainer* e);
-  void loadLib(PodcastMetaDataList& list);
   
   GtkWidget* createResultWidget(PodcastMetaData);
   GtkWidget* UIsearchListBox;
@@ -89,31 +88,6 @@ extern "C"
     return 0;
   }
 
-  ///  update podcasts in library.
-  void loadLib(PodcastMetaDataList &list)
-  {
-    cout << "LoadingLibrary" << endl;
-    // open file To read
-    string fileData = DataTools::getFile(PodcastsPath+"/MyPodcasts.xml");
-    int index = 0;
-    for (size_t i = 0; i < fileData.length(); i++)
-    {
-
-      string Podcast = DataTools::GetFieldAndReturnIndex(fileData, "<Podcast>", "</Podcast>", index, index);
-      if (Podcast == "")
-      {
-        break;
-      }
-      list.createAndAddPodcast(DataTools::GetField(Podcast, "<Artist=\"", "\">"),
-                               DataTools::GetField(Podcast, "<RssFeed=\"", "\">"),
-                               DataTools::GetField(Podcast, "<Title=\"", "\">"),
-                               DataTools::GetField(Podcast, "<Image30=\"", "\">"),
-                               DataTools::GetField(Podcast, "<Image60=\"", "\">"),
-                               DataTools::GetField(Podcast, "<Image100=\"", "\">"),
-                               DataTools::GetField(Podcast, "<Image600=\"", "\">"));
-    }
-    cout << "finished" << endl;
-  }
 
 
   /// for listing search results in a GtkListBox or GtkFlowbox.

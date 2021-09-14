@@ -60,3 +60,28 @@ void removeFromLibrary(PodcastMetaData currentPodcast){
   
   cout << "removed from lib" << endl;
 }
+///  update podcasts in library.
+void loadLib(PodcastMetaDataList &list)
+{
+  string PodcastsPath = getenv("HOME");
+  cout << "LoadingLibrary" << endl;
+  // open file To read
+  string fileData = DataTools::getFile(PodcastsPath+"/MyPodcasts.xml");
+  int index = 0;
+  for (size_t i = 0; i < fileData.length(); i++)
+  {
+    string Podcast = DataTools::GetFieldAndReturnIndex(fileData, "<Podcast>", "</Podcast>", index, index);
+    if (Podcast == "")
+    {
+      break;
+    }
+    list.createAndAddPodcast(DataTools::GetField(Podcast, "<Artist=\"", "\">"),
+                             DataTools::GetField(Podcast, "<RssFeed=\"", "\">"),
+                             DataTools::GetField(Podcast, "<Title=\"", "\">"),
+                             DataTools::GetField(Podcast, "<Image30=\"", "\">"),
+                             DataTools::GetField(Podcast, "<Image60=\"", "\">"),
+                             DataTools::GetField(Podcast, "<Image100=\"", "\">"),
+                             DataTools::GetField(Podcast, "<Image600=\"", "\">"));
+  }
+  cout << "finished" << endl;
+}
