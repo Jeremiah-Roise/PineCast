@@ -21,7 +21,7 @@ class DataTools
     }
 
     /// gets particular values from podcast xml files and returns the index it was found at from the index reference.
-    static string GetFieldP(string PodcastRSS,string startAtChars,string endAtChars,int &index,int startAtIndex = 0){
+    static string GetFieldAndReturnIndex(string PodcastRSS,string startAtChars,string endAtChars,int &index,int startAtIndex = 0){
         size_t itemStart = 0;
         size_t itemEnd = 0;
         if(startAtChars == ""){itemStart = 0;}
@@ -81,12 +81,27 @@ class DataTools
     int positionIndex=0;
     while(true)
     {
-        string item = GetFieldP(RSSFile,"<item>","</item>",positionIndex,positionIndex);//  find item starting from last item we indexed
+        string item = GetFieldAndReturnIndex(RSSFile,"<item>","</item>",positionIndex,positionIndex);//  find item starting from last item we indexed
         if(item == ""){break;}
         episodes.addEpisode(GetPodcastData(item));// add podcast to some kind of list
     }
     return episodes;
 }
+
+
+    static bool hasSpaces(string& Value){
+    for (char i:Value)
+    if (isspace(i) != 0)
+        {return true;}
+
+    return false;
+    }
+
+    
+    static string removeSpaces(string Value){
+        std::remove(Value.begin(), Value.end(), ' ');
+        return Value;
+    }
 };
 
 
