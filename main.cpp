@@ -28,7 +28,7 @@ extern "C"
   void clearContainer(GtkContainer* e);
   void loadLib(PodcastMetaDataList& list);
   
-  GtkWidget* CreateSearchEntry(PodcastMetaData);
+  GtkWidget* createResultWidget(PodcastMetaData);
   GtkWidget* searchListBox;
   GtkWidget* window;
   GtkWidget* mainStack;
@@ -65,7 +65,6 @@ extern "C"
       mkdir(PodcastsPath.c_str(), ACCESSPERMS);
     }
 
-    //  TODO create thread with loadLib and mutexes for locking
     gtk_init(&argc, &argv);
     builder = gtk_builder_new();
     gtk_builder_add_from_file(builder, "PodcastWindow.glade", NULL);
@@ -123,8 +122,6 @@ extern "C"
 
 
   /// for listing search results in a GtkListBox or GtkFlowbox.
-  ///
-  /// TODO limit give this an argument for number of entries to create. 
   void createSearchResults(GtkWidget *container, PodcastMetaDataList x)
   {
     int size = x.GetIndexSize();
@@ -139,16 +136,16 @@ extern "C"
     {
       PodcastMetaData tmp = x.GetPodcastAtIndex(i);
       string name = tmp.title;
-      GtkWidget *result = CreateSearchEntry(tmp);
+      GtkWidget *result = createResultWidget(tmp);
 
       gtk_container_add(GTK_CONTAINER(container), result);
       gtk_widget_show_all(result);
     }
   }
-  /// minor UI builder function that creates the Podcast results in the library and search pages.
+  /// minor UI builder function that creates the Podcast result widget in the library and search pages.
   ///
   /// the main reason this isn't in a lambda is because it could be used by many other systems.
-  GtkWidget* CreateSearchEntry(PodcastMetaData podcast)
+  GtkWidget* createResultWidget(PodcastMetaData podcast)
   {
 
     GtkWidget* topBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
