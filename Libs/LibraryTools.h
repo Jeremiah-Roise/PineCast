@@ -64,7 +64,7 @@ void removeFromLibrary(PodcastMetaData currentPodcast){
 void loadLib(PodcastMetaDataList &list)
 {
   string PodcastsPath = getenv("HOME");
-  cout << "LoadingLibrary" << endl;
+  cout << "start loading library" << endl;
   // open file To read
   string fileData = DataTools::getFile(PodcastsPath+"/MyPodcasts.xml");
   int index = 0;
@@ -83,5 +83,5 @@ void loadLib(PodcastMetaDataList &list)
                              DataTools::GetField(Podcast, "<Image100=\"", "\">"),
                              DataTools::GetField(Podcast, "<Image600=\"", "\">"));
   }
-  cout << "finished" << endl;
+  cout << "finished loading library" << endl;
 }
