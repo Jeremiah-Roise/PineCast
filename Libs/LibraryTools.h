@@ -64,6 +64,7 @@ void removeFromLibrary(PodcastMetaData currentPodcast){
 void loadLib(PodcastMetaDataList &list)
 {
   string PodcastsPath = getenv("HOME");
+  PodcastsPath += "/.Podcasts";
   cout << "start loading library" << endl;
   // open file To read
   string fileData = DataTools::getFile(PodcastsPath+"/MyPodcasts.xml");
