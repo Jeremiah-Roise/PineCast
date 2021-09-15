@@ -347,7 +347,8 @@ extern "C"
     gtk_container_add(GTK_CONTAINER(e), box);
     gtk_widget_show_all(e);
 
-    string filePath = PodcastsPath+"/"+podcast.title + ".mp3";
+    string filePath = PodcastsPath+"/"+ DataTools::cleanString(podcast.title) + ".mp3";
+
     double progress = 0;
     const std::future<void> thread = std::async(std::launch::async, webTools::DownloadPodcast, podcast.mp3Link, filePath, &progress);
 
@@ -390,8 +391,9 @@ extern "C"
     gtk_widget_set_sensitive(e,false);
     g_signal_connect(e, "pressed", (GCallback)[]() { cout << "already downloading" << endl; }, (gpointer) "button");
 
+    
+    string filePath = PodcastsPath+"/"+ DataTools::cleanString(podcast.title) + ".mp3";
     double progress;
-    string filePath = PodcastsPath+"/"+podcast.title + ".mp3";
     const std::future<void> thread = std::async(std::launch::async, webTools::DownloadPodcast,podcast.mp3Link, filePath, &progress);
     while (!(progress >= 0.05)) // wait for download to finish.
     {
@@ -440,10 +442,9 @@ extern "C"
   }
 
   /// uses system command to start podcast with default application should be able to tolerate spaces.
-  void playMp3(string name)
+  void playMp3(string path)
   {
-    string FName = "xdg-open \""+ PodcastsPath+ "/" + name + "\"";
-    FName += " &";
+    string FName = "xdg-open \"" + path + "\" &";
     cout << "the command is: " << FName << endl;
     system(FName.data());
   }
