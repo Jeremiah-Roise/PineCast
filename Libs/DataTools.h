@@ -98,9 +98,31 @@ class DataTools
     }
 
     
-    static string removeSpaces(string Value){
-        std::remove(Value.begin(), Value.end(), ' ');
-        return Value;
+    static string replaceSpaces(string& Value,char replaceWith){
+        string cleanString;
+        for (char i :Value)
+        {
+                if (i == ' ')
+                cleanString += i;
+                if (i != ' ')
+                {
+                    cleanString += replaceWith;
+                }
+        }
+    return cleanString;
+    }
+
+    static string cleanString(string Value){
+        string cleanString;
+        for (char i :Value)
+        {
+            size_t code = int(i);
+            bool isNumber = code > 48 && code < 58;
+            bool ischaracter = (code > 64 && code < 91) || (code > 96 && code < 123);
+            if (isNumber || ischaracter)
+                cleanString += i;
+        }
+        return cleanString;
     }
 };
 
