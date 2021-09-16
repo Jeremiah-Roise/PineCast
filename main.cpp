@@ -172,8 +172,8 @@ extern "C"
         getSelectedPodcastEpisodeButton(e);
       };
 
-      g_signal_connect(playButton, "pressed", (GCallback)streamfunc, (gpointer) "button");
-      g_signal_connect(downloadButton, "pressed", (GCallback)downloadfunc, (gpointer) "button");
+      g_signal_connect(playButton, "released", (GCallback)streamfunc, (gpointer) "button");
+      g_signal_connect(downloadButton, "released", (GCallback)downloadfunc, (gpointer) "button");
 
       gtk_label_set_line_wrap(GTK_LABEL(titleLabel), true);
       gtk_label_set_xalign(GTK_LABEL(titleLabel), 0.0);
@@ -334,7 +334,7 @@ extern "C"
   void DownloadAndPlayPodcast(podcastDataTypes::PodcastEpisode podcast, GtkWidget* e)
   {
     gtk_widget_set_sensitive(e,false);
-    g_signal_connect(e, "pressed", (GCallback)[]() { cout << "already downloading" << endl; }, (gpointer) "button");
+    g_signal_connect(e, "released", (GCallback)[]() { cout << "already downloading" << endl; }, (gpointer) "button");
     e = gtk_widget_get_parent(e);
     gtk_widget_hide(e);
     clearContainer(GTK_CONTAINER(e));
@@ -389,7 +389,7 @@ extern "C"
     gtk_widget_show_all(e);
     g_signal_handlers_destroy(e);
     gtk_widget_set_sensitive(e,false);
-    g_signal_connect(e, "pressed", (GCallback)[]() { cout << "already downloading" << endl; }, (gpointer) "button");
+    g_signal_connect(e, "released", (GCallback)[]() { cout << "already downloading" << endl; }, (gpointer) "button");
 
     
     string filePath = PodcastsPath+"/"+ DataTools::cleanString(podcast.title) + ".mp3";
@@ -475,6 +475,17 @@ extern "C"
     Library.clear();
     loadLib(Library);
     createSearchResults(UILibraryUi, Library);
+
+    auto cache = [](){
+      string name = currentPodcast.title + ".rss";
+
+      string data = webTools::getFileInMem(currentPodcast.RssFeed);
+      caching::createCacheFile(name.c_str(),data.c_str(),data.size());
+    };
+
+
+    thread cacheThread(cache);
+    cacheThread.detach();
   }
 
   ///  clears the given container of all children
