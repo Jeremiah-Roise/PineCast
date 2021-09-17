@@ -1,5 +1,8 @@
 #include<string>
+#pragma once
 using std::string;
+using std::cout;
+using std::endl;
 class filepaths
 {
 public:
