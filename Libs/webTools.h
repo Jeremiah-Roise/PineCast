@@ -126,23 +126,24 @@ class webTools
 	}
 }
   /// Downloads a podcast and returns the progress through the double pointer
-  static void DownloadPodcast(string url,string filepath,double* Pprogress){
+  static void DownloadPodcast(string url,string filepath,void(*progressFunc)(double, string)){
     cout << "downloading podcast" << endl;
     cout << filepath << endl;
     try
   {
 
-    
+    float lastUpdate = 0;
     FILE *fp;
     fp = fopen(filepath.c_str(),"wb");
     cout << "created file" << endl;
     cURLpp::Easy handle;
     handle.setOpt(cURLpp::options::NoProgress(false));
-    handle.setOpt(cURLpp::options::ProgressFunction([=](double dltotal,   double dlnow,   double ultotal,   double ulnow){
+    handle.setOpt(cURLpp::options::ProgressFunction([&](double dltotal,   double dlnow,   double ultotal,   double ulnow){
       double check= dlnow/dltotal;
-      if (check >= 0)
+      if (((check >= 0) && (check  >= lastUpdate + 0.01) && (check <= lastUpdate + 0.019)) || (check >= 1))
       {
-        *Pprogress = check;
+        lastUpdate = check;
+        progressFunc(check,filepath);
         return 0;
       }
       return 0;
