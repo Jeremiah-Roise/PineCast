@@ -5,8 +5,8 @@
 #include <utime.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include"filepaths.h"
 using namespace std;
-#define filepathBase "/tmp/PineCast/"
 
 class caching
 {
@@ -15,12 +15,12 @@ public:
     static void createCacheFile(const char* filename,const char* data,const int dataSize){
         struct stat tmp;
         //make sure that the base directory exists
-        if (stat(filepathBase, &tmp) != 0 && S_ISDIR(tmp.st_mode) != 1)
+        if (stat(filepaths::tmpPath().c_str(), &tmp) != 0 && S_ISDIR(tmp.st_mode) != 1)
         {
-          mkdir(filepathBase, ACCESSPERMS);
+          mkdir(filepaths::tmpPath().c_str(), ACCESSPERMS);
         }
         fstream filehandle;
-        string filepath = filepathBase;
+        string filepath = filepaths::tmpPath().c_str();
         filepath += filename;
         std::remove(filepath.begin(), filepath.end(), ' ');
         filehandle.open(filepath.c_str(),ios_base::out);
@@ -35,7 +35,7 @@ public:
     //  checks if a cachefile exists and if it's out of date if it's out of date or doesn't exist return false
     static bool isCacheFileValid(const char* filename,size_t refreshTime){
         
-        string filepath = filepathBase;
+        string filepath = filepaths::tmpPath().c_str();
         filepath += filename;
 
         //  remove spaces from the path
@@ -56,7 +56,7 @@ public:
     }
     //  given the name of the file it returns the correct path with the name of the file
     static string getCachePath(const char* filename){
-        string filepath = filepathBase;
+        string filepath = filepaths::tmpPath().c_str();
         filepath += filename;
         std::remove(filepath.begin(), filepath.end(), ' ');
         return filepath;
