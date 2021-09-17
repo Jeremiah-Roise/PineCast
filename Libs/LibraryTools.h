@@ -3,6 +3,7 @@
 #include<iostream>
 #include"PodcastMetaDataLists.h"
 #include"DataTools.h"
+#include"filepaths.h"
 using std::cout;
 using std::endl;
 using std::string;
@@ -21,20 +22,19 @@ void addToLibrary(PodcastMetaData currentPodcast){
   XML += "\n<Image30=\""+currentPodcast.image30+"\">";
   XML += "\n</Podcast>";
   ofstream file;
-  string PodcastsPath = getenv("HOME");
-  file.open(PodcastsPath + "/.Podcasts/MyPodcasts.xml",std::ios::app);
+  file.open(filepaths::lclFiles() + "/MyPodcasts.xml",std::ios::app);
   if(file.fail()){cout << "file write failed" << endl;}
   file.write(XML.data(),XML.size());
   cout << "wrote to file" << endl;
   file.close();
-  //loadLib(&Library);
-  //createSearchResults(LibraryUi,Library);
+  string newPodDir = filepaths::lclFiles().c_str();
+  newPodDir += currentPodcast.title.c_str();
+  mkdir(newPodDir.c_str(),ACCESSPERMS);
 }
 
 void removeFromLibrary(PodcastMetaData currentPodcast){
   string XML;
-  string PodcastsPath = getenv("HOME");
-  XML = DataTools::getFile(PodcastsPath + "/.Podcasts/MyPodcasts.xml");
+  XML = DataTools::getFile(filepaths::lclFiles() + "/MyPodcasts.xml");
   size_t index;
   size_t end;
   index = XML.find("<Title=\""+ currentPodcast.title +"\">");
@@ -55,7 +55,7 @@ void removeFromLibrary(PodcastMetaData currentPodcast){
   XML.erase(index,end - index);
 
   fstream file;
-  file.open(PodcastsPath + "/.Podcasts/MyPodcasts.xml",fstream::out);
+  file.open(filepaths::lclFiles() + "/MyPodcasts.xml",fstream::out);
   file.write(XML.c_str(),XML.size());
   
   cout << "removed from lib" << endl;
@@ -63,11 +63,9 @@ void removeFromLibrary(PodcastMetaData currentPodcast){
 ///  update podcasts in library.
 void loadLib(PodcastMetaDataList &list)
 {
-  string PodcastsPath = getenv("HOME");
-  PodcastsPath += "/.Podcasts";
   cout << "start loading library" << endl;
   // open file To read
-  string fileData = DataTools::getFile(PodcastsPath+"/MyPodcasts.xml");
+  string fileData = DataTools::getFile(filepaths::lclFiles()+"/MyPodcasts.xml");
   int index = 0;
   for (size_t i = 0; i < fileData.length(); i++)
   {
