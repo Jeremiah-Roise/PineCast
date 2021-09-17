@@ -1,5 +1,6 @@
 #include<string>
 #include<vector>
+#include"podcastDataTypes.h"
 using namespace std;
 #pragma once
 //  conforms to apple podcast search api
@@ -52,6 +53,7 @@ protected:
     int index = 0;
 private:
     std::vector<PodcastMetaData> podcasts;
+    podcastDataTypes::episodeList myEpisodes;
 };
 
 
