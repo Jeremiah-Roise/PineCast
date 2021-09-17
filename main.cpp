@@ -45,25 +45,22 @@ extern "C"
   PodcastMetaDataList Library;
   vector<podcastDataTypes::PodcastEpisode> Downloading;
   podcastDataTypes::episodeList currentepisodes;
-  string PodcastsPath = getenv("HOME");
   bool deleteMode = false;  /// whether the library is set to delete selected podcast.
   bool downloadPodcast = false; /// select whether to download or stream podcasts.
 
   ///  GUI setup.
   int main(int argc, char **argv)
   {
-    PodcastsPath += "/.Podcasts";
     struct stat tmp;
-    if (stat(PodcastsPath.c_str(), &tmp) != 0 && S_ISDIR(tmp.st_mode) != 1)
+    if (stat(filepaths::lclFiles().c_str(), &tmp) != 0 && S_ISDIR(tmp.st_mode) != 1)
     {
-      mkdir(PodcastsPath.c_str(), ACCESSPERMS);
+      mkdir(filepaths::lclFiles().c_str(), ACCESSPERMS);
     }
 
     gtk_init(&argc, &argv);
     builder = gtk_builder_new();
     gtk_builder_add_from_file(builder, "PodcastWindow.glade", NULL);
     UIwindow = GTK_WIDGET(gtk_builder_get_object(builder, "MainWindow"));
-
     //                                                            | these are macros|
     //                                                            | in UINAMES.h    |
     UIsearchListBox =      GTK_WIDGET(gtk_builder_get_object(builder, searchListBoxName));
@@ -78,7 +75,6 @@ extern "C"
     UIPVEpisodeList =      GTK_WIDGET(gtk_builder_get_object(builder, PVEpisodeListName));
     UIaddToLibraryButton = GTK_WIDGET(gtk_builder_get_object(builder, addToLibraryButtonName));
     UIDownloadsList =      GTK_WIDGET(gtk_builder_get_object(builder, "DownloadsList"));
-
     gtk_builder_connect_signals(builder, NULL);
     g_object_unref(builder);
     loadLib(Library);
@@ -87,7 +83,6 @@ extern "C"
     gtk_main();
     return 0;
   }
-
 
 
   /// for listing search results in a GtkListBox or GtkFlowbox.
@@ -111,6 +106,7 @@ extern "C"
       gtk_widget_show_all(result);
     }
   }
+  
   /// minor UI builder function that creates the Podcast result widget in the library and search pages.
   ///
   /// the main reason this isn't in a lambda is because it could be used by many other systems.
@@ -141,6 +137,7 @@ extern "C"
     createSearchResults(UIsearchListBox,searchList);
     return;
   }
+  
   /// when this is called it initializes the preview page.
   ///
   /// when called it uses the global currentPodcast variable to get the Podcast title, image, artist, etc,
@@ -291,6 +288,23 @@ extern "C"
     cout << "after set preview" << endl;
   }
 
+ void playMp3(string name);
+void streamPodcastMonitor(double prg, string file){
+  cout << prg << endl;
+  if (prg >= 0.0500 && prg <= 0.059)
+  {
+    playMp3(file);
+  }
+}
+
+void downloadPodcastMonitor(double prg, string file){
+  cout << prg << endl;
+  if (prg >= 1)
+  {
+    playMp3(file);
+  }
+}
+
 
   /// function that gets called when an episode is clicked.
   ///
@@ -310,62 +324,29 @@ extern "C"
 
     if (downloadPodcast)
     {
-
-      Downloading.push_back(current);
-      thread th = thread(DownloadAndPlayPodcast, Downloading.back(), e);
-      th.detach();
-      return;
+      DownloadAndPlayPodcast(current,e);
     }
     else
     {
-
-      Downloading.push_back(current);
-      thread th = thread(streamPodcast, Downloading.back(), e);
-      th.detach();
-      return;
+      streamPodcast(current,e);
     }
   }
 
-  void playMp3(string name);
+ 
   /// Downloads entirely and then plays a podcast.
   ///
   /// creates the download bar widget and updates it with the current progress,
   /// it's very jenky but it works.
   void DownloadAndPlayPodcast(podcastDataTypes::PodcastEpisode podcast, GtkWidget* e)
   {
-    gtk_widget_set_sensitive(e,false);
-    g_signal_connect(e, "released", (GCallback)[]() { cout << "already downloading" << endl; }, (gpointer) "button");
-    e = gtk_widget_get_parent(e);
-    gtk_widget_hide(e);
-    clearContainer(GTK_CONTAINER(e));
+          Downloading.push_back(podcast);
+      string filePath = filepaths::lclFiles();
+      filePath += DataTools::cleanString(currentPodcast.title);
+      filePath += "/"+DataTools::cleanString(Downloading.back().title)+".mp3";
 
-    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_container_add(GTK_CONTAINER(box), gtk_label_new(podcast.title.data()));
-    GtkWidget *progressBar = gtk_progress_bar_new();
-    gtk_container_add(GTK_CONTAINER(box), progressBar);
-    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), 0.0f);
-    gtk_container_add(GTK_CONTAINER(e), box);
-    gtk_widget_show_all(e);
-
-    string filePath = PodcastsPath+"/"+ DataTools::cleanString(podcast.title) + ".mp3";
-
-    double progress = 0;
-    const std::future<void> thread = std::async(std::launch::async, webTools::DownloadPodcast, podcast.mp3Link, filePath, &progress);
-
-    while (thread.wait_for(0ms) != std::future_status::ready) // wait for download to finish.
-    {
-      sleep(1);
-      
-      if (GTK_IS_WIDGET(progressBar))
-      {
-        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
-      }
-      podcast.Download = progress;
-      cout << "Download progress: " << podcast.Download << endl;
-    }
-    thread.wait();
-
-    playMp3(filePath);
+      std::thread downThread = std::thread(webTools::DownloadPodcast, Downloading.back().mp3Link, filePath, downloadPodcastMonitor);
+      downThread.detach();
+      return;
   }
 
 
@@ -375,50 +356,13 @@ extern "C"
   /// uses playMp3 to start the audio player checks download progress once per second.
   void streamPodcast(podcastDataTypes::PodcastEpisode podcast, GtkWidget* e)
   {
-    gtk_widget_hide(e);
-    clearContainer(GTK_CONTAINER(e));
+      Downloading.push_back(podcast);
+      string filePath = filepaths::lclFiles();
+      filePath += DataTools::cleanString(currentPodcast.title);
+      filePath += "/"+DataTools::cleanString(Downloading.back().title)+".mp3";
 
-    GtkWidget* box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_container_add(GTK_CONTAINER(box), gtk_label_new(podcast.title.data()));
-    GtkWidget* progressBar = gtk_progress_bar_new();
-    gtk_container_add(GTK_CONTAINER(box), progressBar);
-    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), 0.0f);
-    gtk_container_add(GTK_CONTAINER(e), box);
-    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), 0);
-
-    gtk_widget_show_all(e);
-    g_signal_handlers_destroy(e);
-    gtk_widget_set_sensitive(e,false);
-    g_signal_connect(e, "released", (GCallback)[]() { cout << "already downloading" << endl; }, (gpointer) "button");
-
-    
-    string filePath = PodcastsPath+"/"+ DataTools::cleanString(podcast.title) + ".mp3";
-    double progress;
-    const std::future<void> thread = std::async(std::launch::async, webTools::DownloadPodcast,podcast.mp3Link, filePath, &progress);
-    while (!(progress >= 0.05)) // wait for download to finish.
-    {
-      sleep(1);
-      if (GTK_IS_WIDGET(progressBar))
-      {
-        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
-      }
-
-      podcast.Download = progress;
-      cout << "Download progress: " << podcast.Download << endl;
-    }
-    playMp3(filePath);
-    while (thread.wait_for(0ms) != std::future_status::ready) // wait for download to finish.
-    {
-      sleep(1);
-      if (GTK_IS_WIDGET(progressBar))
-      {
-        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), progress);
-      }
-      podcast.Download = progress;
-      cout << "Download progress: " << progress << endl;
-    }
-
-    thread.wait();
+      std::thread downThread = std::thread(webTools::DownloadPodcast, Downloading.back().mp3Link, filePath, streamPodcastMonitor);
+      downThread.detach();
   }
 
 
@@ -482,7 +426,6 @@ extern "C"
       string data = webTools::getFileInMem(currentPodcast.RssFeed);
       caching::createCacheFile(name.c_str(),data.c_str(),data.size());
     };
-
 
     thread cacheThread(cache);
     cacheThread.detach();
