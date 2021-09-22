@@ -51,11 +51,12 @@ extern "C"
   ///  GUI setup.
   int main(int argc, char **argv)
   {
-    struct stat tmp;
-    if (stat(filepaths::lclFiles().c_str(), &tmp) != 0 && S_ISDIR(tmp.st_mode) != 1)
+    string lcl = filepaths::lclFiles();
+    if (filepaths::folderExists(lcl) == false)
     {
-      mkdir(filepaths::lclFiles().c_str(), ACCESSPERMS);
+      mkdir(lcl.c_str(),ACCESSPERMS);
     }
+    
 
     gtk_init(&argc, &argv);
     builder = gtk_builder_new();
