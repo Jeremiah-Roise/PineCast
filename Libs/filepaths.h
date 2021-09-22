@@ -15,4 +15,13 @@ public:
         string tmpDir = "/tmp/PineCast/";
         return tmpDir;
     }
+    /// a function for checking whether a folder exists
+    static bool folderExists(string& folder){
+        struct stat tmp;
+        if (stat(folder.c_str(), &tmp) != 0 && S_ISDIR(tmp.st_mode) != 1)
+        {
+            return false;
+        }
+        return true;
+    }
 };
