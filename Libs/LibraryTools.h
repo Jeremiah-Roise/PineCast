@@ -21,14 +21,16 @@ void addToLibrary(PodcastMetaData currentPodcast){
   XML += "\n<Image60=\""+currentPodcast.image60+"\">";
   XML += "\n<Image30=\""+currentPodcast.image30+"\">";
   XML += "\n</Podcast>";
+
   ofstream file;
   file.open(filepaths::lclFiles() + "/MyPodcasts.xml",std::ios::app);
   if(file.fail()){cout << "file write failed" << endl;}
   file.write(XML.data(),XML.size());
-  cout << "wrote to file" << endl;
+  cout << "wrote to library" << endl;
   file.close();
+
   string newPodDir = filepaths::lclFiles().c_str();
-  newPodDir += currentPodcast.title.c_str();
+  newPodDir += DataTools::cleanString(currentPodcast.title);
   mkdir(newPodDir.c_str(),ACCESSPERMS);
 }
 
@@ -57,9 +59,16 @@ void removeFromLibrary(PodcastMetaData currentPodcast){
   fstream file;
   file.open(filepaths::lclFiles() + "/MyPodcasts.xml",fstream::out);
   file.write(XML.c_str(),XML.size());
+
+  string PodDir = filepaths::lclFiles().c_str();
+  PodDir += DataTools::cleanString(currentPodcast.title);
+  rmdir(PodDir.c_str());
+  cout << PodDir << endl;
   
   cout << "removed from lib" << endl;
 }
+
+
 ///  update podcasts in library.
 void loadLib(PodcastMetaDataList &list)
 {
@@ -81,6 +90,14 @@ void loadLib(PodcastMetaDataList &list)
                              DataTools::GetField(Podcast, "<Image60=\"", "\">"),
                              DataTools::GetField(Podcast, "<Image100=\"", "\">"),
                              DataTools::GetField(Podcast, "<Image600=\"", "\">"));
+    struct stat tmp;
+    string folderPath = filepaths::lclFiles();
+    folderPath += DataTools::cleanString(list.GetPodcastAtIndex(i).title);
+    cout << folderPath << endl;
+    if (stat(folderPath.c_str(), &tmp) != 0 && S_ISDIR(tmp.st_mode) != 1)
+    {
+      mkdir(folderPath.c_str(), ACCESSPERMS);
+    }
   }
   cout << "finished loading library" << endl;
 }
