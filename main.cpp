@@ -339,7 +339,7 @@ void downloadPodcastMonitor(double prg, string file){
   /// it's very jenky but it works.
   void DownloadAndPlayPodcast(podcastDataTypes::PodcastEpisode podcast, GtkWidget* e)
   {
-          Downloading.push_back(podcast);
+      Downloading.push_back(podcast);
       string filePath = filepaths::lclFiles();
       filePath += DataTools::cleanString(currentPodcast.title);
       filePath += "/"+DataTools::cleanString(Downloading.back().title)+".mp3";
