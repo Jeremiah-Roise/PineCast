@@ -48,17 +48,52 @@ extern "C"
   bool deleteMode = false;  /// whether the library is set to delete selected podcast.
   bool downloadPodcast = false; /// select whether to download or stream podcasts.
 
+
+
+  /* Close the splash screen */
+gboolean close_screen(gpointer data)
+{
+  gtk_widget_destroy((GtkWidget*)data);
+  gtk_main_quit ();
+  return(FALSE);
+}
+
+
+int Show_Splash_Screen(int time,int width,int height)
+{
+  GtkWidget *window;
+  window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_widget_set_size_request (window, width, height);
+  gtk_window_set_decorated(GTK_WINDOW (window), FALSE);
+  gtk_window_set_position(GTK_WINDOW(window),GTK_WIN_POS_CENTER_ALWAYS);
+  gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
+  gtk_widget_show_all (window);
+  g_timeout_add (time, close_screen, window);
+  gtk_main ();
+  return 0;
+}
+
+
+
+
+
   ///  GUI setup.
   int main(int argc, char **argv)
   {
+
+    gtk_init(&argc, &argv);
+    
+    Show_Splash_Screen(3000,-1,-1);
+
+
+
+
     string lcl = filepaths::lclFiles();
     if (filepaths::folderExists(lcl) == false)
     {
       mkdir(lcl.c_str(),ACCESSPERMS);
     }
-    
 
-    gtk_init(&argc, &argv);
     builder = gtk_builder_new();
     gtk_builder_add_from_file(builder, "PodcastWindow.glade", NULL);
     UIwindow = GTK_WIDGET(gtk_builder_get_object(builder, "MainWindow"));
@@ -79,8 +114,8 @@ extern "C"
     gtk_builder_connect_signals(builder, NULL);
     g_object_unref(builder);
     loadLib(Library);
-    gtk_widget_show(UIwindow);
     createSearchResults(UILibraryUi, Library);
+    gtk_widget_show(UIwindow);
     gtk_main();
     return 0;
   }
