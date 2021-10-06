@@ -14,15 +14,15 @@ using namespace std;
 #define oneDayInSeconds 86400
 extern "C"
 {
-  void streamPodcast(podcastDataTypes::PodcastEpisode podcast, GtkWidget* e);
-  void DownloadAndPlayPodcast(podcastDataTypes::PodcastEpisode podcast, GtkWidget* e);
-  void createSearchResults(GtkWidget* container, PodcastMetaDataList x);
+  void streamPodcast(PodcastEpisode podcast, GtkWidget* e);
+  void DownloadAndPlayPodcast(PodcastEpisode podcast, GtkWidget* e);
+  void createSearchResults(GtkWidget* container, PodcastDataList x);
   void returnSelectionFromSearchResults(GtkWidget*, gpointer);
   void searchItunesWithText(GtkEntry* e);
   void getSelectedPodcastEpisodeButton(GtkWidget* e);
   void clearContainer(GtkContainer* e);
   
-  GtkWidget* createResultWidget(PodcastMetaData);
+  GtkWidget* createResultWidget(PodcastData);
   GtkWidget* UIsearchListBox;
   GtkWidget* UIwindow;
   GtkWidget* UImainStack;
@@ -40,11 +40,11 @@ extern "C"
   GtkBuilder* builder;
   GtkWidget* UIstackPage;
   GtkWidget* UIsearchEntry;
-  PodcastMetaData currentPodcast;
-  PodcastMetaDataList searchList;
-  PodcastMetaDataList Library;
-  vector<podcastDataTypes::PodcastEpisode> Downloading;
-  podcastDataTypes::episodeList currentepisodes;
+  PodcastData currentPodcast;
+  PodcastDataList searchList;
+  PodcastDataList Library;
+  vector<PodcastEpisode> Downloading;
+  PodcastEpisodeList currentepisodes;
   bool deleteMode = false;  /// whether the library is set to delete selected podcast.
   bool downloadPodcast = false; /// select whether to download or stream podcasts.
 
@@ -122,7 +122,7 @@ int Show_Splash_Screen(int time,int width,int height)
 
 
   /// for listing search results in a GtkListBox or GtkFlowbox.
-  void createSearchResults(GtkWidget *container, PodcastMetaDataList x)
+  void createSearchResults(GtkWidget *container, PodcastDataList x)
   {
     int size = x.GetIndexSize();
     if (size == 0)
@@ -134,7 +134,7 @@ int Show_Splash_Screen(int time,int width,int height)
 
     for (int i = 0; i < size; i++)
     {
-      PodcastMetaData tmp = x.GetPodcastAtIndex(i);
+      PodcastData tmp = x.GetPodcastAtIndex(i);
       string name = tmp.title;
       GtkWidget *result = createResultWidget(tmp);
 
@@ -146,7 +146,7 @@ int Show_Splash_Screen(int time,int width,int height)
   /// minor UI builder function that creates the Podcast result widget in the library and search pages.
   ///
   /// the main reason this isn't in a lambda is because it could be used by many other systems.
-  GtkWidget* createResultWidget(PodcastMetaData podcast)
+  GtkWidget* createResultWidget(PodcastData podcast)
   {
 
     GtkWidget* topBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -179,12 +179,12 @@ int Show_Splash_Screen(int time,int width,int height)
   /// when called it uses the global currentPodcast variable to get the Podcast title, image, artist, etc,
   /// and iterates through the episodes argument to create the episodes,
   /// should probably be updated to not use global variables.
-  void setPreviewPage(podcastDataTypes::episodeList episodes)
+  void setPreviewPage(PodcastEpisodeList episodes)
   {
-    auto widgetBuilder = [](podcastDataTypes::episodeList data, int i)
+    auto widgetBuilder = [](PodcastEpisodeList data, int i)
     {
-      string title = data.getEpisodeAtIndex(i).title.c_str();
-      string duration = "<span size=\"medium\"><i>" + data.getEpisodeAtIndex(i).duration + "</i></span>";
+      string title = data.at(i).title.c_str();
+      string duration = "<span size=\"medium\"><i>" + data.at(i).duration + "</i></span>";
 
       GtkWidget* topBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
       GtkWidget* infoBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -251,7 +251,7 @@ int Show_Splash_Screen(int time,int width,int height)
 
     clearContainer(GTK_CONTAINER(UIPVEpisodeList));
 
-    for (int i = 0; i < episodes.getIndexSize(); i++)
+    for (size_t i = 0; i < episodes.size(); i++)
     {
       GtkWidget* singleEntry = widgetBuilder(episodes, i);
       gtk_container_add(GTK_CONTAINER(UIPVEpisodeList), singleEntry);
@@ -347,9 +347,9 @@ void downloadPodcastMonitor(double prg, string file){
   /// takes in the selected episode by getting it's index from the name of the widget
   void getSelectedPodcastEpisodeButton(GtkWidget* e)
   {
-    podcastDataTypes::PodcastEpisode current = currentepisodes.getEpisodeAtIndex(atoi(gtk_widget_get_name(e)));
+    PodcastEpisode current = currentepisodes.at(atoi(gtk_widget_get_name(e)));
     //  check if the podcast is already being downloaded.
-    for (podcastDataTypes::PodcastEpisode download : Downloading)
+    for (PodcastEpisode download : Downloading)
     {
       if (download.mp3Link == current.mp3Link)
       {
@@ -373,7 +373,7 @@ void downloadPodcastMonitor(double prg, string file){
   ///
   /// creates the download bar widget and updates it with the current progress,
   /// it's very jenky but it works.
-  void DownloadAndPlayPodcast(podcastDataTypes::PodcastEpisode podcast, GtkWidget* e)
+  void DownloadAndPlayPodcast(PodcastEpisode podcast, GtkWidget* e)
   {
       Downloading.push_back(podcast);
       string filePath = filepaths::lclFiles();
@@ -390,7 +390,7 @@ void downloadPodcastMonitor(double prg, string file){
   /// streams a podcast by waiting until it is %0.05 finished and then opens the audioplayer.
   ///
   /// uses playMp3 to start the audio player checks download progress once per second.
-  void streamPodcast(podcastDataTypes::PodcastEpisode podcast, GtkWidget* e)
+  void streamPodcast(PodcastEpisode podcast, GtkWidget* e)
   {
       Downloading.push_back(podcast);
       string filePath = filepaths::lclFiles();
