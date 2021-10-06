@@ -1,7 +1,7 @@
 #include<string.h>
 #include<fstream>
 #include<iostream>
-#include"podcastDataTypes.h"
+#include"podcastEpisodeTypes.h"
 using namespace std;
 #pragma once
 // test rss file is pinetalk.rss
@@ -50,9 +50,9 @@ class DataTools
     }
 
     /// extracts data from save file data.
-    static podcastDataTypes::PodcastEpisode GetPodcastData(const string& aRSSFile){
+    static PodcastEpisode GetPodcastData(const string& aRSSFile){
 
-        podcastDataTypes::PodcastEpisode MostRecent;
+        PodcastEpisode MostRecent;
         // get title
         MostRecent.title = GetField(aRSSFile,"<title>","</title>");
 
@@ -74,16 +74,16 @@ class DataTools
         return MostRecent;
     }
     /// gets all the episodes from a podcast xml file and returns them in an episode list.
-    static podcastDataTypes::podcastDataTypes::episodeList getEpisodes(string RSSFile){
+    static PodcastEpisodeList getEpisodes(string& RSSFile){
     RSSFile = GetField(RSSFile,"<channel>","</channel>");
     // find episodes maybe use while loop
-    podcastDataTypes::episodeList episodes;
+    PodcastEpisodeList episodes;
     int positionIndex=0;
     while(true)
     {
         string item = GetFieldAndReturnIndex(RSSFile,"<item>","</item>",positionIndex,positionIndex);//  find item starting from last item we indexed
         if(item == ""){break;}
-        episodes.addEpisode(GetPodcastData(item));// add podcast to some kind of list
+        episodes.push_back(GetPodcastData(item));// add podcast to some kind of list
     }
     return episodes;
 }

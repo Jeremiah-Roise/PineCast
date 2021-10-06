@@ -10,7 +10,7 @@ using std::string;
 
 
 //  this ONLY adds the entry to the library file 
-void addToLibrary(PodcastMetaData currentPodcast){
+void addToLibrary(PodcastData currentPodcast){
   cout << "adding to library" << endl;
   string XML;
   XML = "\n<Podcast>";
@@ -34,7 +34,7 @@ void addToLibrary(PodcastMetaData currentPodcast){
   mkdir(newPodDir.c_str(),ACCESSPERMS);
 }
 
-void removeFromLibrary(PodcastMetaData currentPodcast){
+void removeFromLibrary(PodcastData currentPodcast){
   string XML;
   XML = DataTools::getFile(filepaths::lclFiles() + "/MyPodcasts.xml");
   size_t index;
@@ -70,7 +70,7 @@ void removeFromLibrary(PodcastMetaData currentPodcast){
 
 
 ///  update podcasts in library.
-void loadLib(PodcastMetaDataList &list)
+void loadLib(PodcastDataList &list)
 {
   cout << "start loading library" << endl;
   // open file To read
