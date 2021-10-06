@@ -44,8 +44,8 @@ class webTools
   }
 
   /// Searches Itunes Database of podcasts and parses the results into: Podcast name; artist; feedurl; image url.
-  static PodcastMetaDataList itunesSearch(string search = ""){
-    if(search == "" || search.c_str() == NULL){PodcastMetaDataList test;return test;}// catch if search string is empty
+  static PodcastDataList itunesSearch(string search = ""){
+    if(search == "" || search.c_str() == NULL){PodcastDataList test;return test;}// catch if search string is empty
     for (unsigned int i = 0; i < search.length(); i++)
     {
       if (search[i] == ' '){search[i] = '+';}
@@ -58,7 +58,7 @@ class webTools
     // how to parse Json
     int items = std::stoi(DataTools::GetField(data,"\"resultCount\":",","));
     data = DataTools::GetField(data,"\"results\":","");
-    PodcastMetaDataList tmp;
+    PodcastDataList tmp;
     int tmp0 = 0;
     int tmp1 = 0;
     int tmp2 = 0;
