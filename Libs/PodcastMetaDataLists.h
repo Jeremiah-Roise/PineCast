@@ -1,10 +1,10 @@
 #include<string>
 #include<vector>
-#include"podcastDataTypes.h"
+#include"podcastEpisodeTypes.h"
 using namespace std;
 #pragma once
 //  conforms to apple podcast search api
-struct PodcastMetaData
+struct PodcastData
 {
 string title;
 string artist;
@@ -19,11 +19,11 @@ int index=0;
 
 
 
-class PodcastMetaDataList
+class PodcastDataList
 {
 public:
     int createAndAddPodcast(string author,string RssFeed,string title,string thumbnail30,string thumbnail60,string thumbnail100,string thumbnail600){
-        PodcastMetaData tmp;
+        PodcastData tmp;
         tmp.artist = author;
         tmp.RssFeed = RssFeed;
         tmp.image30 = thumbnail30;
@@ -36,7 +36,7 @@ public:
         index ++;
         return index-1;
     }
-    PodcastMetaData GetPodcastAtIndex(int index){
+    PodcastData GetPodcastAtIndex(int index){
         if (podcasts.empty())
         {
             cout << "list is empty" << endl;
@@ -52,8 +52,8 @@ public:
 protected:
     int index = 0;
 private:
-    std::vector<PodcastMetaData> podcasts;
-    podcastDataTypes::episodeList myEpisodes;
+    std::vector<PodcastData> podcasts;
+    PodcastEpisodeList myEpisodes;
 };
 
 
