@@ -83,16 +83,20 @@ void loadLib(PodcastDataList &list)
     {
       break;
     }
-    list.createAndAddPodcast(DataTools::GetField(Podcast, "<Artist=\"", "\">"),
-                             DataTools::GetField(Podcast, "<RssFeed=\"", "\">"),
-                             DataTools::GetField(Podcast, "<Title=\"", "\">"),
-                             DataTools::GetField(Podcast, "<Image30=\"", "\">"),
-                             DataTools::GetField(Podcast, "<Image60=\"", "\">"),
-                             DataTools::GetField(Podcast, "<Image100=\"", "\">"),
-                             DataTools::GetField(Podcast, "<Image600=\"", "\">"));
+    PodcastData tmpData;
+    tmpData.artist = DataTools::GetField(Podcast, "<Artist=\"", "\">");
+    tmpData.RssFeed = DataTools::GetField(Podcast, "<RssFeed=\"", "\">");
+    tmpData.title = DataTools::GetField(Podcast, "<Title=\"", "\">");
+    tmpData.image30 = DataTools::GetField(Podcast, "<Image30=\"", "\">");
+    tmpData.image60 = DataTools::GetField(Podcast, "<Image60=\"", "\">");
+    tmpData.image100 = DataTools::GetField(Podcast, "<Image100=\"", "\">");
+    tmpData.image600 = DataTools::GetField(Podcast, "<Image600=\"", "\">"); 
+
+    list.push_back(tmpData);
+
     struct stat tmp;
     string folderPath = filepaths::lclFiles();
-    folderPath += DataTools::cleanString(list.GetPodcastAtIndex(i).title);
+    folderPath += DataTools::cleanString(list.at(i).title);
     cout << folderPath << endl;
     if (stat(folderPath.c_str(), &tmp) != 0 && S_ISDIR(tmp.st_mode) != 1)
     {

@@ -79,7 +79,11 @@ class webTools
 
       // get artist
       string artist = DataTools::GetFieldAndReturnIndex(data,"\"artistName\":\"","\"",tmp3,tmp3);
-      tmp.createAndAddPodcast(artist,feedUrl,collectionName,image30,image60,image100,image600);
+      
+
+    PodcastData tmpData;
+    tmpData = {feedUrl,collectionName,image30,image60,image100,image600};
+    tmp.push_back(tmpData);
     }
     return tmp;
   }
