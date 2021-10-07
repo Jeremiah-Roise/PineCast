@@ -124,7 +124,7 @@ int Show_Splash_Screen(int time,int width,int height)
   /// for listing search results in a GtkListBox or GtkFlowbox.
   void createSearchResults(GtkWidget *container, PodcastDataList x)
   {
-    int size = x.GetIndexSize();
+    int size = x.size();
     if (size == 0)
     {
       return;
@@ -134,7 +134,7 @@ int Show_Splash_Screen(int time,int width,int height)
 
     for (int i = 0; i < size; i++)
     {
-      PodcastData tmp = x.GetPodcastAtIndex(i);
+      PodcastData tmp = x.at(i);
       string name = tmp.title;
       GtkWidget *result = createResultWidget(tmp);
 
@@ -268,12 +268,12 @@ int Show_Splash_Screen(int time,int width,int height)
 
     if (page == 0)
     {
-      currentPodcast = Library.GetPodcastAtIndex(index);
+      currentPodcast = Library.at(index);
     }
 
     if (page == 1)
     {
-      currentPodcast = searchList.GetPodcastAtIndex(index);
+      currentPodcast = searchList.at(index);
     }
 
     if (page == 0 && deleteMode == true)
