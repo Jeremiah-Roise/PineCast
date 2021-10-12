@@ -51,8 +51,14 @@ extern "C"
 
 
 
-int Show_Splash_Screen(int time)
+int Show_Splash_Screen(int time,void(*toRun)())
 {
+auto func = [toRun](gpointer data){
+  toRun();
+  gtk_widget_destroy((GtkWidget*)data);
+  gtk_main_quit ();
+  return(FALSE);
+  };
   GtkWidget *window;
   window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_widget_set_size_request (window, -1, -1);
@@ -60,11 +66,41 @@ int Show_Splash_Screen(int time)
   gtk_window_set_position(GTK_WINDOW(window),GTK_WIN_POS_CENTER_ALWAYS);
   gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
   gtk_widget_show_all (window);
-  g_timeout_add (time, [](gpointer data){gtk_widget_destroy((GtkWidget*)data); gtk_main_quit (); return(FALSE);}, window); gtk_main ();
+  thread mythread(func,window);
+  mythread.detach();
+  gtk_main ();
   return 0;
 }
 
+void init(){
+  string lcl = filepaths::lclFiles();
+  if (filepaths::folderExists(lcl) == false)
+  {
+    mkdir(lcl.c_str(),ACCESSPERMS);
+  }
 
+  builder = gtk_builder_new();
+  gtk_builder_add_from_file(builder, "PodcastWindow.glade", NULL);
+  UIwindow = GTK_WIDGET(gtk_builder_get_object(builder, "MainWindow"));
+  //                                                            | these are macros|
+  //                                                            | in UINAMES.h    |
+  UIsearchListBox =      GTK_WIDGET(gtk_builder_get_object(builder, searchListBoxName));
+  UIsearchEntry =        GTK_WIDGET(gtk_builder_get_object(builder, searchEntryName));
+  UImainStack =          GTK_WIDGET(gtk_builder_get_object(builder, mainStackName));
+  UInotebook =           GTK_WIDGET(gtk_builder_get_object(builder, notebookName));
+  UIPodcastDetailsPage = GTK_WIDGET(gtk_builder_get_object(builder, podcastDetailsPageName));
+  UILibraryUi =          GTK_WIDGET(gtk_builder_get_object(builder, LibraryUiName));
+  UIPVImage =            GTK_WIDGET(gtk_builder_get_object(builder, PVImageName));
+  UIPVTitle =            GTK_WIDGET(gtk_builder_get_object(builder, PVTitleName));
+  UIPVAuthor =           GTK_WIDGET(gtk_builder_get_object(builder, PVAuthorName));
+  UIPVEpisodeList =      GTK_WIDGET(gtk_builder_get_object(builder, PVEpisodeListName));
+  UIaddToLibraryButton = GTK_WIDGET(gtk_builder_get_object(builder, addToLibraryButtonName));
+  UIDownloadsList =      GTK_WIDGET(gtk_builder_get_object(builder, "DownloadsList"));
+  gtk_builder_connect_signals(builder, NULL);
+  g_object_unref(builder);
+  loadLib(Library);
+  createSearchResults(UILibraryUi, Library);
+}
 
 
 
@@ -73,39 +109,7 @@ int Show_Splash_Screen(int time)
   {
 
     gtk_init(&argc, &argv);
-    
-    Show_Splash_Screen(3000);
-
-
-
-
-    string lcl = filepaths::lclFiles();
-    if (filepaths::folderExists(lcl) == false)
-    {
-      mkdir(lcl.c_str(),ACCESSPERMS);
-    }
-
-    builder = gtk_builder_new();
-    gtk_builder_add_from_file(builder, "PodcastWindow.glade", NULL);
-    UIwindow = GTK_WIDGET(gtk_builder_get_object(builder, "MainWindow"));
-    //                                                            | these are macros|
-    //                                                            | in UINAMES.h    |
-    UIsearchListBox =      GTK_WIDGET(gtk_builder_get_object(builder, searchListBoxName));
-    UIsearchEntry =        GTK_WIDGET(gtk_builder_get_object(builder, searchEntryName));
-    UImainStack =          GTK_WIDGET(gtk_builder_get_object(builder, mainStackName));
-    UInotebook =           GTK_WIDGET(gtk_builder_get_object(builder, notebookName));
-    UIPodcastDetailsPage = GTK_WIDGET(gtk_builder_get_object(builder, podcastDetailsPageName));
-    UILibraryUi =          GTK_WIDGET(gtk_builder_get_object(builder, LibraryUiName));
-    UIPVImage =            GTK_WIDGET(gtk_builder_get_object(builder, PVImageName));
-    UIPVTitle =            GTK_WIDGET(gtk_builder_get_object(builder, PVTitleName));
-    UIPVAuthor =           GTK_WIDGET(gtk_builder_get_object(builder, PVAuthorName));
-    UIPVEpisodeList =      GTK_WIDGET(gtk_builder_get_object(builder, PVEpisodeListName));
-    UIaddToLibraryButton = GTK_WIDGET(gtk_builder_get_object(builder, addToLibraryButtonName));
-    UIDownloadsList =      GTK_WIDGET(gtk_builder_get_object(builder, "DownloadsList"));
-    gtk_builder_connect_signals(builder, NULL);
-    g_object_unref(builder);
-    loadLib(Library);
-    createSearchResults(UILibraryUi, Library);
+    Show_Splash_Screen(3000,init);
     gtk_widget_show(UIwindow);
     gtk_main();
     return 0;
