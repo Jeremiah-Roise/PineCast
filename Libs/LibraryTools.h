@@ -68,9 +68,20 @@ void removeFromLibrary(PodcastData currentPodcast){
   cout << "removed from lib" << endl;
 }
 
+void addToDownloads(PodcastEpisode& episode){
+  
+  string XML = "<Title=\""+episode.title+"\">\n";
+
+  ofstream file;
+  file.open(filepaths::lclFiles() + "Downloaded.xml",std::ios::app);
+  if(file.fail()){cout << "file write failed" << endl;}
+  file.write(XML.data(),XML.size());
+  file.close();
+}
 
 ///  update podcasts in library.
 void loadLib(PodcastDataList &list)
+  
 {
   cout << "start loading library" << endl;
   // open file To read
