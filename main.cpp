@@ -60,16 +60,20 @@ gboolean close_screen(gpointer data)
 }
 
 
-int Show_Splash_Screen(int time,int width,int height)
+int Show_Splash_Screen(int time)
 {
   GtkWidget *window;
   window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_widget_set_size_request (window, width, height);
+  gtk_widget_set_size_request (window, -1, -1);
   gtk_window_set_decorated(GTK_WINDOW (window), FALSE);
   gtk_window_set_position(GTK_WINDOW(window),GTK_WIN_POS_CENTER_ALWAYS);
   gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
   gtk_widget_show_all (window);
-  g_timeout_add (time, close_screen, window);
+  g_timeout_add (time, [](gpointer data)gtk_widget_destroy((GtkWidget*)data);
+  gtk_main_quit ();
+  return(FALSE);{gtk_widget_destroy((GtkWidget*)data);
+  gtk_main_quit ();
+  return(FALSE);}, window);
   gtk_main ();
   return 0;
 }
@@ -84,7 +88,7 @@ int Show_Splash_Screen(int time,int width,int height)
 
     gtk_init(&argc, &argv);
     
-    Show_Splash_Screen(3000,-1,-1);
+    Show_Splash_Screen(3000);
 
 
 
