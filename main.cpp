@@ -1,4 +1,4 @@
-#include <gtk/gtk.h>
+#include </usr/include/gtk-3.0/gtk/gtk.h>
 #include <iostream>
 #include <stdio.h>
 #include <future>
@@ -37,13 +37,14 @@ extern "C"
   GtkWidget* UILibraryUi;
   GtkWidget* UIaddToLibraryButton;
   GtkWidget* UIDownloadsList;
-  GtkBuilder* builder;
   GtkWidget* UIstackPage;
   GtkWidget* UIsearchEntry;
+  GtkBuilder* builder;
   PodcastData currentPodcast;
   PodcastDataList searchList;
   PodcastDataList Library;
-  vector<PodcastEpisode> Downloading;
+  PodcastEpisodeList Downloading;
+  PodcastEpisodeList DownloadedEpisodes;
   PodcastEpisodeList currentepisodes;
   bool deleteMode = false;  /// whether the library is set to delete selected podcast.
   bool downloadPodcast = false; /// select whether to download or stream podcasts.
@@ -182,7 +183,7 @@ int Show_Splash_Screen(int time,int width,int height)
   void setPreviewPage(PodcastEpisodeList episodes)
   {
     auto widgetBuilder = [](PodcastEpisodeList data, int i)
-    {
+    { 
       string title = data.at(i).title.c_str();
       string duration = "<span size=\"medium\"><i>" + data.at(i).duration + "</i></span>";
 
