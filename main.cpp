@@ -51,26 +51,6 @@ extern "C"
 
 
 
-int Show_Splash_Screen(int time,void(*toRun)())
-{
-auto func = [toRun](gpointer data){
-  toRun();
-  gtk_widget_destroy((GtkWidget*)data);
-  gtk_main_quit ();
-  return(FALSE);
-  };
-  GtkWidget *window;
-  window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_widget_set_size_request (window, -1, -1);
-  gtk_window_set_decorated(GTK_WINDOW (window), FALSE);
-  gtk_window_set_position(GTK_WINDOW(window),GTK_WIN_POS_CENTER_ALWAYS);
-  gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
-  gtk_widget_show_all (window);
-  thread mythread(func,window);
-  mythread.detach();
-  gtk_main ();
-  return 0;
-}
 
 void init(){
   string lcl = filepaths::lclFiles();
@@ -82,8 +62,8 @@ void init(){
   builder = gtk_builder_new();
   gtk_builder_add_from_file(builder, "PodcastWindow.glade", NULL);
   UIwindow = GTK_WIDGET(gtk_builder_get_object(builder, "MainWindow"));
-  //                                                            | these are macros|
-  //                                                            | in UINAMES.h    |
+  //                                                              | these are macros|
+  //                                                              | in UINAMES.h    |
   UIsearchListBox =      GTK_WIDGET(gtk_builder_get_object(builder, searchListBoxName));
   UIsearchEntry =        GTK_WIDGET(gtk_builder_get_object(builder, searchEntryName));
   UImainStack =          GTK_WIDGET(gtk_builder_get_object(builder, mainStackName));
@@ -102,18 +82,17 @@ void init(){
   createSearchResults(UILibraryUi, Library);
 }
 
+///  GUI setup.
+int main(int argc, char **argv)
+{
 
+  gtk_init(&argc, &argv);
+  init();
 
-  ///  GUI setup.
-  int main(int argc, char **argv)
-  {
-
-    gtk_init(&argc, &argv);
-    Show_Splash_Screen(3000,init);
-    gtk_widget_show(UIwindow);
-    gtk_main();
-    return 0;
-  }
+  gtk_widget_show(UIwindow);
+  gtk_main();
+  return 0;
+}
 
 
   /// for listing search results in a GtkListBox or GtkFlowbox.
