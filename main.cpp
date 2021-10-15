@@ -79,6 +79,7 @@ void init(){
   gtk_builder_connect_signals(builder, NULL);
   g_object_unref(builder);
   loadLib(Library);
+  DownloadedEpisodes = getDownloads();
   createSearchResults(UILibraryUi, Library);
 }
 
@@ -155,10 +156,10 @@ int main(int argc, char **argv)
   /// should probably be updated to not use global variables.
   void setPreviewPage(PodcastEpisodeList episodes)
   {
-    auto widgetBuilder = [](PodcastEpisodeList data, int i)
+    auto standardWidgetBuilder = [](PodcastEpisode& SelectedEpisode)
     { 
-      string title = data.at(i).title.c_str();
-      string duration = "<span size=\"medium\"><i>" + data.at(i).duration + "</i></span>";
+      string title = SelectedEpisode.title;
+      string duration = "<span size=\"medium\"><i>" + SelectedEpisode.duration + "</i></span>";
 
       GtkWidget* topBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
       GtkWidget* infoBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -168,11 +169,13 @@ int main(int argc, char **argv)
       GtkWidget* titleLabel = gtk_label_new(title.c_str());
       GtkWidget* durationLabel = gtk_label_new(duration.c_str());
 
+        
       void (*streamfunc)(GtkWidget*) = [](GtkWidget* e)
       {
         downloadPodcast = false;
         getSelectedPodcastEpisodeButton(e);
       };
+  
       void (*downloadfunc)(GtkWidget*) = [](GtkWidget* e)
       {
         downloadPodcast = true;
@@ -195,8 +198,8 @@ int main(int argc, char **argv)
 
       gtk_box_pack_start(GTK_BOX(buttonBox), playButton, false, false, 0);
       gtk_box_pack_end(GTK_BOX(buttonBox), downloadButton, false, false, 0);
-      gtk_widget_set_name(GTK_WIDGET(playButton),to_string(i).c_str());
-      gtk_widget_set_name(GTK_WIDGET(downloadButton),to_string(i).c_str());
+      gtk_widget_set_name(GTK_WIDGET(playButton),to_string(SelectedEpisode.index).c_str());
+      gtk_widget_set_name(GTK_WIDGET(downloadButton),to_string(SelectedEpisode.index).c_str());
 
       gtk_box_pack_start(GTK_BOX(topBox), infoBox, false, false, 0);
       gtk_box_pack_end(GTK_BOX(topBox), buttonBox, false, false, 0);
@@ -204,6 +207,47 @@ int main(int argc, char **argv)
       return topBox;
     };
 
+    auto downloadedWidgetBuilder = [](PodcastEpisode& SelectedEpisode){
+
+      string title = SelectedEpisode.title;
+      string duration = "<span size=\"medium\"><i>" + SelectedEpisode.duration + "</i></span>";
+
+      GtkWidget* topBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
+      GtkWidget* infoBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+      GtkWidget* buttonBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
+      GtkWidget* playButton = gtk_button_new_from_icon_name("media-playback-start", GTK_ICON_SIZE_BUTTON);
+      GtkWidget* titleLabel = gtk_label_new(title.c_str());
+      GtkWidget* durationLabel = gtk_label_new(duration.c_str());
+
+        
+      void (*streamfunc)(GtkWidget*) = [](GtkWidget* e)
+      {
+        downloadPodcast = false;
+        //  put something here
+      };
+  
+
+      g_signal_connect(playButton, "released", (GCallback)streamfunc, (gpointer) "button");
+
+      gtk_label_set_line_wrap(GTK_LABEL(titleLabel), true);// enables line wrap
+      gtk_label_set_xalign(GTK_LABEL(titleLabel), 0.0);// sets lables to left align
+
+      gtk_label_set_line_wrap(GTK_LABEL(durationLabel), true);// enables line wrap
+      gtk_label_set_xalign(GTK_LABEL(durationLabel), 0.0);// sets lables to left align
+      gtk_label_set_use_markup(GTK_LABEL(durationLabel), true);// enables markup on label
+      gtk_label_set_markup(GTK_LABEL(durationLabel), duration.c_str());// displays the duration of the podcast in italics
+
+      gtk_box_pack_start(GTK_BOX(infoBox), titleLabel, false, false, 0);
+      gtk_box_pack_start(GTK_BOX(infoBox), durationLabel, false, false, 0);
+      gtk_box_pack_start(GTK_BOX(topBox), infoBox, false, false, 0);
+      gtk_box_pack_end(GTK_BOX(topBox), buttonBox, false, false, 0);
+
+      gtk_box_pack_start(GTK_BOX(buttonBox), playButton, false, false, 0);
+      gtk_widget_set_name(GTK_WIDGET(playButton),to_string(SelectedEpisode.index).c_str());
+
+      gtk_widget_show_all(topBox);
+      return topBox;
+    };
     //  hide the add to library button if in the library
     int page = (int)gtk_notebook_get_current_page(GTK_NOTEBOOK(UInotebook));
     if (page == 0)
@@ -224,11 +268,19 @@ int main(int argc, char **argv)
     currentepisodes = episodes;
 
     clearContainer(GTK_CONTAINER(UIPVEpisodeList));
-
-    for (size_t i = 0; i < episodes.size(); i++)
+GtkWidget* singleEntry;
+    for (PodcastEpisode episode:episodes)
     {
-      GtkWidget* singleEntry = widgetBuilder(episodes, i);
+      if (isEpisodeDownloaded(episode))
+      {
+      singleEntry = downloadedWidgetBuilder(episode);
       gtk_container_add(GTK_CONTAINER(UIPVEpisodeList), singleEntry);
+      }
+      else
+      {
+      singleEntry = standardWidgetBuilder(episode);
+      gtk_container_add(GTK_CONTAINER(UIPVEpisodeList), singleEntry);
+      }
     }
   }
 
@@ -298,23 +350,6 @@ int main(int argc, char **argv)
     cout << "after set preview" << endl;
   }
 
- void playMp3(string name);
-void streamPodcastMonitor(double prg, string file){
-  cout << prg << endl;
-  if (prg >= 0.0500 && prg <= 0.059)
-  {
-    playMp3(file);
-  }
-}
-
-void downloadPodcastMonitor(double prg, string file){
-  cout << prg << endl;
-  if (prg >= 1)
-  {
-    playMp3(file);
-  }
-}
-
 
   /// function that gets called when an episode is clicked.
   ///
@@ -331,7 +366,7 @@ void downloadPodcastMonitor(double prg, string file){
         return;
       }
     }
-
+    addToDownloads(current);
     if (downloadPodcast)
     {
       DownloadAndPlayPodcast(current,e);
@@ -350,11 +385,8 @@ void downloadPodcastMonitor(double prg, string file){
   void DownloadAndPlayPodcast(PodcastEpisode podcast, GtkWidget* e)
   {
       Downloading.push_back(podcast);
-      string filePath = filepaths::lclFiles();
-      filePath += DataTools::cleanString(currentPodcast.title);
-      filePath += "/"+DataTools::cleanString(Downloading.back().title)+".mp3";
 
-      std::thread downThread = std::thread(webTools::DownloadPodcast, Downloading.back().mp3Link, filePath, downloadPodcastMonitor);
+      std::thread downThread = std::thread(PlayPodcast::stream,podcast,currentPodcast);
       downThread.detach();
       return;
   }
@@ -367,11 +399,8 @@ void downloadPodcastMonitor(double prg, string file){
   void streamPodcast(PodcastEpisode podcast, GtkWidget* e)
   {
       Downloading.push_back(podcast);
-      string filePath = filepaths::lclFiles();
-      filePath += DataTools::cleanString(currentPodcast.title);
-      filePath += "/"+DataTools::cleanString(Downloading.back().title)+".mp3";
 
-      std::thread downThread = std::thread(webTools::DownloadPodcast, Downloading.back().mp3Link, filePath, streamPodcastMonitor);
+      std::thread downThread = std::thread(PlayPodcast::download,podcast,currentPodcast);
       downThread.detach();
   }
 
@@ -395,13 +424,6 @@ void downloadPodcastMonitor(double prg, string file){
     deleteMode = !deleteMode;
   }
 
-  /// uses system command to start podcast with default application should be able to tolerate spaces.
-  void playMp3(string path)
-  {
-    string FName = "xdg-open \"" + path + "\" &";
-    cout << "the command is: " << FName << endl;
-    system(FName.data());
-  }
 
   ///  simply goes to the main page.
   void goMainPage()
