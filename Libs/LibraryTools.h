@@ -79,6 +79,46 @@ void addToDownloads(PodcastEpisode& episode){
   file.close();
 }
 
+void addToDownloads(PodcastEpisodeList& episodes){
+  for (PodcastEpisode i:episodes){
+    addToDownloads(i);
+  }
+}
+
+PodcastEpisodeList getDownloads(){
+  // open file To read
+  string fileData = DataTools::getFile(filepaths::lclFiles()+"/Downloaded.xml");
+  int index = 0;
+  PodcastEpisodeList downloaded;
+  for (size_t i = 0; i < fileData.length(); i++)
+  {
+    string Podcast = DataTools::GetFieldAndReturnIndex(fileData, "<Title=\"", "\">", index, index);
+    if (Podcast == "")
+      break;
+    
+    PodcastEpisode tmp;
+    tmp.title = Podcast;
+    downloaded.push_back(tmp);
+  }
+  return downloaded;
+}
+
+bool isEpisodeDownloaded(PodcastEpisode compare){
+  PodcastEpisodeList downloaded = getDownloads();
+  cout << compare.title << endl;
+  for (PodcastEpisode i:downloaded)
+  {
+    cout << i.title << endl;
+    if (i.title == compare.title)
+    {
+      return true;
+    }
+    
+  }
+  
+ return false; 
+}
+
 ///  update podcasts in library.
 void loadLib(PodcastDataList &list)
   
