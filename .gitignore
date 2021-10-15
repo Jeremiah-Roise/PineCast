@@ -8,3 +8,4 @@ PodcastWindow.glade~
 build/**
 .ccls
 compile_commands.json
+Docs/html
