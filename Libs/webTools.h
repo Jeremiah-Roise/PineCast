@@ -129,18 +129,53 @@ class webTools
     cout << "no connection" << endl;
 	}
 }
+};
+
+
+class PlayPodcast
+{
+private:
+
+  /// uses system command to start podcast with default application should be able to tolerate spaces.
+  static void playMp3(string path)
+  {
+    string FName = "xdg-open \"" + path + "\" &";
+    cout << "the command is: " << FName << endl;
+    system(FName.data());
+  }
+
+  static void downloadPodcastMonitor(double prg, string file){
+    cout << prg << endl;
+    if (prg >= 1)
+    {
+      playMp3(file);
+    }
+  }
+
+  static void streamPodcastMonitor(double prg, string file){
+    cout << prg << endl;
+    if (prg >= 0.0500 && prg <= 0.059)
+    {
+      playMp3(file);
+    }
+  }
+
+  static auto filePathFromEpisode(PodcastEpisode& episode,PodcastData Podcast)
+  {
+    string filepath = filepaths::lclFiles();
+    filepath += DataTools::cleanString(Podcast.title);
+    filepath += "/"+DataTools::cleanString(episode.title)+".mp3";
+    return filepath;
+  }
+
   /// Downloads a podcast and returns the progress through the double pointer
-  static void DownloadPodcast(string url,string filepath,void(*progressFunc)(double, string)){
+  static void DownloadPodcast(PodcastEpisode episode,void(*progressFunc)(double, string),PodcastData Podcast){
+    string filepath = filePathFromEpisode(episode,Podcast);
     cout << "downloading podcast" << endl;
-    cout << filepath << endl;
     try
   {
-
-    float lastUpdate = 0;
-    FILE *fp;
-    fp = fopen(filepath.c_str(),"wb");
-    cout << "created file" << endl;
-    cURLpp::Easy handle;
+    float lastUpdate = 0; FILE *fp; fp = fopen(filepath.c_str(),"wb");
+    cout << "created file" << endl; cURLpp::Easy handle;
     handle.setOpt(cURLpp::options::NoProgress(false));
     handle.setOpt(cURLpp::options::ProgressFunction([&](double dltotal,   double dlnow,   double ultotal,   double ulnow){
       double check= dlnow/dltotal;
@@ -152,7 +187,7 @@ class webTools
       }
       return 0;
       }));
-      handle.setOpt(cURLpp::Options::Url(url));
+      handle.setOpt(cURLpp::Options::Url(episode.mp3Link));
       handle.setOpt(cURLpp::options::FollowLocation(true));
       handle.setOpt(cURLpp::options::WriteFile(fp));
       handle.perform();
@@ -170,4 +205,14 @@ class webTools
   }
 }
 
+public:
+  static void stream(PodcastEpisode episode,PodcastData Podcast)
+  {
+    DownloadPodcast(episode,streamPodcastMonitor,Podcast);
+  }
+
+  static void download(PodcastEpisode episode,PodcastData Podcast)
+  {
+    DownloadPodcast(episode,downloadPodcastMonitor,Podcast);
+  }
 };
