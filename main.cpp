@@ -216,6 +216,7 @@ int main(int argc, char **argv)
       GtkWidget* infoBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
       GtkWidget* buttonBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
       GtkWidget* playButton = gtk_button_new_from_icon_name("media-playback-start", GTK_ICON_SIZE_BUTTON);
+      GtkWidget* deleteButton = gtk_button_new_from_icon_name("gtk-delete",GTK_ICON_SIZE_BUTTON);
       GtkWidget* titleLabel = gtk_label_new(title.c_str());
       GtkWidget* durationLabel = gtk_label_new(duration.c_str());
 
@@ -244,6 +245,8 @@ int main(int argc, char **argv)
 
       gtk_box_pack_start(GTK_BOX(buttonBox), playButton, false, false, 0);
       gtk_widget_set_name(GTK_WIDGET(playButton),to_string(SelectedEpisode.index).c_str());
+      gtk_box_pack_start(GTK_BOX(buttonBox), deleteButton, false, false, 0);
+      gtk_widget_set_name(GTK_WIDGET(deleteButton),to_string(SelectedEpisode.index).c_str());
 
       gtk_widget_show_all(topBox);
       return topBox;
@@ -380,8 +383,6 @@ GtkWidget* singleEntry;
  
   /// Downloads entirely and then plays a podcast.
   ///
-  /// creates the download bar widget and updates it with the current progress,
-  /// it's very jenky but it works.
   void DownloadAndPlayPodcast(PodcastEpisode podcast, GtkWidget* e)
   {
       Downloading.push_back(podcast);
