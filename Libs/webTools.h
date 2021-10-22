@@ -206,13 +206,26 @@ private:
 }
 
 public:
+  //  takes a podcast episode and calls the DownloadPodcast function with the correct arguments to stream the podcast
   static void stream(PodcastEpisode episode,PodcastData Podcast)
   {
     DownloadPodcast(episode,streamPodcastMonitor,Podcast);
   }
 
+  //  takes a podcast episode and calls the DownloadPodcast function with the correct arguments to download and play the podcast
   static void download(PodcastEpisode episode,PodcastData Podcast)
   {
     DownloadPodcast(episode,downloadPodcastMonitor,Podcast);
+  }
+
+  //  plays localy downloaded podcasts. should be called when a podcast is already downloaded
+  static void play(PodcastEpisode episode, PodcastData Podcast){
+    string filepath = filePathFromEpisode(episode,Podcast);
+    if (filepaths::fileExists(filepath))
+    {
+      playMp3(filepath);
+      return;
+    }
+    return;
   }
 };
