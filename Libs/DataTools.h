@@ -79,11 +79,15 @@ class DataTools
     // find episodes maybe use while loop
     PodcastEpisodeList episodes;
     int positionIndex=0;
+    size_t episodeNumber=0;
     while(true)
     {
         string item = GetFieldAndReturnIndex(RSSFile,"<item>","</item>",positionIndex,positionIndex);//  find item starting from last item we indexed
         if(item == ""){break;}
-        episodes.push_back(GetPodcastData(item));// add podcast to some kind of list
+        PodcastEpisode tmp = GetPodcastData(item);
+        episodes.push_back(tmp);// add podcast to some kind of list
+        episodes.front().index = episodes.size();
+        episodeNumber++;
     }
     return episodes;
 }
