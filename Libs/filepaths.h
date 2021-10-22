@@ -24,4 +24,13 @@ public:
         }
         return true;
     }
+    /// a function for checking whether a file exists
+    static bool fileExists(string& folder){
+        struct stat tmp;
+        if (stat(folder.c_str(), &tmp) == 0)
+        {
+            return true;
+        }
+        return false;
+    }
 };
