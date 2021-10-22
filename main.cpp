@@ -16,13 +16,12 @@ extern "C"
 {
   void streamPodcast(PodcastEpisode podcast, GtkWidget* e);
   void DownloadAndPlayPodcast(PodcastEpisode podcast, GtkWidget* e);
-  void createSearchResults(GtkWidget* container, PodcastDataList x);
+  void createSearchResults(GtkWidget* container, PodcastDataList& x);
   void returnSelectionFromSearchResults(GtkWidget*, gpointer);
   void searchItunesWithText(GtkEntry* e);
   void getSelectedPodcastEpisodeButton(GtkWidget* e);
   void clearContainer(GtkContainer* e);
   
-  GtkWidget* createResultWidget(PodcastData);
   GtkWidget* UIsearchListBox;
   GtkWidget* UIwindow;
   GtkWidget* UImainStack;
@@ -47,7 +46,6 @@ extern "C"
   PodcastEpisodeList DownloadedEpisodes;
   PodcastEpisodeList currentepisodes;
   bool deleteMode = false;  /// whether the library is set to delete selected podcast.
-  bool downloadPodcast = false; /// select whether to download or stream podcasts.
 
 
 
@@ -95,33 +93,10 @@ int main(int argc, char **argv)
   return 0;
 }
 
-
-  /// for listing search results in a GtkListBox or GtkFlowbox.
-  void createSearchResults(GtkWidget *container, PodcastDataList x)
-  {
-    int size = x.size();
-    if (size == 0)
-    {
-      return;
-    } //  User Input Filtering
-    //deleting old search results
-    clearContainer(GTK_CONTAINER(container));
-
-    for (int i = 0; i < size; i++)
-    {
-      PodcastData tmp = x.at(i);
-      string name = tmp.title;
-      GtkWidget *result = createResultWidget(tmp);
-
-      gtk_container_add(GTK_CONTAINER(container), result);
-      gtk_widget_show_all(result);
-    }
-  }
-  
   /// minor UI builder function that creates the Podcast result widget in the library and search pages.
   ///
   /// the main reason this isn't in a lambda is because it could be used by many other systems.
-  GtkWidget* createResultWidget(PodcastData podcast)
+  GtkWidget* createResultWidget(PodcastData& podcast, size_t& index)
   {
 
     GtkWidget* topBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -130,13 +105,36 @@ int main(int argc, char **argv)
     gtk_label_set_xalign(GTK_LABEL(titleLabel), 0.0);
     gtk_label_set_line_wrap(GTK_LABEL(titleLabel), true);
     GtkWidget* previewButton = gtk_button_new_from_icon_name("open-menu-symbolic", GTK_ICON_SIZE_BUTTON);
-    gtk_widget_set_name(GTK_WIDGET(previewButton), (const gchar*)to_string(podcast.index).c_str());
     gtk_box_pack_start(GTK_BOX(topBox), thumbImage, false, false, 0);
     gtk_box_pack_start(GTK_BOX(topBox), titleLabel, false, false, 0);
     gtk_box_pack_end(GTK_BOX(topBox), previewButton, false, false, 0);
-    g_signal_connect(previewButton, "released", (GCallback)returnSelectionFromSearchResults, (gpointer) nullptr);
+    podcast.index = index;
+    g_signal_connect(previewButton, "released", (GCallback)returnSelectionFromSearchResults, (gpointer) &podcast.index);
     return topBox;
   }
+
+  /// for listing search results in a GtkListBox or GtkFlowbox.
+  void createSearchResults(GtkWidget *container, PodcastDataList& podcastWidgetsToCreate)
+  {
+    int size = podcastWidgetsToCreate.size();
+    if (size == 0)
+    {
+      return;
+    } //  User Input Filtering
+    //deleting old search results
+    clearContainer(GTK_CONTAINER(container));
+
+    size_t index = 0;
+    for (PodcastData& i:podcastWidgetsToCreate)
+    {
+      GtkWidget *result = createResultWidget(i,index);
+
+      gtk_container_add(GTK_CONTAINER(container), result);
+      gtk_widget_show_all(result);
+      index++;
+    }
+  }
+  
 
 
   /// get search text and give it to the itunes search function
@@ -172,18 +170,15 @@ int main(int argc, char **argv)
         
       void (*streamfunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer episodeIndex)
       {
-        downloadPodcast = false;
         streamPodcast(currentepisodes.at(*(int*)episodeIndex),e);
       };
   
       void (*downloadfunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer episodeIndex)
       {
-        downloadPodcast = true;
-        streamPodcast(currentepisodes.at(*(int*)episodeIndex),e);
+        DownloadAndPlayPodcast(currentepisodes.at(*(int*)episodeIndex),e);
       };
-
       g_signal_connect(playButton, "released", (GCallback)streamfunc, (gpointer) &SelectedEpisode.index);
-      g_signal_connect(downloadButton, "released", (GCallback)downloadfunc, (gpointer) &SelectedEpisode.index);
+      g_signal_connect(downloadButton, "released", (GCallback)downloadfunc, (gpointer) &(SelectedEpisode.index));
 
       gtk_label_set_line_wrap(GTK_LABEL(titleLabel), true);
       gtk_label_set_xalign(GTK_LABEL(titleLabel), 0.0);
@@ -223,7 +218,6 @@ int main(int argc, char **argv)
         
       void (*streamfunc)(GtkWidget*) = [](GtkWidget* e)
       {
-        downloadPodcast = false;
         //  put something here
       };
   
@@ -269,8 +263,8 @@ int main(int argc, char **argv)
     currentepisodes = episodes;
 
     clearContainer(GTK_CONTAINER(UIPVEpisodeList));
-GtkWidget* singleEntry;
-    for (PodcastEpisode episode:episodes)
+    GtkWidget* singleEntry;
+    for (PodcastEpisode& episode:currentepisodes)
     {
       if (isEpisodeDownloaded(episode))
       {
@@ -286,11 +280,9 @@ GtkWidget* singleEntry;
   }
 
   ///  gets the returned selection from search results
-  void returnSelectionFromSearchResults(GtkWidget* e, gpointer data)
+  void returnSelectionFromSearchResults(GtkWidget* e, gpointer PodcastIndex)
   {
-
-    int index = atoi(gtk_widget_get_name(e));
-
+    int index = *(int*)PodcastIndex;
     int page = (int)gtk_notebook_get_current_page(GTK_NOTEBOOK(UInotebook));
 
     if (page == 0)
