@@ -105,10 +105,8 @@ PodcastEpisodeList getDownloads(){
 
 bool isEpisodeDownloaded(PodcastEpisode compare){
   PodcastEpisodeList downloaded = getDownloads();
-  cout << compare.title << endl;
   for (PodcastEpisode i:downloaded)
   {
-    cout << i.title << endl;
     if (i.title == compare.title)
     {
       return true;
