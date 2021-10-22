@@ -142,6 +142,7 @@ void loadLib(PodcastDataList &list)
     tmpData.image600 = DataTools::GetField(Podcast, "<Image600=\"", "\">"); 
 
     list.push_back(tmpData);
+    list.back().index = (list.size() -1);
 
     struct stat tmp;
     string folderPath = filepaths::lclFiles();
