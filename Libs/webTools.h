@@ -65,25 +65,24 @@ class webTools
     int tmp3 = 0;
     for (int i = 0; i != items; i++)
     {
+      PodcastData tmpData;
       // get image url's
-      string image30 = DataTools::GetFieldAndReturnIndex(data,"\"artworkUrl30\":\"","\"",tmp0,tmp0);
-      string image60 = DataTools::GetFieldAndReturnIndex(data,"\"artworkUrl60\":\"","\"",tmp0,tmp0);
-      string image100 = DataTools::GetFieldAndReturnIndex(data,"\"artworkUrl100\":\"","\"",tmp0,tmp0);
-      string image600 = DataTools::GetFieldAndReturnIndex(data,"\"artworkUrl600\":\"","\"",tmp0,tmp0);
+      tmpData.image30  = DataTools::GetFieldAndReturnIndex(data,"\"artworkUrl30\":\"","\"",tmp0,tmp0);
+      tmpData.image60  = DataTools::GetFieldAndReturnIndex(data,"\"artworkUrl60\":\"","\"",tmp0,tmp0);
+      tmpData.image100 = DataTools::GetFieldAndReturnIndex(data,"\"artworkUrl100\":\"","\"",tmp0,tmp0);
+      tmpData.image600 = DataTools::GetFieldAndReturnIndex(data,"\"artworkUrl600\":\"","\"",tmp0,tmp0);
 
       // get feed url
-      string feedUrl = DataTools::GetFieldAndReturnIndex(data,"\"feedUrl\":\"","\"",tmp1,tmp1);
+      tmpData.RssFeed  = DataTools::GetFieldAndReturnIndex(data,"\"feedUrl\":\"","\"",tmp1,tmp1);
 
       // get collection Name
-      string collectionName = DataTools::GetFieldAndReturnIndex(data,"\"collectionName\":\"","\"",tmp2,tmp2);
+      tmpData.title    = DataTools::GetFieldAndReturnIndex(data,"\"collectionName\":\"","\"",tmp2,tmp2);
 
       // get artist
-      string artist = DataTools::GetFieldAndReturnIndex(data,"\"artistName\":\"","\"",tmp3,tmp3);
+      tmpData.artist   = DataTools::GetFieldAndReturnIndex(data,"\"artistName\":\"","\"",tmp3,tmp3);
       
-
-    PodcastData tmpData;
-    tmpData = {feedUrl,collectionName,image30,image60,image100,image600};
     tmp.push_back(tmpData);
+    tmp.front().index = (tmp.size() - 1);
     }
     return tmp;
   }
