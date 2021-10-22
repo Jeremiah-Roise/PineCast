@@ -170,20 +170,20 @@ int main(int argc, char **argv)
       GtkWidget* durationLabel = gtk_label_new(duration.c_str());
 
         
-      void (*streamfunc)(GtkWidget*) = [](GtkWidget* e)
+      void (*streamfunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer episodeIndex)
       {
         downloadPodcast = false;
-        getSelectedPodcastEpisodeButton(e);
+        streamPodcast(currentepisodes.at(*(int*)episodeIndex),e);
       };
   
-      void (*downloadfunc)(GtkWidget*) = [](GtkWidget* e)
+      void (*downloadfunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer episodeIndex)
       {
         downloadPodcast = true;
-        getSelectedPodcastEpisodeButton(e);
+        streamPodcast(currentepisodes.at(*(int*)episodeIndex),e);
       };
 
-      g_signal_connect(playButton, "released", (GCallback)streamfunc, (gpointer) "button");
-      g_signal_connect(downloadButton, "released", (GCallback)downloadfunc, (gpointer) "button");
+      g_signal_connect(playButton, "released", (GCallback)streamfunc, (gpointer) &SelectedEpisode.index);
+      g_signal_connect(downloadButton, "released", (GCallback)downloadfunc, (gpointer) &SelectedEpisode.index);
 
       gtk_label_set_line_wrap(GTK_LABEL(titleLabel), true);
       gtk_label_set_xalign(GTK_LABEL(titleLabel), 0.0);
@@ -244,9 +244,7 @@ int main(int argc, char **argv)
       gtk_box_pack_end(GTK_BOX(topBox), buttonBox, false, false, 0);
 
       gtk_box_pack_start(GTK_BOX(buttonBox), playButton, false, false, 0);
-      gtk_widget_set_name(GTK_WIDGET(playButton),to_string(SelectedEpisode.index).c_str());
       gtk_box_pack_start(GTK_BOX(buttonBox), deleteButton, false, false, 0);
-      gtk_widget_set_name(GTK_WIDGET(deleteButton),to_string(SelectedEpisode.index).c_str());
 
       gtk_widget_show_all(topBox);
       return topBox;
@@ -351,33 +349,6 @@ GtkWidget* singleEntry;
       return;
     }
     cout << "after set preview" << endl;
-  }
-
-
-  /// function that gets called when an episode is clicked.
-  ///
-  /// takes in the selected episode by getting it's index from the name of the widget
-  void getSelectedPodcastEpisodeButton(GtkWidget* e)
-  {
-    PodcastEpisode current = currentepisodes.at(atoi(gtk_widget_get_name(e)));
-    //  check if the podcast is already being downloaded.
-    for (PodcastEpisode download : Downloading)
-    {
-      if (download.mp3Link == current.mp3Link)
-      {
-        cout << "already downloading" << endl;
-        return;
-      }
-    }
-    addToDownloads(current);
-    if (downloadPodcast)
-    {
-      DownloadAndPlayPodcast(current,e);
-    }
-    else
-    {
-      streamPodcast(current,e);
-    }
   }
 
  
