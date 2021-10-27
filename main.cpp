@@ -348,7 +348,7 @@ int main(int argc, char **argv)
   {
       Downloading.push_back(podcast);
 
-      std::thread downThread = std::thread(PlayPodcast::stream,podcast,currentPodcast);
+      std::thread downThread = std::thread(PlayPodcast::download,podcast,currentPodcast);
       downThread.detach();
       return;
   }
@@ -362,7 +362,7 @@ int main(int argc, char **argv)
   {
       Downloading.push_back(podcast);
 
-      std::thread downThread = std::thread(PlayPodcast::download,podcast,currentPodcast);
+      std::thread downThread = std::thread(PlayPodcast::stream,podcast,currentPodcast);
       downThread.detach();
   }
 
