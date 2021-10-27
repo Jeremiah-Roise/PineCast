@@ -124,14 +124,12 @@ int main(int argc, char **argv)
     //deleting old search results
     clearContainer(GTK_CONTAINER(container));
 
-    size_t index = 0;
     for (PodcastData& i:podcastWidgetsToCreate)
     {
-      GtkWidget *result = createResultWidget(i,index);
+      GtkWidget *result = createResultWidget(i,i.index);
 
       gtk_container_add(GTK_CONTAINER(container), result);
       gtk_widget_show_all(result);
-      index++;
     }
   }
   
