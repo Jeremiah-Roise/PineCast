@@ -122,36 +122,18 @@ void loadLib(PodcastDataList &list)
   
 {
   cout << "start loading library" << endl;
+
+
+    string filePath = filepaths::lclFiles()+"/MyPodcasts.xml";
+    cout << filePath << endl;
+    if (filepaths::fileExists(filePath) != true)
+    {
+      cout << "MyPodcasts.xml does not exist" << endl;
+      return;
+    }
+    string fileData = DataTools::getFile(filePath);
+    
+    list = DataTools::extractPodcastDataFromString(fileData);
   // open file To read
-  string fileData = DataTools::getFile(filepaths::lclFiles()+"/MyPodcasts.xml");
-  int index = 0;
-  for (size_t i = 0; i < fileData.length(); i++)
-  {
-    string Podcast = DataTools::GetFieldAndReturnIndex(fileData, "<Podcast>", "</Podcast>", index, index);
-    if (Podcast == "")
-    {
-      break;
-    }
-    PodcastData tmpData;
-    tmpData.artist = DataTools::GetField(Podcast, "<Artist=\"", "\">");
-    tmpData.RssFeed = DataTools::GetField(Podcast, "<RssFeed=\"", "\">");
-    tmpData.title = DataTools::GetField(Podcast, "<Title=\"", "\">");
-    tmpData.image30 = DataTools::GetField(Podcast, "<Image30=\"", "\">");
-    tmpData.image60 = DataTools::GetField(Podcast, "<Image60=\"", "\">");
-    tmpData.image100 = DataTools::GetField(Podcast, "<Image100=\"", "\">");
-    tmpData.image600 = DataTools::GetField(Podcast, "<Image600=\"", "\">"); 
-
-    list.push_back(tmpData);
-    list.back().index = (list.size() -1);
-
-    struct stat tmp;
-    string folderPath = filepaths::lclFiles();
-    folderPath += DataTools::cleanString(list.at(i).title);
-    cout << folderPath << endl;
-    if (stat(folderPath.c_str(), &tmp) != 0 && S_ISDIR(tmp.st_mode) != 1)
-    {
-      mkdir(folderPath.c_str(), ACCESSPERMS);
-    }
-  }
   cout << "finished loading library" << endl;
 }

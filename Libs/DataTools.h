@@ -126,6 +126,31 @@ class DataTools
         }
         return cleanString;
     }
+
+    static PodcastDataList extractPodcastDataFromString(string& fileData){
+
+      PodcastDataList list;
+      int index = 0;
+      for (size_t i = 0; i < fileData.length(); i++)
+      {
+        string Podcast = DataTools::GetFieldAndReturnIndex(fileData, "<Podcast>", "</Podcast>", index, index);
+        if (Podcast == "")
+          break;
+
+        PodcastData tmpData;
+        tmpData.artist = DataTools::GetField(Podcast, "<Artist=\"", "\">");
+        tmpData.RssFeed = DataTools::GetField(Podcast, "<RssFeed=\"", "\">");
+        tmpData.title = DataTools::GetField(Podcast, "<Title=\"", "\">");
+        tmpData.image30 = DataTools::GetField(Podcast, "<Image30=\"", "\">");
+        tmpData.image60 = DataTools::GetField(Podcast, "<Image60=\"", "\">");
+        tmpData.image100 = DataTools::GetField(Podcast, "<Image100=\"", "\">");
+        tmpData.image600 = DataTools::GetField(Podcast, "<Image600=\"", "\">"); 
+
+        list.push_back(tmpData);
+        list.back().index = (list.size() -1);// setting the index property of the element
+      }
+      return list;
+    }
 };
 
 
