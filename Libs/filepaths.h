@@ -25,9 +25,9 @@ public:
         return true;
     }
     /// a function for checking whether a file exists
-    static bool fileExists(string& folder){
+    static bool fileExists(string& filePath){
         struct stat tmp;
-        if (stat(folder.c_str(), &tmp) == 0)
+        if (stat(filePath.c_str(), &tmp) == 0)
         {
             return true;
         }
