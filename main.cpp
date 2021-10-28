@@ -165,19 +165,6 @@ int main(int argc, char **argv)
       GtkWidget* titleLabel = gtk_label_new(title.c_str());
       GtkWidget* durationLabel = gtk_label_new(duration.c_str());
 
-        
-      void (*streamfunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer episodeIndex)
-      {
-        streamPodcast(currentepisodes.at(*(int*)episodeIndex),e);
-      };
-  
-      void (*downloadfunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer episodeIndex)
-      {
-        DownloadAndPlayPodcast(currentepisodes.at(*(int*)episodeIndex),e);
-      };
-      g_signal_connect(playButton, "released", (GCallback)streamfunc, (gpointer) &SelectedEpisode.index);
-      g_signal_connect(downloadButton, "released", (GCallback)downloadfunc, (gpointer) &(SelectedEpisode.index));
-
       gtk_label_set_line_wrap(GTK_LABEL(titleLabel), true);
       gtk_label_set_xalign(GTK_LABEL(titleLabel), 0.0);
 
@@ -197,6 +184,26 @@ int main(int argc, char **argv)
       gtk_box_pack_start(GTK_BOX(topBox), infoBox, false, false, 0);
       gtk_box_pack_end(GTK_BOX(topBox), buttonBox, false, false, 0);
       gtk_widget_show_all(topBox);
+
+      void (*streamfunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer episodeIndex)
+      {
+        Downloading.push_back(currentepisodes.at(*(int*)episodeIndex));
+
+        std::thread downThread = std::thread(PlayPodcast::stream,Downloading.back(),currentPodcast);
+        downThread.detach();
+      };
+  
+      void (*downloadfunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer episodeIndex)
+      {
+        Downloading.push_back(currentepisodes.at(*(int*)episodeIndex));
+
+        std::thread downThread = std::thread(PlayPodcast::download,Downloading.back(),currentPodcast);
+        downThread.detach();
+        return;
+      };
+      g_signal_connect(playButton, "released", (GCallback)streamfunc, (gpointer) &(SelectedEpisode.index));
+      g_signal_connect(downloadButton, "released", (GCallback)downloadfunc, (gpointer) &(SelectedEpisode.index));
+
       return topBox;
     };
 
@@ -214,13 +221,23 @@ int main(int argc, char **argv)
       GtkWidget* durationLabel = gtk_label_new(duration.c_str());
 
         
-      void (*streamfunc)(GtkWidget*) = [](GtkWidget* e)
+      void (*streamfunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer episodeIndex)
       {
-        //  put something here
+        Downloading.push_back(currentepisodes.at(*(int*)episodeIndex));
+
+        std::thread downThread = std::thread(PlayPodcast::stream,Downloading.back(),currentPodcast);
+        downThread.detach();
+      };
+      void (*playFunction)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer episodeIndex)
+      {
+      std::thread downThread = std::thread(PlayPodcast::play,currentepisodes.at(*(int*)episodeIndex),currentPodcast);
+      downThread.detach();
+      return;
       };
   
 
-      g_signal_connect(playButton, "released", (GCallback)streamfunc, (gpointer) "button");
+      g_signal_connect(playButton, "released", (GCallback)playFunction, (gpointer) &(SelectedEpisode.index));
+      g_signal_connect(deleteButton, "released", (GCallback)streamfunc,  (gpointer) &(SelectedEpisode.index));
 
       gtk_label_set_line_wrap(GTK_LABEL(titleLabel), true);// enables line wrap
       gtk_label_set_xalign(GTK_LABEL(titleLabel), 0.0);// sets lables to left align
@@ -342,30 +359,6 @@ int main(int argc, char **argv)
   }
 
  
-  /// Downloads entirely and then plays a podcast.
-  ///
-  void DownloadAndPlayPodcast(PodcastEpisode podcast, GtkWidget* e)
-  {
-      Downloading.push_back(podcast);
-
-      std::thread downThread = std::thread(PlayPodcast::download,podcast,currentPodcast);
-      downThread.detach();
-      return;
-  }
-
-
-
-  /// streams a podcast by waiting until it is %0.05 finished and then opens the audioplayer.
-  ///
-  /// uses playMp3 to start the audio player checks download progress once per second.
-  void streamPodcast(PodcastEpisode podcast, GtkWidget* e)
-  {
-      Downloading.push_back(podcast);
-
-      std::thread downThread = std::thread(PlayPodcast::stream,podcast,currentPodcast);
-      downThread.detach();
-  }
-
 
 
   ///  sets the library's delete mode to true.
