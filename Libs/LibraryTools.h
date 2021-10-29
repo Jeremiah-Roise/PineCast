@@ -112,7 +112,7 @@ public:
     file.close();
   }
 
-  static void removeFromDownloads(PodcastEpisode& episodeToRemove)
+  static void removeFromDownloads(PodcastEpisode& episodeToRemove,PodcastData& Podcast)
   {
     
     string lineToRemove = "<Title=\""+episodeToRemove.title+"\">\n";
@@ -127,6 +127,8 @@ public:
     if(file.fail()){cout << "file write failed" << endl;}
     file.write(filedata.c_str(),filedata.size());
     file.close();
+    filepath = filepaths::lclFiles() + DataTools::cleanString(Podcast.title) + "/" +DataTools::cleanString(episodeToRemove.title) + ".mp3";
+    unlink(filepath.c_str());
   }
 
   static bool isEpisodeDownloaded(PodcastEpisode compare){
