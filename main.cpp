@@ -49,7 +49,7 @@ extern "C"
 
 
 
-
+//  this function just sets up a bunch of global variables and checks that folders exist
 void init(){
   string lcl = filepaths::lclFiles();
   if (filepaths::folderExists(lcl) == false)
@@ -76,8 +76,8 @@ void init(){
   UIDownloadsList =      GTK_WIDGET(gtk_builder_get_object(builder, "DownloadsList"));
   gtk_builder_connect_signals(builder, NULL);
   g_object_unref(builder);
-  loadLib(Library);
-  DownloadedEpisodes = getDownloads();
+  Library::loadLib(Library);
+  DownloadedEpisodes = Downloads::getDownloads();
   createSearchResults(UILibraryUi, Library);
 }
 
@@ -188,7 +188,7 @@ int main(int argc, char **argv)
       void (*streamfunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer episodeIndex)
       {
         Downloading.push_back(currentepisodes.at(*(int*)episodeIndex));
-
+        Downloads::addToDownloads(Downloading.back());
         std::thread downThread = std::thread(PlayPodcast::stream,Downloading.back(),currentPodcast);
         downThread.detach();
       };
@@ -196,7 +196,7 @@ int main(int argc, char **argv)
       void (*downloadfunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer episodeIndex)
       {
         Downloading.push_back(currentepisodes.at(*(int*)episodeIndex));
-
+        Downloads::addToDownloads(Downloading.back());
         std::thread downThread = std::thread(PlayPodcast::download,Downloading.back(),currentPodcast);
         downThread.detach();
         return;
@@ -221,12 +221,9 @@ int main(int argc, char **argv)
       GtkWidget* durationLabel = gtk_label_new(duration.c_str());
 
         
-      void (*streamfunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer episodeIndex)
+      void (*deleteFunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer episodeIndex)
       {
-        Downloading.push_back(currentepisodes.at(*(int*)episodeIndex));
-
-        std::thread downThread = std::thread(PlayPodcast::stream,Downloading.back(),currentPodcast);
-        downThread.detach();
+        Downloads::removeFromDownloads(currentepisodes.at(*(int*)episodeIndex));
       };
       void (*playFunction)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer episodeIndex)
       {
@@ -237,7 +234,7 @@ int main(int argc, char **argv)
   
 
       g_signal_connect(playButton, "released", (GCallback)playFunction, (gpointer) &(SelectedEpisode.index));
-      g_signal_connect(deleteButton, "released", (GCallback)streamfunc,  (gpointer) &(SelectedEpisode.index));
+      g_signal_connect(deleteButton, "released", (GCallback)deleteFunc,  (gpointer) &(SelectedEpisode.index));
 
       gtk_label_set_line_wrap(GTK_LABEL(titleLabel), true);// enables line wrap
       gtk_label_set_xalign(GTK_LABEL(titleLabel), 0.0);// sets lables to left align
@@ -281,7 +278,7 @@ int main(int argc, char **argv)
     GtkWidget* singleEntry;
     for (PodcastEpisode& episode:currentepisodes)
     {
-      if (isEpisodeDownloaded(episode))
+      if (Downloads::isEpisodeDownloaded(episode))
       {
       singleEntry = downloadedWidgetBuilder(episode);
       gtk_container_add(GTK_CONTAINER(UIPVEpisodeList), singleEntry);
@@ -312,10 +309,10 @@ int main(int argc, char **argv)
 
     if (page == 0 && deleteMode == true)
     {
-      removeFromLibrary(currentPodcast);
+      Library::removeFromLibrary(currentPodcast);
       clearContainer(GTK_CONTAINER(UILibraryUi));
       Library.clear();
-      loadLib(Library);
+      Library::loadLib(Library);
       createSearchResults(UILibraryUi, Library);
       return;
     }
@@ -401,10 +398,10 @@ int main(int argc, char **argv)
   ///  adds the podcast to the library.
   void addPodcastToLibButton()
   {
-    addToLibrary(currentPodcast);
+    Library::addToLibrary(currentPodcast);
     clearContainer(GTK_CONTAINER(UILibraryUi));
     Library.clear();
-    loadLib(Library);
+    Library::loadLib(Library);
     createSearchResults(UILibraryUi, Library);
 
     auto cache = [](){
