@@ -185,24 +185,26 @@ int main(int argc, char **argv)
       gtk_box_pack_end(GTK_BOX(topBox), buttonBox, false, false, 0);
       gtk_widget_show_all(topBox);
 
-      void (*streamfunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer episodeIndex)
+      void (*streamfunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer podcastEpisode)
       {
-        Downloading.push_back(currentepisodes.at(*(int*)episodeIndex));
+        gtk_widget_hide(gtk_widget_get_parent(e));
+        Downloading.push_back(*(PodcastEpisode*)podcastEpisode);
         Downloads::addToDownloads(Downloading.back());
         std::thread downThread = std::thread(PlayPodcast::stream,Downloading.back(),currentPodcast);
         downThread.detach();
       };
   
-      void (*downloadfunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer episodeIndex)
+      void (*downloadfunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer podcastEpisode)
       {
-        Downloading.push_back(currentepisodes.at(*(int*)episodeIndex));
+        gtk_widget_hide(gtk_widget_get_parent(e));
+        Downloading.push_back(*(PodcastEpisode*)podcastEpisode);
         Downloads::addToDownloads(Downloading.back());
         std::thread downThread = std::thread(PlayPodcast::download,Downloading.back(),currentPodcast);
         downThread.detach();
         return;
       };
-      g_signal_connect(playButton, "released", (GCallback)streamfunc, (gpointer) &(SelectedEpisode.index));
-      g_signal_connect(downloadButton, "released", (GCallback)downloadfunc, (gpointer) &(SelectedEpisode.index));
+      g_signal_connect(playButton, "released", (GCallback)streamfunc, (gpointer) &SelectedEpisode);
+      g_signal_connect(downloadButton, "released", (GCallback)downloadfunc, (gpointer) &SelectedEpisode);
 
       return topBox;
     };
@@ -221,20 +223,22 @@ int main(int argc, char **argv)
       GtkWidget* durationLabel = gtk_label_new(duration.c_str());
 
         
-      void (*deleteFunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer episodeIndex)
+      void (*deleteFunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer podcastEpisode)
       {
-        Downloads::removeFromDownloads(currentepisodes.at(*(int*)episodeIndex));
+        gtk_widget_hide(gtk_widget_get_parent(e));
+        Downloads::removeFromDownloads(*(PodcastEpisode*)podcastEpisode,currentPodcast);
       };
-      void (*playFunction)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer episodeIndex)
+      void (*playFunction)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer podcastEpisode)
       {
-      std::thread downThread = std::thread(PlayPodcast::play,currentepisodes.at(*(int*)episodeIndex),currentPodcast);
-      downThread.detach();
-      return;
+        gtk_widget_hide(gtk_widget_get_parent(e));
+        std::thread downThread = std::thread(PlayPodcast::play,*(PodcastEpisode*)podcastEpisode,currentPodcast);
+        downThread.detach();
+        return;
       };
   
 
-      g_signal_connect(playButton, "released", (GCallback)playFunction, (gpointer) &(SelectedEpisode.index));
-      g_signal_connect(deleteButton, "released", (GCallback)deleteFunc,  (gpointer) &(SelectedEpisode.index));
+      g_signal_connect(playButton, "released", (GCallback)playFunction, (gpointer) &SelectedEpisode);
+      g_signal_connect(deleteButton, "released", (GCallback)deleteFunc, (gpointer) &SelectedEpisode);
 
       gtk_label_set_line_wrap(GTK_LABEL(titleLabel), true);// enables line wrap
       gtk_label_set_xalign(GTK_LABEL(titleLabel), 0.0);// sets lables to left align
@@ -257,14 +261,12 @@ int main(int argc, char **argv)
     };
     //  hide the add to library button if in the library
     int page = (int)gtk_notebook_get_current_page(GTK_NOTEBOOK(UInotebook));
+
     if (page == 0)
-    {
       gtk_widget_hide(UIaddToLibraryButton);
-    }
+
     if (page == 1)
-    {
       gtk_widget_show(UIaddToLibraryButton);
-    }
 
     gtk_stack_set_visible_child(GTK_STACK(UImainStack), UIPodcastDetailsPage);
     gtk_label_set_text(GTK_LABEL(UIPVTitle), currentPodcast.title.c_str());
@@ -298,14 +300,10 @@ int main(int argc, char **argv)
     int page = (int)gtk_notebook_get_current_page(GTK_NOTEBOOK(UInotebook));
 
     if (page == 0)
-    {
       currentPodcast = Library.at(index);
-    }
 
     if (page == 1)
-    {
       currentPodcast = searchList.at(index);
-    }
 
     if (page == 0 && deleteMode == true)
     {
