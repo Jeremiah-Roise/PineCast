@@ -11,7 +11,7 @@ using std::string;
 class Library
 {
 public:
-  //  this ONLY adds the entry to the library file 
+  ///  this ONLY adds the entry to the library file 
   static void addToLibrary(PodcastData currentPodcast){
     cout << "adding to library" << endl;
     string XML;
