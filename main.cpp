@@ -12,6 +12,7 @@
 #define goto  //please don't.
 using namespace std;
 #define oneDayInSeconds 86400
+
 extern "C"
 {
   void streamPodcast(PodcastEpisode podcast, GtkWidget* e);
@@ -42,7 +43,7 @@ extern "C"
   PodcastData currentPodcast;
   PodcastDataList searchList;
   PodcastDataList Library;
-  vector<PlayPodcast> Downloading;
+  vector<PlayPodcast> downloadObjects;
   PodcastEpisodeList DownloadedEpisodes;
   PodcastEpisodeList currentepisodes;
   bool deleteMode = false;  /// whether the library is set to delete selected podcast.
@@ -191,8 +192,8 @@ int main(int argc, char **argv)
         Downloads::addToDownloads(*(PodcastEpisode*)podcastEpisode);
 
         PlayPodcast streamObject(0.5,*(PodcastEpisode*)podcastEpisode,currentPodcast);
-        Downloading.push_back(streamObject);
-        Downloading.back().StartDownload();
+        downloadObjects.push_back(streamObject);
+        downloadObjects.back().StartDownload();
         return;
       };
   
@@ -202,8 +203,8 @@ int main(int argc, char **argv)
         Downloads::addToDownloads(*(PodcastEpisode*)podcastEpisode);
 
         PlayPodcast downLoadObject(0.5,*(PodcastEpisode*)podcastEpisode,currentPodcast);
-        Downloading.push_back(downLoadObject);
-        Downloading.back().StartDownload();
+        downloadObjects.push_back(downLoadObject);
+        downloadObjects.back().StartDownload();
         return;
       };
       g_signal_connect(playButton, "released", (GCallback)streamfunc, (gpointer) &SelectedEpisode);
