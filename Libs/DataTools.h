@@ -11,6 +11,14 @@ using namespace std;
 class DataTools
 {
     public:
+
+    static auto filePathFromEpisode(PodcastEpisode& episode,PodcastData Podcast)
+    {
+        string filepath = filepaths::lclFiles();
+        filepath += DataTools::cleanString(Podcast.title);
+        filepath += "/"+DataTools::cleanString(episode.title)+".mp3";
+        return filepath;
+    }
     /// just gets the string data from a file.
     static std::string getFile(string file){
         
