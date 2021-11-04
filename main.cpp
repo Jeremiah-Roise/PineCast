@@ -42,7 +42,7 @@ extern "C"
   PodcastData currentPodcast;
   PodcastDataList searchList;
   PodcastDataList Library;
-  PodcastEpisodeList Downloading;
+  vector<PlayPodcast> Downloading;
   PodcastEpisodeList DownloadedEpisodes;
   PodcastEpisodeList currentepisodes;
   bool deleteMode = false;  /// whether the library is set to delete selected podcast.
@@ -188,23 +188,22 @@ int main(int argc, char **argv)
       void (*streamfunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer podcastEpisode)
       {
         gtk_widget_hide(gtk_widget_get_parent(e));
-        Downloading.push_back(*(PodcastEpisode*)podcastEpisode);
-        Downloads::addToDownloads(Downloading.back());
+        Downloads::addToDownloads(*(PodcastEpisode*)podcastEpisode);
 
-        PlayPodcast streamObject(0.5,Downloading.back(),currentPodcast);
-        std::thread downThread = std::thread(streamObject.StartDownload);
-        downThread.detach();
+        PlayPodcast streamObject(0.5,*(PodcastEpisode*)podcastEpisode,currentPodcast);
+        Downloading.push_back(streamObject);
+        Downloading.back().StartDownload();
+        return;
       };
   
       void (*downloadfunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer podcastEpisode)
       {
         gtk_widget_hide(gtk_widget_get_parent(e));
-        Downloading.push_back(*(PodcastEpisode*)podcastEpisode);
-        Downloads::addToDownloads(Downloading.back());
+        Downloads::addToDownloads(*(PodcastEpisode*)podcastEpisode);
 
-        PlayPodcast downloadObject(0.5,Downloading.back(),currentPodcast);
-        std::thread downThread = std::thread(downloadObject.StartDownload);
-        downThread.detach();
+        PlayPodcast downLoadObject(0.5,*(PodcastEpisode*)podcastEpisode,currentPodcast);
+        Downloading.push_back(downLoadObject);
+        Downloading.back().StartDownload();
         return;
       };
       g_signal_connect(playButton, "released", (GCallback)streamfunc, (gpointer) &SelectedEpisode);
