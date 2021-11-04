@@ -190,7 +190,9 @@ int main(int argc, char **argv)
         gtk_widget_hide(gtk_widget_get_parent(e));
         Downloading.push_back(*(PodcastEpisode*)podcastEpisode);
         Downloads::addToDownloads(Downloading.back());
-        std::thread downThread = std::thread(PlayPodcast::stream,Downloading.back(),currentPodcast);
+
+        PlayPodcast streamObject(0.5,Downloading.back(),currentPodcast);
+        std::thread downThread = std::thread(streamObject.StartDownload);
         downThread.detach();
       };
   
@@ -199,7 +201,9 @@ int main(int argc, char **argv)
         gtk_widget_hide(gtk_widget_get_parent(e));
         Downloading.push_back(*(PodcastEpisode*)podcastEpisode);
         Downloads::addToDownloads(Downloading.back());
-        std::thread downThread = std::thread(PlayPodcast::download,Downloading.back(),currentPodcast);
+
+        PlayPodcast downloadObject(0.5,Downloading.back(),currentPodcast);
+        std::thread downThread = std::thread(downloadObject.StartDownload);
         downThread.detach();
         return;
       };
