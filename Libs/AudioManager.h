@@ -30,14 +30,16 @@ private:
     system(FName.data());
   }
 
-  void progressUpdate(double dltotal,   double dlnow,   double ultotal,   double ulnow){
+  int progressUpdate(double dltotal,   double dlnow,   double ultotal,   double ulnow){
     double check = dlnow/dltotal;
     if (((check >= 0) && (check  >= lastUpdate + 0.01) && (check <= lastUpdate + 0.019)) || (check >= 1))
     {
       lastUpdate = check;
+      cout << check << endl;
       //  ADD UPDATE FUNCTION
-      return;
+      return 0;
     }
+    return 0;
   }
 
   /// Downloads a podcast and returns the progress through the double pointer
@@ -46,17 +48,16 @@ private:
     cout << "downloading podcast" << endl;
     try
     {
-      FILE *fp;
-      fp = fopen(filepath.c_str(),"wb");
       cout << "created file" << endl; cURLpp::Easy handle;
       handle.setOpt(cURLpp::options::NoProgress(false));
       handle.setOpt(cURLpp::options::ProgressFunction(
         [this](double A,double B,double C,double D){
-          this->progressUpdate(A,B,C,D);
-          return 0;
+          return this->progressUpdate(A,B,C,D);
         }));
       handle.setOpt(cURLpp::Options::Url(episode.mp3Link));
       handle.setOpt(cURLpp::options::FollowLocation(true));
+      FILE *fp;
+      fp = fopen(filepath.c_str(),"wb");
       handle.setOpt(cURLpp::options::WriteFile(fp));
       handle.perform();
       fclose(fp);
@@ -76,16 +77,18 @@ private:
 
 
 public:
-  PlayPodcast(size_t tmpEventPoint, const PodcastEpisode& tmpEpisode, const PodcastData& tmpPodcast){
+  PlayPodcast(size_t tmpEventPoint, const PodcastEpisode tmpEpisode, const PodcastData tmpPodcast){
     EventPoint = tmpEventPoint;
     Podcast = tmpPodcast;
     episode = tmpEpisode;
   }
 
   void StartDownload(){
-   StartDownload();
-   return;
+    std::thread downThread = std::thread([this](){this->DownloadPodcast();});
+    downThread.detach();
+    return;
   }
+
   //  plays localy downloaded podcasts. should be called when a podcast is already downloaded
   static void play(PodcastEpisode episode, PodcastData Podcast){
     string filepath = DataTools::filePathFromEpisode(episode,Podcast);
