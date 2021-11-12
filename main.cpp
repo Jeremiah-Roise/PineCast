@@ -43,7 +43,6 @@ extern "C"
   PodcastData currentPodcast;
   PodcastDataList searchList;
   PodcastDataList Library;
-  vector<PlayPodcast> downloadObjects;
   PodcastEpisodeList DownloadedEpisodes;
   PodcastEpisodeList currentepisodes;
   bool deleteMode = false;  /// whether the library is set to delete selected podcast.
@@ -186,25 +185,37 @@ int main(int argc, char **argv)
       gtk_box_pack_end(GTK_BOX(topBox), buttonBox, false, false, 0);
       gtk_widget_show_all(topBox);
 
-      void (*streamfunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer podcastEpisode)
+      void (*streamfunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer PTRpodcastEpisode)
       {
-        gtk_widget_hide(gtk_widget_get_parent(e));
-        Downloads::addToDownloads(*(PodcastEpisode*)podcastEpisode);
+        GtkProgressBar* bar = GTK_PROGRESS_BAR(gtk_progress_bar_new());
+        e = gtk_widget_get_parent(e);
+        gtk_box_pack_end(GTK_BOX(gtk_widget_get_parent(e)),GTK_WIDGET(bar),false,true,30);
+        gtk_widget_show(GTK_WIDGET(bar));
+        gtk_widget_destroy(e);
 
-        PlayPodcast streamObject(0.5,*(PodcastEpisode*)podcastEpisode,currentPodcast);
-        downloadObjects.push_back(streamObject);
-        downloadObjects.back().StartDownload();
+        PodcastEpisode Episode = *(PodcastEpisode*)PTRpodcastEpisode;
+        Downloads::addToDownloads(Episode);
+
+        PlayPodcast<GtkProgressBar*>* streamObject = new PlayPodcast<GtkProgressBar*>(0.5,Episode,currentPodcast, bar);
+        streamObject->updateEventFunc = [](double prg,GtkProgressBar* pbar){gtk_progress_bar_set_fraction(pbar,prg);return;};
+        streamObject->StartDownload();
         return;
       };
   
-      void (*downloadfunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer podcastEpisode)
+      void (*downloadfunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer PTRpodcastEpisode)
       {
-        gtk_widget_hide(gtk_widget_get_parent(e));
-        Downloads::addToDownloads(*(PodcastEpisode*)podcastEpisode);
+        GtkProgressBar* bar = GTK_PROGRESS_BAR(gtk_progress_bar_new());
+        e = gtk_widget_get_parent(e);
+        gtk_box_pack_end(GTK_BOX(gtk_widget_get_parent(e)),GTK_WIDGET(bar),false,true,30);
+        gtk_widget_show(GTK_WIDGET(bar));
+        gtk_widget_destroy(e);
 
-        PlayPodcast downLoadObject(0.5,*(PodcastEpisode*)podcastEpisode,currentPodcast);
-        downloadObjects.push_back(downLoadObject);
-        downloadObjects.back().StartDownload();
+        PodcastEpisode Episode = *(PodcastEpisode*)PTRpodcastEpisode;
+        Downloads::addToDownloads(Episode);
+
+        PlayPodcast<GtkProgressBar*>* downLoadObject = new PlayPodcast<GtkProgressBar*>(1,Episode,currentPodcast,bar);
+        downLoadObject->updateEventFunc = [](double prg,GtkProgressBar* pbar){gtk_progress_bar_set_fraction(pbar,prg);return;};
+        downLoadObject->StartDownload();
         return;
       };
       g_signal_connect(playButton, "released", (GCallback)streamfunc, (gpointer) &SelectedEpisode);
@@ -226,24 +237,6 @@ int main(int argc, char **argv)
       GtkWidget* titleLabel = gtk_label_new(title.c_str());
       GtkWidget* durationLabel = gtk_label_new(duration.c_str());
 
-        
-      void (*deleteFunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer podcastEpisode)
-      {
-        gtk_widget_hide(gtk_widget_get_parent(e));
-        Downloads::removeFromDownloads(*(PodcastEpisode*)podcastEpisode,currentPodcast);
-      };
-      void (*playFunction)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer podcastEpisode)
-      {
-        gtk_widget_hide(gtk_widget_get_parent(e));
-        std::thread downThread = std::thread(PlayPodcast::play,*(PodcastEpisode*)podcastEpisode,currentPodcast);
-        downThread.detach();
-        return;
-      };
-  
-
-      g_signal_connect(playButton, "released", (GCallback)playFunction, (gpointer) &SelectedEpisode);
-      g_signal_connect(deleteButton, "released", (GCallback)deleteFunc, (gpointer) &SelectedEpisode);
-
       gtk_label_set_line_wrap(GTK_LABEL(titleLabel), true);// enables line wrap
       gtk_label_set_xalign(GTK_LABEL(titleLabel), 0.0);// sets lables to left align
 
@@ -261,6 +254,22 @@ int main(int argc, char **argv)
       gtk_box_pack_start(GTK_BOX(buttonBox), deleteButton, false, false, 0);
 
       gtk_widget_show_all(topBox);
+
+      void (*deleteFunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer podcastEpisode)
+      {
+        gtk_widget_hide(gtk_widget_get_parent(e));
+        Downloads::removeFromDownloads(*(PodcastEpisode*)podcastEpisode,currentPodcast);
+      };
+      void (*playFunction)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer podcastEpisode)
+      {
+        gtk_widget_hide(gtk_widget_get_parent(e));
+        std::thread downThread = std::thread(play,*(PodcastEpisode*)podcastEpisode,currentPodcast);
+        downThread.detach();
+        return;
+      };
+      g_signal_connect(playButton, "released", (GCallback)playFunction, (gpointer) &SelectedEpisode);
+      g_signal_connect(deleteButton, "released", (GCallback)deleteFunc, (gpointer) &SelectedEpisode);
+
       return topBox;
     };
     //  hide the add to library button if in the library
