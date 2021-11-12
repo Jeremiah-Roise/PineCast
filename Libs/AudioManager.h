@@ -14,29 +14,83 @@ using std::cout;
 using std::endl;
 using std::string;
 
-class PlayPodcast
-{
-private:
-  size_t EventPoint;
-  PodcastEpisode episode;
-  PodcastData Podcast;
-  float lastUpdate = 0;
 
   /// uses system command to start podcast with default application should be able to tolerate spaces.
-  static void playMp3(string path)
+  void playMp3(string path)
   {
     string FName = "xdg-open \"" + path + "\" &";
     cout << "the command is: " << FName << endl;
     system(FName.data());
   }
 
+  //  plays localy downloaded podcasts. should be called when a podcast is already downloaded
+   void play(PodcastEpisode episode, PodcastData Podcast){
+    string filepath = DataTools::filePathFromEpisode(episode,Podcast);
+    if (filepaths::fileExists(filepath))
+    {
+      playMp3(filepath);
+      return;
+    }
+    return;
+  }
+
+
+class IPlayPodcast
+{
+  public:
+  std::vector<std::unique_ptr<IPlayPodcast>> myList;
+  virtual void StartDownload(){
+    cout << "this is the base Class" << endl;
+  }
+  virtual void play(){
+    cout << "this is the base Class" << endl;
+  }
+  virtual ~IPlayPodcast(){}
+
+};
+
+template<typename eventFuncArg>
+class PlayPodcast:public IPlayPodcast
+{
+public:
+  //  creates a function type to hold an event arg
+  std::function<void(double,eventFuncArg)> updateEventFunc = [](double,eventFuncArg){return;};
+
+  eventFuncArg eventArg;
+  PlayPodcast(size_t tmpEventPoint, const PodcastEpisode tmpEpisode, const PodcastData tmpPodcast,eventFuncArg eventArgtmp){
+    EventPoint = tmpEventPoint;
+    Podcast = tmpPodcast;
+    episode = tmpEpisode;
+    eventArg = eventArgtmp;
+  }
+
+  void StartDownload(){
+    std::thread downThread = std::thread([this](){this->DownloadPodcast();});
+    downThread.detach();
+    return;
+  }
+
+private:
+  size_t EventPoint;
+  PodcastEpisode episode;
+  PodcastData Podcast;
+  float lastUpdate = 0;
+  bool eventPointRun = false;
+  bool updateEventRun = false;
+
   int progressUpdate(double dltotal,   double dlnow,   double ultotal,   double ulnow){
     double check = dlnow/dltotal;
-    if (((check >= 0) && (check  >= lastUpdate + 0.01) && (check <= lastUpdate + 0.019)) || (check >= 1))
+    if (((check >= 0) && (check  >= lastUpdate + 0.01)) || (check >= 1))
     {
+      if (check >= EventPoint && eventPointRun == false)
+      {
+        eventPointRun = true;
+        playMp3(DataTools::filePathFromEpisode(episode,Podcast));
+        //this->EventPointFunc(eventFuncArg);
+      }
       lastUpdate = check;
       cout << check << endl;
-      //  ADD UPDATE FUNCTION
+      updateEventFunc(check,eventArg);
       return 0;
     }
     return 0;
@@ -61,42 +115,19 @@ private:
       handle.setOpt(cURLpp::options::WriteFile(fp));
       handle.perform();
       fclose(fp);
+      delete this;
     }
     catch(curlpp::RuntimeError & e)
     {
       std::cout << e.what() << std::endl;
       cout << "no connection" << endl;
+      delete this;
     }
     catch(curlpp::LogicError & e)
     {
       std::cout << e.what() << std::endl;
       cout << "no connection" << endl;
+      delete this;
     }
 }
-
-
-
-public:
-  PlayPodcast(size_t tmpEventPoint, const PodcastEpisode tmpEpisode, const PodcastData tmpPodcast){
-    EventPoint = tmpEventPoint;
-    Podcast = tmpPodcast;
-    episode = tmpEpisode;
-  }
-
-  void StartDownload(){
-    std::thread downThread = std::thread([this](){this->DownloadPodcast();});
-    downThread.detach();
-    return;
-  }
-
-  //  plays localy downloaded podcasts. should be called when a podcast is already downloaded
-  static void play(PodcastEpisode episode, PodcastData Podcast){
-    string filepath = DataTools::filePathFromEpisode(episode,Podcast);
-    if (filepaths::fileExists(filepath))
-    {
-      playMp3(filepath);
-      return;
-    }
-    return;
-  }
 };
