@@ -273,12 +273,12 @@ int main(int argc, char **argv)
       return topBox;
     };
     //  hide the add to library button if in the library
-    Page page = (Page)gtk_notebook_get_current_page(GTK_NOTEBOOK(UInotebook));
+    stackPage page = (stackPage)gtk_notebook_get_current_page(GTK_NOTEBOOK(UInotebook));
 
-    if (page == Page::Library)
+    if (page == 0)
       gtk_widget_hide(UIaddToLibraryButton);
 
-    if (page == Page::SearchPage)
+    if (page == 1)
       gtk_widget_show(UIaddToLibraryButton);
 
     gtk_stack_set_visible_child(GTK_STACK(UImainStack), UIPodcastDetailsPage);
@@ -310,15 +310,15 @@ int main(int argc, char **argv)
   void returnSelectionFromSearchResults(GtkWidget* e, gpointer PodcastIndex)
   {
     int index = *(int*)PodcastIndex;
-    Page page = (Page)gtk_notebook_get_current_page(GTK_NOTEBOOK(UInotebook));
+    int page = (int)gtk_notebook_get_current_page(GTK_NOTEBOOK(UInotebook));
 
-    if (page == Page::Library)
+    if (page == 0)
       currentPodcast = Library.at(index);
 
-    if (page == Page::SearchPage)
+    if (page == 1)
       currentPodcast = searchList.at(index);
 
-    if (page == Page::Library && deleteMode == true)
+    if (page == 0 && deleteMode == true)
     {
       Library::removeFromLibrary(currentPodcast);
       clearContainer(GTK_CONTAINER(UILibraryUi));
@@ -328,7 +328,7 @@ int main(int argc, char **argv)
       return;
     }
 
-    if (deleteMode == false && page == Page::Library)
+    if (page == 0 && deleteMode == false)
     {
       string rss;
       string fileName = currentPodcast.title + ".rss";
@@ -353,7 +353,7 @@ int main(int argc, char **argv)
       }
     }
 
-    if (page == Page::Library)
+    if (page == stackPage::LibraryPage)
     {
       cout << "loading" << endl;
       string rss;
@@ -399,7 +399,7 @@ int main(int argc, char **argv)
     cout << page_num << endl;
 
     //  if the page is equal to the search page focus the search bar.
-    if (page_num == Page::Library)
+    if (page_num == stackPage::LibraryPage)
     {
       gtk_widget_grab_focus(UIsearchEntry);
       cout << "setting focus to search bar" << endl;
