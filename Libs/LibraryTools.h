@@ -4,6 +4,7 @@
 #include"PodcastMetaDataLists.h"
 #include"DataTools.h"
 #include"filepaths.h"
+#include"webTools.h"
 using std::cout;
 using std::endl;
 using std::string;
@@ -34,6 +35,8 @@ public:
     string newPodDir = filepaths::lclFiles().c_str();
     newPodDir += DataTools::cleanString(currentPodcast.title);
     mkdir(newPodDir.c_str(),ACCESSPERMS);
+    //  add thumbnail to Podcast folder
+    webTools::getWebFile(currentPodcast.image600,newPodDir+"/Thumbnail.png");
   }
 
   static void removeFromLibrary(PodcastData currentPodcast){
