@@ -82,7 +82,7 @@ class webTools
       tmpData.artist   = DataTools::GetFieldAndReturnIndex(data,"\"artistName\":\"","\"",tmp3,tmp3);
       
     tmp.push_back(tmpData);
-    tmp.front().index = (tmp.size() - 1);
+    tmp.back().index = (tmp.size() - 1);
     }
     return tmp;
   }
