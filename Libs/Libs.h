@@ -1,3 +1,4 @@
+#pragma once
 #include"caching.h"
 #include"LibraryTools.h"
 #include"DataTools.h"
