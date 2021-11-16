@@ -50,16 +50,13 @@ extern "C"
 
 
 //  this function just sets up a bunch of global variables and checks that folders exist
-void init(){
+void init(GtkBuilder* builder){
   string lcl = filepaths::lclFiles();
   if (filepaths::folderExists(lcl) == false)
   {
     mkdir(lcl.c_str(),ACCESSPERMS);
   }
 
-  builder = gtk_builder_new();
-  gtk_builder_add_from_file(builder, "PodcastWindow.glade", NULL);
-  UIwindow = GTK_WIDGET(gtk_builder_get_object(builder, "MainWindow"));
   //                                                              | these are macros|
   //                                                              | in UINAMES.h    |
   UIsearchListBox =      GTK_WIDGET(gtk_builder_get_object(builder, searchListBoxName));
@@ -84,11 +81,16 @@ void init(){
 ///  GUI setup.
 int main(int argc, char **argv)
 {
-
   gtk_init(&argc, &argv);
-  init();
+
+  builder = gtk_builder_new();
+  gtk_builder_add_from_file(builder, "PodcastWindow.glade", NULL);
+  UIwindow = GTK_WIDGET(gtk_builder_get_object(builder, "MainWindow"));
+
+  auto T1 = async(init, builder);
 
   gtk_widget_show(UIwindow);
+  T1.wait();
   gtk_main();
   return 0;
 }
