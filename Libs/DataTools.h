@@ -29,7 +29,7 @@ class DataTools
     }
 
     /// gets particular values from podcast xml files and returns the index it was found at from the index reference.
-    static string GetFieldAndReturnIndex(string PodcastRSS,string startAtChars,string endAtChars,int &index,int startAtIndex = 0){
+    static string GetFieldAndReturnIndex(const string& PodcastRSS,string startAtChars,string endAtChars,int &index,int startAtIndex = 0){
         size_t itemStart = 0;
         size_t itemEnd = 0;
         if(startAtChars == ""){itemStart = 0;}
@@ -44,7 +44,7 @@ class DataTools
     }
 
     /// gets particular values from podcast xml files.
-    static string GetField(string PodcastRSS,string startAtChars,string endAtChars,int startAtIndex = 0){
+    static string GetField(const string& PodcastRSS,string startAtChars,string endAtChars,int startAtIndex = 0){
         size_t itemStart = 0;
         size_t itemEnd = 0;
         if(startAtChars == ""){itemStart = 0;}
