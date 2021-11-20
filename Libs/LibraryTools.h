@@ -37,6 +37,7 @@ public:
     mkdir(newPodDir.c_str(),ACCESSPERMS);
     //  add thumbnail to Podcast folder
     webTools::getWebFile(currentPodcast.image600,newPodDir+"/Thumbnail.png");
+    webTools::getWebFile(currentPodcast.RssFeed,newPodDir+"/Feed.rss");
   }
 
   static void removeFromLibrary(PodcastData currentPodcast){
