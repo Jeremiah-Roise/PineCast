@@ -4,10 +4,10 @@
 #include<curlpp/cURLpp.hpp>
 #include<curlpp/Easy.hpp>
 #include<curlpp/Options.hpp>
+#include<curlpp/Infos.hpp>
 #include<sstream>
 #include<gtk/gtk.h>
-#include"DataTools.h"
-#include"PodcastMetaDataLists.h"
+#include"Libs.h"
 #pragma once
 using std::cout;
 using std::endl;
@@ -17,6 +17,27 @@ void getWebFile(string,string);
 class webTools
 {
   public:
+    static bool internetAccess(){
+      cURLpp::Easy handle;
+      handle.setOpt(cURLpp::options::NoProgress(true));
+      handle.setOpt(cURLpp::Options::Url("google.com"));
+      handle.setOpt(cURLpp::options::FollowLocation(false));
+      handle.setOpt(cURLpp::options::NoBody(true));
+      handle.setOpt(curlpp::options::Header(false));
+      handle.perform();
+      size_t responseCode = curlpp::infos::ResponseCode::get(handle);
+      cout << responseCode << endl;
+     
+      //  look I know this a bad test but I'm tired
+      if (responseCode >= 200 && responseCode <= 399)
+      {
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    }
   static string getFileInMem(string url){
     try
     {
