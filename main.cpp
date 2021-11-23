@@ -9,6 +9,7 @@
 #include <utime.h>
 #include "Libs/Libs.h"
 #include "UINAMES.h"
+#include"Libs/UIFunctions.h"
 #define goto  //please don't.
 using namespace std;
 #define oneDayInSeconds 86400
@@ -154,126 +155,6 @@ int main(int argc, char **argv)
   /// should probably be updated to not use global variables.
   void setPreviewPage(PodcastEpisodeList episodes)
   {
-    auto standardWidgetBuilder = [](PodcastEpisode& SelectedEpisode)
-    { 
-      string title = SelectedEpisode.title;
-      string duration = "<span size=\"medium\"><i>" + SelectedEpisode.duration + "</i></span>";
-
-      GtkWidget* topBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
-      GtkWidget* infoBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-      GtkWidget* buttonBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
-      GtkWidget* playButton = gtk_button_new_from_icon_name("media-playback-start", GTK_ICON_SIZE_BUTTON);
-      GtkWidget* downloadButton = gtk_button_new_from_icon_name("emblem-downloads", GTK_ICON_SIZE_BUTTON);
-      GtkWidget* titleLabel = gtk_label_new(title.c_str());
-      GtkWidget* durationLabel = gtk_label_new(duration.c_str());
-
-      gtk_label_set_line_wrap(GTK_LABEL(titleLabel), true);
-      gtk_label_set_xalign(GTK_LABEL(titleLabel), 0.0);
-
-      gtk_label_set_line_wrap(GTK_LABEL(durationLabel), true);
-      gtk_label_set_xalign(GTK_LABEL(durationLabel), 0.0);
-      gtk_label_set_use_markup(GTK_LABEL(durationLabel), true);
-      gtk_label_set_markup(GTK_LABEL(durationLabel), duration.c_str());
-
-      gtk_box_pack_start(GTK_BOX(infoBox), titleLabel, false, false, 0);
-      gtk_box_pack_start(GTK_BOX(infoBox), durationLabel, false, false, 0);
-
-      gtk_box_pack_start(GTK_BOX(buttonBox), playButton, false, false, 0);
-      gtk_box_pack_end(GTK_BOX(buttonBox), downloadButton, false, false, 0);
-      gtk_widget_set_name(GTK_WIDGET(playButton),to_string(SelectedEpisode.index).c_str());
-      gtk_widget_set_name(GTK_WIDGET(downloadButton),to_string(SelectedEpisode.index).c_str());
-
-      gtk_box_pack_start(GTK_BOX(topBox), infoBox, false, false, 0);
-      gtk_box_pack_end(GTK_BOX(topBox), buttonBox, false, false, 0);
-      gtk_widget_show_all(topBox);
-
-      void (*streamfunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer PTRpodcastEpisode)
-      {
-        GtkProgressBar* bar = GTK_PROGRESS_BAR(gtk_progress_bar_new());
-        e = gtk_widget_get_parent(e);
-        gtk_box_pack_end(GTK_BOX(gtk_widget_get_parent(e)),GTK_WIDGET(bar),false,true,30);
-        gtk_widget_show(GTK_WIDGET(bar));
-        gtk_widget_destroy(e);
-
-        PodcastEpisode Episode = *(PodcastEpisode*)PTRpodcastEpisode;
-        Downloads::addToDownloads(Episode);
-
-        PlayPodcast<GtkProgressBar*>* streamObject = new PlayPodcast<GtkProgressBar*>(0.5,Episode,currentPodcast, bar);
-        streamObject->updateEventFunc = [](double prg,GtkProgressBar* pbar){gtk_progress_bar_set_fraction(pbar,prg);return;};
-        streamObject->StartDownload();
-        return;
-      };
-  
-      void (*downloadfunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer PTRpodcastEpisode)
-      {
-        GtkProgressBar* bar = GTK_PROGRESS_BAR(gtk_progress_bar_new());
-        e = gtk_widget_get_parent(e);
-        gtk_box_pack_end(GTK_BOX(gtk_widget_get_parent(e)),GTK_WIDGET(bar),false,true,30);
-        gtk_widget_show(GTK_WIDGET(bar));
-        gtk_widget_destroy(e);
-
-        PodcastEpisode Episode = *(PodcastEpisode*)PTRpodcastEpisode;
-        Downloads::addToDownloads(Episode);
-
-        PlayPodcast<GtkProgressBar*>* downLoadObject = new PlayPodcast<GtkProgressBar*>(1,Episode,currentPodcast,bar);
-        downLoadObject->updateEventFunc = [](double prg,GtkProgressBar* pbar){gtk_progress_bar_set_fraction(pbar,prg);return;};
-        downLoadObject->StartDownload();
-        return;
-      };
-      g_signal_connect(playButton, "released", (GCallback)streamfunc, (gpointer) &SelectedEpisode);
-      g_signal_connect(downloadButton, "released", (GCallback)downloadfunc, (gpointer) &SelectedEpisode);
-
-      return topBox;
-    };
-
-    auto downloadedWidgetBuilder = [](PodcastEpisode& SelectedEpisode){
-
-      string title = SelectedEpisode.title;
-      string duration = "<span size=\"medium\"><i>" + SelectedEpisode.duration + "</i></span>";
-
-      GtkWidget* topBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
-      GtkWidget* infoBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-      GtkWidget* buttonBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
-      GtkWidget* playButton = gtk_button_new_from_icon_name("media-playback-start", GTK_ICON_SIZE_BUTTON);
-      GtkWidget* deleteButton = gtk_button_new_from_icon_name("gtk-delete",GTK_ICON_SIZE_BUTTON);
-      GtkWidget* titleLabel = gtk_label_new(title.c_str());
-      GtkWidget* durationLabel = gtk_label_new(duration.c_str());
-
-      gtk_label_set_line_wrap(GTK_LABEL(titleLabel), true);// enables line wrap
-      gtk_label_set_xalign(GTK_LABEL(titleLabel), 0.0);// sets lables to left align
-
-      gtk_label_set_line_wrap(GTK_LABEL(durationLabel), true);// enables line wrap
-      gtk_label_set_xalign(GTK_LABEL(durationLabel), 0.0);// sets lables to left align
-      gtk_label_set_use_markup(GTK_LABEL(durationLabel), true);// enables markup on label
-      gtk_label_set_markup(GTK_LABEL(durationLabel), duration.c_str());// displays the duration of the podcast in italics
-
-      gtk_box_pack_start(GTK_BOX(infoBox), titleLabel, false, false, 0);
-      gtk_box_pack_start(GTK_BOX(infoBox), durationLabel, false, false, 0);
-      gtk_box_pack_start(GTK_BOX(topBox), infoBox, false, false, 0);
-      gtk_box_pack_end(GTK_BOX(topBox), buttonBox, false, false, 0);
-
-      gtk_box_pack_start(GTK_BOX(buttonBox), playButton, false, false, 0);
-      gtk_box_pack_start(GTK_BOX(buttonBox), deleteButton, false, false, 0);
-
-      gtk_widget_show_all(topBox);
-
-      void (*deleteFunc)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer podcastEpisode)
-      {
-        gtk_widget_hide(gtk_widget_get_parent(e));
-        Downloads::removeFromDownloads(*(PodcastEpisode*)podcastEpisode,currentPodcast);
-      };
-      void (*playFunction)(GtkWidget*,gpointer) = [](GtkWidget* e,gpointer podcastEpisode)
-      {
-        gtk_widget_hide(gtk_widget_get_parent(e));
-        std::thread downThread = std::thread(play,*(PodcastEpisode*)podcastEpisode,currentPodcast);
-        downThread.detach();
-        return;
-      };
-      g_signal_connect(playButton, "released", (GCallback)playFunction, (gpointer) &SelectedEpisode);
-      g_signal_connect(deleteButton, "released", (GCallback)deleteFunc, (gpointer) &SelectedEpisode);
-
-      return topBox;
-    };
     //  hide the add to library button if in the library
     stackPage page = (stackPage)gtk_notebook_get_current_page(GTK_NOTEBOOK(UInotebook));
 
