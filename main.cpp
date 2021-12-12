@@ -147,7 +147,7 @@ int main(int argc, char **argv)
     createSearchResults(UIsearchListBox,searchList);
     return;
   }
-  
+
   /// when this is called it initializes the preview page.
   ///
   /// when called it uses the global currentPodcast variable to get the Podcast title, image, artist, etc,
@@ -176,14 +176,17 @@ int main(int argc, char **argv)
     GtkWidget* singleEntry;
     for (PodcastEpisode& episode:currentepisodes)
     {
+      PodcastDataBundle dataBundle;
+      dataBundle.Episode = episode;
+      dataBundle.Podcast = currentPodcast;
       if (Downloads::isEpisodeDownloaded(episode))
       {
-      singleEntry = downloadedWidgetBuilder(episode);
+      singleEntry = downloadedWidgetBuilder(dataBundle,playPodcastButtonFunc,deletePodcast);
       gtk_container_add(GTK_CONTAINER(UIPVEpisodeList), singleEntry);
       }
       else
       {
-      singleEntry = standardWidgetBuilder(episode);
+      singleEntry = standardWidgetBuilder(dataBundle,streamPodcast,downloadPodcast);
       gtk_container_add(GTK_CONTAINER(UIPVEpisodeList), singleEntry);
       }
     }
