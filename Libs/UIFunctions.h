@@ -11,6 +11,7 @@
 #include"PodcastMetaDataLists.h"
 #include"PodcastDataBundle.h"
 #include "../UINAMES.h"
+void clearContainer(GtkContainer* e);
 
   auto standardWidgetBuilder(PodcastDataBundle& tmp,void(*playFunction)(GtkWidget*, gpointer), void(*downloadFunction)(GtkWidget*, gpointer)){ 
 
@@ -105,6 +106,10 @@
     PodcastDataBundle Episode = *(PodcastDataBundle*)dataBundle;
     cout << Episode.Episode.title << endl;
     GtkWidget* bar = gtk_progress_bar_new();
+    e = gtk_widget_get_parent(e);
+    clearContainer(GTK_CONTAINER(e));
+    gtk_container_add(GTK_CONTAINER(e),bar);
+    gtk_widget_show(bar);
     PlayPodcast<GtkWidget*>* download = new PlayPodcast<GtkWidget*>(1,Episode.Episode,Episode.Podcast,bar);
     download->updateEventFunc = [](double fraction,GtkWidget* bar){gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(bar),fraction);};
     download->StartDownload();
@@ -115,6 +120,10 @@
     PodcastDataBundle Episode = *(PodcastDataBundle*)dataBundle;
     cout << Episode.Episode.title << endl;
     GtkWidget* bar = gtk_progress_bar_new();
+    e = gtk_widget_get_parent(e);
+    clearContainer(GTK_CONTAINER(e));
+    gtk_container_add(GTK_CONTAINER(e),bar);
+    gtk_widget_show(bar);
     PlayPodcast<GtkWidget*>* download = new PlayPodcast<GtkWidget*>(0.5,Episode.Episode,Episode.Podcast,bar);
     download->updateEventFunc = [](double fraction,GtkWidget* bar){gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(bar),fraction);};
     download->StartDownload();
@@ -128,3 +137,9 @@
     cout << path << endl;
     Downloads::removeFromDownloads(Episode.Episode,Episode.Podcast);
   } 
+
+  ///  clears the given container of all children
+  void clearContainer(GtkContainer* e)
+  {
+    gtk_container_foreach(e, (GtkCallback)gtk_widget_destroy, NULL);
+  }
