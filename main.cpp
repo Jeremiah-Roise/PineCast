@@ -22,7 +22,6 @@ extern "C"
   void returnSelectionFromSearchResults(GtkWidget*, gpointer);
   void searchItunesWithText(GtkEntry* e);
   void getSelectedPodcastEpisodeButton(GtkWidget* e);
-  void clearContainer(GtkContainer* e);
   
   GtkWidget* UIsearchListBox;
   GtkWidget* UIwindow;
@@ -312,10 +311,5 @@ int main(int argc, char **argv)
     cacheThread.detach();
   }
 
-  ///  clears the given container of all children
-  void clearContainer(GtkContainer* e)
-  {
-    gtk_container_foreach(e, (GtkCallback)gtk_widget_destroy, NULL);
-  }
 
 }
