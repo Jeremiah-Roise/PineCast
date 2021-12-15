@@ -102,7 +102,6 @@
   } 
 
   void downloadPodcast(GtkWidget* e, gpointer dataBundle){
-    cout << "start" << endl;
     PodcastDataBundle Episode = *(PodcastDataBundle*)dataBundle;
     cout << Episode.Episode.title << endl;
     GtkWidget* bar = gtk_progress_bar_new();
