@@ -180,12 +180,14 @@ int main(int argc, char **argv)
       dataBundle.Podcast = currentPodcast;
       if (Downloads::isEpisodeDownloaded(episode))
       {
-      singleEntry = downloadedWidgetBuilder(dataBundle,playPodcastButtonFunc,deletePodcast);
+      episodeActionsUI* tmp = new episodeActionsUI(true,dataBundle);
+      singleEntry = tmp->topBox;
       gtk_container_add(GTK_CONTAINER(UIPVEpisodeList), singleEntry);
       }
       else
       {
-      singleEntry = standardWidgetBuilder(dataBundle,streamPodcast,downloadPodcast);
+      episodeActionsUI* tmp = new episodeActionsUI(false,dataBundle);
+      singleEntry = tmp->topBox;
       gtk_container_add(GTK_CONTAINER(UIPVEpisodeList), singleEntry);
       }
     }
