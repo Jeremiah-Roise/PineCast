@@ -9,6 +9,7 @@
 #include<gtk-3.0/gtk/gtk.h>
 #include"DataTools.h"
 #include"PodcastMetaDataLists.h"
+#include"PodcastDataBundle.h"
 #pragma once
 using std::cout;
 using std::endl;
@@ -54,13 +55,13 @@ class PlayPodcast:public IPlayPodcast
 {
 public:
   //  creates a function type to hold an event arg
-  std::function<void(double,eventFuncArg)> updateEventFunc = [](double,eventFuncArg){return;};
+  std::function<void(double,PodcastDataBundle,eventFuncArg)> updateEventFunc = [](double,PodcastDataBundle,eventFuncArg){return;};
+  std::function<void(double,PodcastDataBundle,eventFuncArg)> eventPointFunc = [](double,PodcastDataBundle,eventFuncArg){return;};
 
   eventFuncArg eventArg;
-  PlayPodcast(size_t tmpEventPoint, const PodcastEpisode tmpEpisode, const PodcastData tmpPodcast,eventFuncArg eventArgtmp){
+  PlayPodcast(size_t tmpEventPoint,PodcastDataBundle podcastBundle,eventFuncArg eventArgtmp){
     EventPoint = tmpEventPoint;
-    Podcast = tmpPodcast;
-    episode = tmpEpisode;
+    Podcast = podcastBundle;
     eventArg = eventArgtmp;
   }
 
@@ -72,25 +73,28 @@ public:
 
 private:
   size_t EventPoint;
-  PodcastEpisode episode;
-  PodcastData Podcast;
+  PodcastDataBundle Podcast;
   float lastUpdate = 0;
   bool eventPointRun = false;
   bool updateEventRun = false;
+  bool isFinished = false;
 
   int progressUpdate(double dltotal,   double dlnow,   double ultotal,   double ulnow){
     double check = dlnow/dltotal;
-    if (((check >= 0) && (check  >= lastUpdate + 0.01)) || (check >= 1))
+    if (((check >= 0) && (check  >= lastUpdate + 0.01)) || ((check >= 1) && isFinished == false))
     {
       if (check >= EventPoint && eventPointRun == false)
       {
         eventPointRun = true;
-        playMp3(DataTools::filePathFromEpisode(episode,Podcast));
-        //this->EventPointFunc(eventFuncArg);
+        playMp3(DataTools::filePathFromEpisode(Podcast.Episode,Podcast.Podcast));
+        this->eventPointFunc(check,Podcast,eventArg);
       }
+      else
+      {
       lastUpdate = check;
-      cout << check << endl;
-      updateEventFunc(check,eventArg);
+      updateEventFunc(check,Podcast,eventArg);
+      }
+      
       return 0;
     }
     return 0;
@@ -98,7 +102,7 @@ private:
 
   /// Downloads a podcast and returns the progress through the double pointer
   void DownloadPodcast(){
-    string filepath = DataTools::filePathFromEpisode(episode,Podcast);
+    string filepath = DataTools::filePathFromEpisode(Podcast.Episode,Podcast.Podcast);
     cout << "downloading podcast" << endl;
     try
     {
@@ -108,7 +112,7 @@ private:
         [this](double A,double B,double C,double D){
           return this->progressUpdate(A,B,C,D);
         }));
-      handle.setOpt(cURLpp::Options::Url(episode.mp3Link));
+      handle.setOpt(cURLpp::Options::Url(Podcast.Episode.mp3Link));
       handle.setOpt(cURLpp::options::FollowLocation(true));
       FILE *fp;
       fp = fopen(filepath.c_str(),"wb");
