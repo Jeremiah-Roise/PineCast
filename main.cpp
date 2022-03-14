@@ -9,6 +9,7 @@
 #include <utime.h>
 #include "Libs/Libs.h"
 #include "UINAMES.h"
+#include "Libs/PreviewPageClass.h"
 #include"Libs/UIFunctions.h"
 #define goto  //please don't.
 using namespace std;
@@ -27,7 +28,7 @@ extern "C"
   GtkWidget* UIwindow;
   GtkWidget* UImainStack;
   GtkWidget* UInotebook;
-  GtkWidget* UIPodcastDetailsPage;
+  GtkWidget* UIPVPodcastDetailsPage;
 
   //  PV means Preview
   GtkWidget* UIPVImage;
@@ -35,7 +36,7 @@ extern "C"
   GtkWidget* UIPVAuthor;
   GtkWidget* UIPVEpisodeList;
   GtkWidget* UILibraryUi;
-  GtkWidget* UIaddToLibraryButton;
+  GtkWidget* UIPVaddToLibraryButton;
   GtkWidget* UIDownloadsList;
   GtkWidget* UIstackPage;
   GtkWidget* UIsearchEntry;
@@ -45,6 +46,7 @@ extern "C"
   PodcastDataList Library;
   PodcastEpisodeList DownloadedEpisodes;
   PodcastEpisodeList currentepisodes;
+  PreviewPageClass* PreviewPage;
   bool deleteMode = false;  /// whether the library is set to delete selected podcast.
 
 
@@ -56,6 +58,7 @@ void init(GtkBuilder* builder){
   {
     mkdir(lcl.c_str(),ACCESSPERMS);
   }
+  PreviewPage = new PreviewPageClass(builder);
 
   //                                                              | these are macros|
   //                                                              | in UINAMES.h    |
@@ -63,13 +66,13 @@ void init(GtkBuilder* builder){
   UIsearchEntry =        GTK_WIDGET(gtk_builder_get_object(builder, searchEntryName));
   UImainStack =          GTK_WIDGET(gtk_builder_get_object(builder, mainStackName));
   UInotebook =           GTK_WIDGET(gtk_builder_get_object(builder, notebookName));
-  UIPodcastDetailsPage = GTK_WIDGET(gtk_builder_get_object(builder, podcastDetailsPageName));
+  UIPVPodcastDetailsPage = GTK_WIDGET(gtk_builder_get_object(builder, podcastDetailsPageName));
   UILibraryUi =          GTK_WIDGET(gtk_builder_get_object(builder, LibraryUiName));
   UIPVImage =            GTK_WIDGET(gtk_builder_get_object(builder, PVImageName));
   UIPVTitle =            GTK_WIDGET(gtk_builder_get_object(builder, PVTitleName));
   UIPVAuthor =           GTK_WIDGET(gtk_builder_get_object(builder, PVAuthorName));
   UIPVEpisodeList =      GTK_WIDGET(gtk_builder_get_object(builder, PVEpisodeListName));
-  UIaddToLibraryButton = GTK_WIDGET(gtk_builder_get_object(builder, addToLibraryButtonName));
+  UIPVaddToLibraryButton = GTK_WIDGET(gtk_builder_get_object(builder, addToLibraryButtonName));
   UIDownloadsList =      GTK_WIDGET(gtk_builder_get_object(builder, "DownloadsList"));
   gtk_builder_connect_signals(builder, NULL);
   g_object_unref(builder);
@@ -158,12 +161,12 @@ int main(int argc, char **argv)
     stackPage page = (stackPage)gtk_notebook_get_current_page(GTK_NOTEBOOK(UInotebook));
 
     if (page == 0)
-      gtk_widget_hide(UIaddToLibraryButton);
+      gtk_widget_hide(UIPVaddToLibraryButton);
 
     if (page == 1)
-      gtk_widget_show(UIaddToLibraryButton);
+      gtk_widget_show(UIPVaddToLibraryButton);
 
-    gtk_stack_set_visible_child(GTK_STACK(UImainStack), UIPodcastDetailsPage);
+    gtk_stack_set_visible_child(GTK_STACK(UImainStack), UIPVPodcastDetailsPage);
     gtk_label_set_text(GTK_LABEL(UIPVTitle), currentPodcast.title.c_str());
     gtk_label_set_text(GTK_LABEL(UIPVAuthor), currentPodcast.artist.c_str());
     gtk_image_set_from_pixbuf(GTK_IMAGE(UIPVImage), webTools::createImage(currentPodcast.image600, 200, 200));
@@ -227,7 +230,9 @@ int main(int argc, char **argv)
         rss = webTools::getFileInMem(currentPodcast.RssFeed);
         cout << "from web" << endl;
         caching::createCacheFile(fileName.c_str(),rss.c_str(),rss.size());
-        setPreviewPage(DataTools::getEpisodes(rss));
+        //setPreviewPage(DataTools::getEpisodes(rss));
+        gtk_stack_set_visible_child(GTK_STACK(UImainStack),UIPVPodcastDetailsPage);
+        PreviewPage->setPreviewPage(DataTools::getEpisodes(rss),currentPodcast);
         return;
       }
       else
@@ -235,7 +240,9 @@ int main(int argc, char **argv)
         cout << "from cache" << endl;
         string filepath = caching::getCachePath(fileName.c_str());
         rss = DataTools::getFile(filepath);
-        setPreviewPage(DataTools::getEpisodes(rss));
+        //setPreviewPage(DataTools::getEpisodes(rss));
+        gtk_stack_set_visible_child(GTK_STACK(UImainStack),UIPVPodcastDetailsPage);
+        PreviewPage->setPreviewPage(DataTools::getEpisodes(rss),currentPodcast);
         return;
       }
     }
