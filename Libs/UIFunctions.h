@@ -1,4 +1,5 @@
-#include <gtk-3.0/gtk/gtk.h>
+#pragma once
+#include<gtk-3.0/gtk/gtk.h>
 #include <iostream>
 #include <stdio.h>
 #include <future>
@@ -15,6 +16,7 @@ void clearContainer(GtkContainer* e);
 void deletePodcast(GtkWidget*, gpointer);
 void buttonDownload(GtkWidget* e, gpointer data);
 void buttonStream(GtkWidget* e, gpointer data);
+void buttonPlay(GtkWidget* e, gpointer data);
 
   void streamPodcast(PodcastDataBundle& Episode, GtkProgressBar* bar){
     cout << Episode.Episode.title << endl;
@@ -101,7 +103,7 @@ void buttonStream(GtkWidget* e, gpointer data);
           button1 = GTK_BUTTON (gtk_button_new_from_icon_name("media-playback-start", GTK_ICON_SIZE_BUTTON));
           button2 = GTK_BUTTON (gtk_button_new_from_icon_name("emblem-downloads", GTK_ICON_SIZE_BUTTON));
           g_signal_connect(button1, "released", (GCallback)buttonStream,(gpointer) this);
-          g_signal_connect(button2, "released", (GCallback)downloadPodcast, (gpointer) this);
+          g_signal_connect(button2, "released", (GCallback)buttonDownload, (gpointer) this);
         }
         gtk_label_set_line_wrap(GTK_LABEL(titleLabel), true);// enables line wrap
         gtk_label_set_xalign(GTK_LABEL(titleLabel), 0.0);// sets lables to left align
