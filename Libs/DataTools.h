@@ -6,13 +6,12 @@ using namespace std;
 #pragma once
 // test rss file is pinetalk.rss
 
-// For getting data fields in strings of data example: datastring = {myAge="16yrs"} getField(datastring,"myAge=\\"","\\"") returns string 16yrs
+// For getting data fields in strings of data example: datastring = {myAge="16yrs"} getField(datastring,"myAge=\"","\"") returns string 16yrs
 
-class DataTools
+namespace DataTools
 {
-    public:
-
-    static auto filePathFromEpisode(PodcastEpisode& episode,PodcastData Podcast)
+    string cleanString(string Value);
+    auto filePathFromEpisode(PodcastEpisode& episode,PodcastData Podcast)
     {
         string filepath = filepaths::lclFiles();
         filepath += DataTools::cleanString(Podcast.title);
@@ -20,7 +19,7 @@ class DataTools
         return filepath;
     }
     /// just gets the string data from a file.
-    static std::string getFile(string file){
+    std::string getFile(string file){
         
         ifstream myfile(file,ios::binary);// declaring file reader object opening file to read
         std::string text( (std::istreambuf_iterator<char>(myfile)),(std::istreambuf_iterator<char>()));
@@ -29,7 +28,7 @@ class DataTools
     }
 
     /// gets particular values from podcast xml files and returns the index it was found at from the index reference.
-    static string GetFieldAndReturnIndex(const string& PodcastRSS,string startAtChars,string endAtChars,int &index,int startAtIndex = 0){
+    string GetFieldAndReturnIndex(const string& PodcastRSS,string startAtChars,string endAtChars,int &index,int startAtIndex = 0){
         size_t itemStart = 0;
         size_t itemEnd = 0;
         if(startAtChars == ""){itemStart = 0;}
@@ -44,7 +43,7 @@ class DataTools
     }
 
     /// gets particular values from podcast xml files.
-    static string GetField(const string& PodcastRSS,string startAtChars,string endAtChars,int startAtIndex = 0){
+    string GetField(const string& PodcastRSS,string startAtChars,string endAtChars,int startAtIndex = 0){
         size_t itemStart = 0;
         size_t itemEnd = 0;
         if(startAtChars == ""){itemStart = 0;}
@@ -58,7 +57,7 @@ class DataTools
     }
 
     /// extracts data from save file data.
-    static PodcastEpisode GetPodcastData(const string& aRSSFile){
+    PodcastEpisode GetPodcastData(const string& aRSSFile){
 
         PodcastEpisode MostRecent;
         // get title
@@ -82,7 +81,7 @@ class DataTools
         return MostRecent;
     }
     /// gets all the episodes from a podcast xml file and returns them in an episode list.
-    static PodcastEpisodeList getEpisodes(string& RSSFile){
+    PodcastEpisodeList getEpisodes(string& RSSFile){
     RSSFile = GetField(RSSFile,"<channel>","</channel>");
     // find episodes maybe use while loop
     PodcastEpisodeList episodes;
@@ -99,7 +98,7 @@ class DataTools
 }
 
 
-    static bool hasSpaces(string& Value){
+    bool hasSpaces(string& Value){
     for (char i:Value)
     if (isspace(i) != 0)
         {return true;}
@@ -108,7 +107,7 @@ class DataTools
     }
 
     
-    static string replaceSpaces(string& Value,char replaceWith){
+    string replaceSpaces(string& Value,char replaceWith){
         string cleanString;
         for (char i :Value)
         {
@@ -122,7 +121,7 @@ class DataTools
     return cleanString;
     }
 
-    static string cleanString(string Value){
+    string cleanString(string Value){
         string cleanString;
         for (char i :Value)
         {
@@ -135,7 +134,7 @@ class DataTools
         return cleanString;
     }
 
-    static PodcastDataList extractPodcastDataFromString(string& fileData){
+    PodcastDataList extractPodcastDataFromString(string& fileData){
 
       PodcastDataList list;
       int index = 0;
