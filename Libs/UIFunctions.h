@@ -1,5 +1,5 @@
 #pragma once
-#include<gtk-3.0/gtk/gtk.h>
+#include<gtk/gtk.h>
 #include <iostream>
 #include <stdio.h>
 #include <future>
@@ -95,8 +95,8 @@ void buttonPlay(GtkWidget* e, gpointer data);
         {
           button1 = GTK_BUTTON (gtk_button_new_from_icon_name("gtk-delete",GTK_ICON_SIZE_BUTTON));
           button2 = GTK_BUTTON (gtk_button_new_from_icon_name("media-playback-start", GTK_ICON_SIZE_BUTTON));
-          g_signal_connect(button1, "released", (GCallback)buttonPlay, (gpointer) this);
-          g_signal_connect(button2, "released", (GCallback)deletePodcast, (gpointer) this);
+          g_signal_connect(button1, "released", (GCallback)deletePodcast, (gpointer) this);
+          g_signal_connect(button2, "released", (GCallback)buttonPlay, (gpointer) this);
         }
         if(isDownloaded == false)// if true create the UI for a podcast that has no been downloaded
         {
