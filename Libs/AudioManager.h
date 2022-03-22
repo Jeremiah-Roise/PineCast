@@ -6,7 +6,7 @@
 #include<curlpp/Easy.hpp>
 #include<curlpp/Options.hpp>
 #include<sstream>
-#include<gtk-3.0/gtk/gtk.h>
+#include<gtk/gtk.h>
 #include"DataTools.h"
 #include"PodcastMetaDataLists.h"
 #include"PodcastDataBundle.h"
