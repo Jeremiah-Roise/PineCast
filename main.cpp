@@ -1,4 +1,4 @@
-#include </usr/include/gtk-3.0/gtk/gtk.h>
+#include <gtk/gtk.h>
 #include <iostream>
 #include <stdio.h>
 #include <future>
@@ -142,7 +142,7 @@ int main(int argc, char **argv)
 
   /// get search text and give it to the itunes search function
   ///
-  /// linked directly to the UI in glade
+  /// linked directly to the UI xml
   void searchItunesWithText(GtkEntry* e)
   {
     searchList = webTools::itunesSearch(gtk_entry_get_text(e));
