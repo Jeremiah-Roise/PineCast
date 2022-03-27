@@ -36,40 +36,8 @@ using std::string;
   }
 
 
-class IPlayPodcast
+class PlayPodcast
 {
-  public:
-  std::vector<std::unique_ptr<IPlayPodcast>> myList;
-  virtual void StartDownload(){
-    cout << "this is the base Class" << endl;
-  }
-  virtual void play(){
-    cout << "this is the base Class" << endl;
-  }
-  virtual ~IPlayPodcast(){}
-
-};
-
-template<typename eventFuncArg>
-class PlayPodcast:public IPlayPodcast
-{
-public:
-  //  creates a function type to hold an event arg
-  std::function<void(double,PodcastDataBundle,eventFuncArg)> updateEventFunc = [](double,PodcastDataBundle,eventFuncArg){return;};
-  std::function<void(double,PodcastDataBundle,eventFuncArg)> eventPointFunc = [](double,PodcastDataBundle,eventFuncArg){return;};
-
-  eventFuncArg eventArg;
-  PlayPodcast(size_t tmpEventPoint,PodcastDataBundle podcastBundle,eventFuncArg eventArgtmp){
-    EventPoint = tmpEventPoint;
-    Podcast = podcastBundle;
-    eventArg = eventArgtmp;
-  }
-
-  void StartDownload(){
-    std::thread downThread = std::thread([this](){this->DownloadPodcast();});
-    downThread.detach();
-    return;
-  }
 
 private:
   size_t EventPoint;
@@ -87,51 +55,65 @@ private:
       {
         eventPointRun = true;
         playMp3(DataTools::filePathFromEpisode(Podcast.Episode,Podcast.Podcast));
-        this->eventPointFunc(check,Podcast,eventArg);
+        this->atestfunc(check,Podcast);
       }
       else
       {
       lastUpdate = check;
-      updateEventFunc(check,Podcast,eventArg);
+      atestfunc(check,Podcast);
       }
       
       return 0;
     }
     return 0;
   }
+public:
 
   /// Downloads a podcast and returns the progress through the double pointer
-  void DownloadPodcast(){
-    string filepath = DataTools::filePathFromEpisode(Podcast.Episode,Podcast.Podcast);
+  void DownloadPodcast(PodcastDataBundle lclPodcast){
+      cout << lclPodcast.Episode.mp3Link << endl;
+    string filepath = DataTools::filePathFromEpisode(lclPodcast.Episode,lclPodcast.Podcast);
     cout << "downloading podcast" << endl;
     try
     {
       cout << "created file" << endl; cURLpp::Easy handle;
       handle.setOpt(cURLpp::options::NoProgress(false));
-      handle.setOpt(cURLpp::options::ProgressFunction(
-        [this](double A,double B,double C,double D){
-          return this->progressUpdate(A,B,C,D);
-        }));
-      handle.setOpt(cURLpp::Options::Url(Podcast.Episode.mp3Link));
+      handle.setOpt(cURLpp::options::ProgressFunction( [this](double A,double B,double C,double D){cout << "this is the callback function" << endl; return this->progressUpdate(A,B,C,D); }));
+
+
+      handle.setOpt(cURLpp::Options::Url(lclPodcast.Episode.mp3Link));
       handle.setOpt(cURLpp::options::FollowLocation(true));
       FILE *fp;
       fp = fopen(filepath.c_str(),"wb");
       handle.setOpt(cURLpp::options::WriteFile(fp));
       handle.perform();
       fclose(fp);
-      delete this;
     }
     catch(curlpp::RuntimeError & e)
     {
       std::cout << e.what() << std::endl;
       cout << "no connection" << endl;
-      delete this;
     }
     catch(curlpp::LogicError & e)
     {
       std::cout << e.what() << std::endl;
       cout << "no connection" << endl;
-      delete this;
     }
-}
+  }
+  //  creates a function type to hold an event arg
+  void atestfunc(double val,PodcastDataBundle val2){
+    cout << val << " : " << val2.Episode.title << endl;
+  }
+
+  PlayPodcast(size_t tmpEventPoint,PodcastDataBundle podcastBundle) : Podcast(podcastBundle)
+  {
+    EventPoint = tmpEventPoint;
+  }
+
+  void StartDownload(){
+    cout << Podcast.Episode.mp3Link << endl;
+    std::thread downThread = std::thread([this](PodcastDataBundle A){this->DownloadPodcast(A);},Podcast);
+    downThread.detach();
+    return;
+  }
 };

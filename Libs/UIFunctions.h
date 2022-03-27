@@ -8,9 +8,11 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <utime.h>
-#include"podcastEpisodeTypes.h"
-#include"PodcastMetaDataLists.h"
-#include"PodcastDataBundle.h"
+#include "podcastEpisodeTypes.h"
+#include "PodcastMetaDataLists.h"
+#include "PodcastDataBundle.h"
+#include "AudioManager.h"
+#include "LibraryTools.h"
 #include "../UINAMES.h"
 void clearContainer(GtkContainer* e);
 void deletePodcast(GtkWidget*, gpointer);
@@ -18,59 +20,7 @@ void buttonDownload(GtkWidget* e, gpointer data);
 void buttonStream(GtkWidget* e, gpointer data);
 void buttonPlay(GtkWidget* e, gpointer data);
 
-  void streamPodcast(PodcastDataBundle& Episode, GtkProgressBar* bar){
-    cout << Episode.Episode.title << endl;
-    PlayPodcast<GtkProgressBar*>* download = new PlayPodcast<GtkProgressBar*>(0.5,Episode,bar);
-    download->updateEventFunc = [](double fraction, PodcastDataBundle Podcast,GtkProgressBar* bar)
-    {
-      gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(bar),fraction);
-    };
-
-    download->eventPointFunc = [](double fraction, PodcastDataBundle Podcast,GtkProgressBar* bar)
-    {
-      GtkWidget* parent = gtk_widget_get_parent(GTK_WIDGET(bar));
-      GtkWidget* playButton = gtk_button_new_from_icon_name("media-playback-start", GTK_ICON_SIZE_BUTTON);
-      GtkWidget* deleteButton = gtk_button_new_from_icon_name("gtk-delete",GTK_ICON_SIZE_BUTTON);
-      gtk_container_add(GTK_CONTAINER(parent),playButton);
-      gtk_container_add(GTK_CONTAINER(parent),deleteButton);
-      gtk_widget_show(playButton);
-      gtk_widget_show(deleteButton);
-    };
-
-    download->StartDownload();
-    Downloads::addToDownloads(Episode.Episode);
-  } 
-
-
-  void downloadPodcast(GtkProgressBar* progressBar, PodcastDataBundle Episode){
-    cout << Episode.Episode.title << endl;
-    PlayPodcast<GtkProgressBar*>* download = new PlayPodcast<GtkProgressBar*>(1,Episode,progressBar);
-
-    download->updateEventFunc = [](double fraction, PodcastDataBundle Podcast,GtkProgressBar* bar)
-    {
-      gtk_progress_bar_set_fraction(bar,fraction);
-    };
-
-    download->eventPointFunc = [](double fraction, PodcastDataBundle Podcast,GtkProgressBar* bar)
-    {
-      GtkWidget* parent = gtk_widget_get_parent(GTK_WIDGET(bar));
-      GtkWidget* playButton = gtk_button_new_from_icon_name("media-playback-start", GTK_ICON_SIZE_BUTTON);
-      GtkWidget* deleteButton = gtk_button_new_from_icon_name("gtk-delete",GTK_ICON_SIZE_BUTTON);
-
-      gtk_container_add(GTK_CONTAINER(parent),playButton);
-      gtk_container_add(GTK_CONTAINER(parent),deleteButton);
-
-      gtk_widget_show(playButton);
-      gtk_widget_show(deleteButton);
-      gtk_widget_destroy(GTK_WIDGET(bar));
-    };
-
-    download->StartDownload();
-    Downloads::addToDownloads(Episode.Episode);
-  } 
-
-
-  class episodeActionsUI
+  class episodeActionsUI : public PlayPodcast
   {
     public:
       GtkWidget* topBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
@@ -89,7 +39,7 @@ void buttonPlay(GtkWidget* e, gpointer data);
       GtkWidget* durationLabel = gtk_label_new(duration.c_str());
 
     public:
-      episodeActionsUI(bool isDownloaded,PodcastDataBundle& Podcast) : Podcast(Podcast)
+      episodeActionsUI(bool isDownloaded,PodcastDataBundle inputPodcast) : PlayPodcast(0.5,inputPodcast), Podcast(inputPodcast)
       {
         if (isDownloaded == true)// if true create the UI for a Podcast Episode that has been downloaded
         {
@@ -124,7 +74,12 @@ void buttonPlay(GtkWidget* e, gpointer data);
         gtk_widget_show_all(topBox);
 
       }
+
+      //void atestfunc(double val,PodcastDataBundle val2){
+        //cout << "this is inheritance at work" << endl;
+      //}
   };
+
   
   void buttonPlay(GtkWidget* e, gpointer data){
     episodeActionsUI buttonSource = *reinterpret_cast<episodeActionsUI*>(data);
@@ -132,11 +87,12 @@ void buttonPlay(GtkWidget* e, gpointer data);
   } 
   void buttonStream(GtkWidget* e, gpointer data){
     episodeActionsUI buttonSource = *reinterpret_cast<episodeActionsUI*>(data);
-    streamPodcast(buttonSource.Podcast,buttonSource.progressTracker);
+    //streamPodcast(buttonSource.Podcast,buttonSource.progressTracker);
+    buttonSource.StartDownload();
   }
   void buttonDownload(GtkWidget* e, gpointer data){
     episodeActionsUI buttonSource = *reinterpret_cast<episodeActionsUI*>(data);
-    downloadPodcast(buttonSource.progressTracker,buttonSource.Podcast);
+    //downloadPodcast(buttonSource.progressTracker,buttonSource.Podcast);
   }
 
   void deletePodcast(GtkWidget* e, gpointer data){
