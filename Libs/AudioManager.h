@@ -47,6 +47,7 @@ private:
   bool updateEventRun = false;
   bool isFinished = false;
 
+public:
   int progressUpdate(double dltotal,   double dlnow,   double ultotal,   double ulnow){
     double check = dlnow/dltotal;
     if (((check >= 0) && (check  >= lastUpdate + 0.01)) || ((check >= 1) && isFinished == false))
@@ -67,7 +68,6 @@ private:
     }
     return 0;
   }
-public:
 
   /// Downloads a podcast and returns the progress through the double pointer
   void DownloadPodcast(PodcastDataBundle lclPodcast){
@@ -78,7 +78,7 @@ public:
     {
       cout << "created file" << endl; cURLpp::Easy handle;
       handle.setOpt(cURLpp::options::NoProgress(false));
-      handle.setOpt(cURLpp::options::ProgressFunction( [this](double A,double B,double C,double D){cout << "this is the callback function" << endl; return this->progressUpdate(A,B,C,D); }));
+      handle.setOpt(cURLpp::options::ProgressFunction( [this](double A,double B,double C,double D){return this->progressUpdate(A,B,C,D); }));
 
 
       handle.setOpt(cURLpp::Options::Url(lclPodcast.Episode.mp3Link));
