@@ -74,10 +74,6 @@ void buttonPlay(GtkWidget* e, gpointer data);
         gtk_widget_show_all(topBox);
 
       }
-
-      //void atestfunc(double val,PodcastDataBundle val2){
-        //cout << "this is inheritance at work" << endl;
-      //}
   };
 
   
