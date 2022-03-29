@@ -25,8 +25,8 @@ using std::string;
   }
 
   //  plays localy downloaded podcasts. should be called when a podcast is already downloaded
-   void play(PodcastEpisode episode, PodcastData Podcast){
-    string filepath = DataTools::filePathFromEpisode(episode,Podcast);
+   void play(PodcastDataBundle Podcast){
+    string filepath = DataTools::filePathFromEpisode(Podcast.Episode,Podcast.Podcast);
     if (filepaths::fileExists(filepath))
     {
       playMp3(filepath);
@@ -38,16 +38,23 @@ using std::string;
 
 class PlayPodcast
 {
-
 private:
-  size_t EventPoint;
+
   PodcastDataBundle Podcast;
+  size_t EventPoint;
   float lastUpdate = 0;
   bool eventPointRun = false;
   bool updateEventRun = false;
   bool isFinished = false;
 
 public:
+  PlayPodcast(PodcastDataBundle podcastBundle,size_t EventPoint) : Podcast(podcastBundle), EventPoint(EventPoint){}
+
+  //  creates a function type to hold an event arg
+  void atestfunc(double val,PodcastDataBundle val2){
+    cout << val << " : " << val2.Episode.title << endl;
+  }
+
   int progressUpdate(double dltotal,   double dlnow,   double ultotal,   double ulnow){
     double check = dlnow/dltotal;
     if (((check >= 0) && (check  >= lastUpdate + 0.01)) || ((check >= 1) && isFinished == false))
@@ -79,8 +86,6 @@ public:
       cout << "created file" << endl; cURLpp::Easy handle;
       handle.setOpt(cURLpp::options::NoProgress(false));
       handle.setOpt(cURLpp::options::ProgressFunction( [this](double A,double B,double C,double D){return this->progressUpdate(A,B,C,D); }));
-
-
       handle.setOpt(cURLpp::Options::Url(lclPodcast.Episode.mp3Link));
       handle.setOpt(cURLpp::options::FollowLocation(true));
       FILE *fp;
@@ -100,15 +105,7 @@ public:
       cout << "no connection" << endl;
     }
   }
-  //  creates a function type to hold an event arg
-  void atestfunc(double val,PodcastDataBundle val2){
-    cout << val << " : " << val2.Episode.title << endl;
-  }
 
-  PlayPodcast(size_t tmpEventPoint,PodcastDataBundle podcastBundle) : Podcast(podcastBundle)
-  {
-    EventPoint = tmpEventPoint;
-  }
 
   void StartDownload(){
     cout << Podcast.Episode.mp3Link << endl;
