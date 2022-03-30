@@ -39,7 +39,7 @@ void buttonPlay(GtkWidget* e, gpointer data);
       GtkWidget* durationLabel = gtk_label_new(duration.c_str());
 
     public:
-      episodeActionsUI(bool isDownloaded,PodcastDataBundle inputPodcast) : PlayPodcast(0.5,inputPodcast), Podcast(inputPodcast)
+      episodeActionsUI(bool isDownloaded,PodcastDataBundle inputPodcast) : PlayPodcast(inputPodcast,0.5), Podcast(inputPodcast)
       {
         if (isDownloaded == true)// if true create the UI for a Podcast Episode that has been downloaded
         {
@@ -79,7 +79,7 @@ void buttonPlay(GtkWidget* e, gpointer data);
   
   void buttonPlay(GtkWidget* e, gpointer data){
     episodeActionsUI buttonSource = *reinterpret_cast<episodeActionsUI*>(data);
-    play(buttonSource.Podcast.Episode,buttonSource.Podcast.Podcast);
+    play(buttonSource.Podcast);
   } 
   void buttonStream(GtkWidget* e, gpointer data){
     episodeActionsUI buttonSource = *reinterpret_cast<episodeActionsUI*>(data);
@@ -88,7 +88,7 @@ void buttonPlay(GtkWidget* e, gpointer data);
   }
   void buttonDownload(GtkWidget* e, gpointer data){
     episodeActionsUI buttonSource = *reinterpret_cast<episodeActionsUI*>(data);
-    //downloadPodcast(buttonSource.progressTracker,buttonSource.Podcast);
+    buttonSource.StartDownload();
   }
 
   void deletePodcast(GtkWidget* e, gpointer data){
