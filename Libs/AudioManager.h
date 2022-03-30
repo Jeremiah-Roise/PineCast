@@ -13,8 +13,6 @@
 #pragma once
 using std::cout;
 using std::endl;
-using std::string;
-
 
   /// uses system command to start podcast with default application should be able to tolerate spaces.
   void playMp3(string path)
@@ -43,34 +41,31 @@ private:
   PodcastDataBundle Podcast;
   size_t EventPoint;
   float lastUpdate = 0;
-  bool eventPointRun = false;
-  bool updateEventRun = false;
-  bool isFinished = false;
+  bool downloadFinished = false;
+  PodcastDataBundle empty;
 
 public:
-  PlayPodcast(PodcastDataBundle podcastBundle,size_t EventPoint) : Podcast(podcastBundle), EventPoint(EventPoint){}
-
-  //  creates a function type to hold an event arg
-  void atestfunc(double val,PodcastDataBundle val2){
-    cout << val << " : " << val2.Episode.title << endl;
+  void StartDownload(){
+    std::thread downThread = std::thread([this](PodcastDataBundle A){this->DownloadPodcast(A);},Podcast);
+    downThread.detach();
+    return;
   }
 
-  int progressUpdate(double dltotal,   double dlnow,   double ultotal,   double ulnow){
+  PlayPodcast(PodcastDataBundle podcastBundle,size_t EventPoint) : Podcast(podcastBundle), EventPoint(EventPoint){}
+
+
+  int progressUpdate(double dltotal,   double dlnow){
     double check = dlnow/dltotal;
-    if (((check >= 0) && (check  >= lastUpdate + 0.01)) || ((check >= 1) && isFinished == false))
+    if (check >= 1 && downloadFinished == false)
     {
-      if (check >= EventPoint && eventPointRun == false)
-      {
-        eventPointRun = true;
-        playMp3(DataTools::filePathFromEpisode(Podcast.Episode,Podcast.Podcast));
-        this->atestfunc(check,Podcast);
-      }
-      else
-      {
+      downloadFinished = true;
+      cout << check << endl;
+      return 0;
+    }
+    if (lastUpdate + 0.01 < check)
+    {
       lastUpdate = check;
-      atestfunc(check,Podcast);
-      }
-      
+      cout << check << endl;
       return 0;
     }
     return 0;
@@ -83,9 +78,10 @@ public:
     cout << "downloading podcast" << endl;
     try
     {
-      cout << "created file" << endl; cURLpp::Easy handle;
+      cout << "created file" << endl;
+      cURLpp::Easy handle;
       handle.setOpt(cURLpp::options::NoProgress(false));
-      handle.setOpt(cURLpp::options::ProgressFunction( [this](double A,double B,double C,double D){return this->progressUpdate(A,B,C,D); }));
+      handle.setOpt(cURLpp::options::ProgressFunction([this](double A,double B,double C,double D){return this->progressUpdate(A,B);}));
       handle.setOpt(cURLpp::Options::Url(lclPodcast.Episode.mp3Link));
       handle.setOpt(cURLpp::options::FollowLocation(true));
       FILE *fp;
@@ -107,10 +103,4 @@ public:
   }
 
 
-  void StartDownload(){
-    cout << Podcast.Episode.mp3Link << endl;
-    std::thread downThread = std::thread([this](PodcastDataBundle A){this->DownloadPodcast(A);},Podcast);
-    downThread.detach();
-    return;
-  }
 };
