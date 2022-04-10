@@ -14,11 +14,11 @@
 #include "AudioManager.h"
 #include "LibraryTools.h"
 #include "../UINAMES.h"
-void clearContainer(GtkContainer* e);
-void deletePodcast(GtkWidget*, gpointer);
-void buttonDownload(GtkWidget* e, gpointer data);
+//void clearContainer(GtkContainer* e);
+//void deletePodcast(GtkWidget*, gpointer);
+//void buttonDownload(GtkWidget* e, gpointer data);
 void buttonStream(GtkWidget* e, gpointer data);
-void buttonPlay(GtkWidget* e, gpointer data);
+//void buttonPlay(GtkWidget* e, gpointer data);
 
   class episodeActionsUI : public PlayPodcast
   {
@@ -37,23 +37,28 @@ void buttonPlay(GtkWidget* e, gpointer data);
       GtkWidget* buttonBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
       GtkWidget* titleLabel = gtk_label_new(title.c_str());
       GtkWidget* durationLabel = gtk_label_new(duration.c_str());
+      
+      void updateBar(double amount){
+        cout << "this is the update function: " << amount << endl;
+      }
 
     public:
       episodeActionsUI(bool isDownloaded,PodcastDataBundle inputPodcast) : PlayPodcast(inputPodcast,0.5), Podcast(inputPodcast)
       {
+        updateFunc = std::bind(&episodeActionsUI::updateBar,this,std::placeholders::_1);
         if (isDownloaded == true)// if true create the UI for a Podcast Episode that has been downloaded
         {
           button1 = GTK_BUTTON (gtk_button_new_from_icon_name("gtk-delete",GTK_ICON_SIZE_BUTTON));
           button2 = GTK_BUTTON (gtk_button_new_from_icon_name("media-playback-start", GTK_ICON_SIZE_BUTTON));
-          g_signal_connect(button1, "released", (GCallback)deletePodcast, (gpointer) this);
-          g_signal_connect(button2, "released", (GCallback)buttonPlay, (gpointer) this);
+          //g_signal_connect(button1, "released", (GCallback)deletePodcast, (gpointer) this);
+          //g_signal_connect(button2, "released", (GCallback)buttonPlay, (gpointer) this);
         }
         if(isDownloaded == false)// if true create the UI for a podcast that has no been downloaded
         {
           button1 = GTK_BUTTON (gtk_button_new_from_icon_name("media-playback-start", GTK_ICON_SIZE_BUTTON));
           button2 = GTK_BUTTON (gtk_button_new_from_icon_name("emblem-downloads", GTK_ICON_SIZE_BUTTON));
           g_signal_connect(button1, "released", (GCallback)buttonStream,(gpointer) this);
-          g_signal_connect(button2, "released", (GCallback)buttonDownload, (gpointer) this);
+          //g_signal_connect(button2, "released", (GCallback)buttonDownload, (gpointer) this);
         }
         gtk_label_set_line_wrap(GTK_LABEL(titleLabel), true);// enables line wrap
         gtk_label_set_xalign(GTK_LABEL(titleLabel), 0.0);// sets lables to left align
@@ -77,26 +82,26 @@ void buttonPlay(GtkWidget* e, gpointer data);
   };
 
   
-  void buttonPlay(GtkWidget* e, gpointer data){
-    episodeActionsUI buttonSource = *reinterpret_cast<episodeActionsUI*>(data);
-    play(buttonSource.Podcast);
-  } 
+  //void buttonPlay(GtkWidget* e, gpointer data){
+  //  episodeActionsUI buttonSource = *reinterpret_cast<episodeActionsUI*>(data);
+  //  play(buttonSource.Podcast);
+  //} 
   void buttonStream(GtkWidget* e, gpointer data){
-    episodeActionsUI buttonSource = *reinterpret_cast<episodeActionsUI*>(data);
+    episodeActionsUI* buttonSource = reinterpret_cast<episodeActionsUI*>(data);
     //streamPodcast(buttonSource.Podcast,buttonSource.progressTracker);
-    buttonSource.StartDownload();
+    buttonSource->StartDownload();
   }
-  void buttonDownload(GtkWidget* e, gpointer data){
-    episodeActionsUI buttonSource = *reinterpret_cast<episodeActionsUI*>(data);
-    buttonSource.StartDownload();
-  }
+  //void buttonDownload(GtkWidget* e, gpointer data){
+  //  episodeActionsUI buttonSource = *reinterpret_cast<episodeActionsUI*>(data);
+  //  buttonSource.StartDownload();
+  //}
 
-  void deletePodcast(GtkWidget* e, gpointer data){
-    episodeActionsUI buttonSource = *reinterpret_cast<episodeActionsUI*>(data);
-    string path = DataTools::filePathFromEpisode(buttonSource.Podcast.Episode,buttonSource.Podcast.Podcast);
-    cout << path << endl;
-    Downloads::removeFromDownloads(buttonSource.Podcast.Episode,buttonSource.Podcast.Podcast);
-  } 
+  //void deletePodcast(GtkWidget* e, gpointer data){
+  //  episodeActionsUI buttonSource = *reinterpret_cast<episodeActionsUI*>(data);
+  //  string path = DataTools::filePathFromEpisode(buttonSource.Podcast.Episode,buttonSource.Podcast.Podcast);
+  //  cout << path << endl;
+  //  Downloads::removeFromDownloads(buttonSource.Podcast.Episode,buttonSource.Podcast.Podcast);
+  //} 
 
   ///  clears the given container of all children
   void clearContainer(GtkContainer* e)
