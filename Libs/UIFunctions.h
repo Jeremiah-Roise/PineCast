@@ -32,6 +32,7 @@ void buttonStream(GtkWidget* e, gpointer data);
 
       string title = Podcast.Episode.title;
       string duration = "<span size=\"medium\"><i>" + Podcast.Episode.duration + "</i></span>";
+      bool started = false;
 
       GtkWidget* infoBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
       GtkWidget* buttonBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
@@ -40,9 +41,21 @@ void buttonStream(GtkWidget* e, gpointer data);
       
       void updateBar(double amount){
         cout << "this is the update function: " << amount << endl;
+        gtk_progress_bar_set_fraction(progressTracker,amount);
       }
 
     public:
+      friend void buttonStream(GtkWidget* e, gpointer data){
+        episodeActionsUI* buttonSource = reinterpret_cast<episodeActionsUI*>(data);
+        //streamPodcast(buttonSource.Podcast,buttonSource.progressTracker);
+        buttonSource->StartDownload();
+        if (buttonSource->started == false)
+        {
+          buttonSource->started = true;
+          gtk_widget_show(GTK_WIDGET(buttonSource->progressTracker));
+        }
+        
+      }
       episodeActionsUI(bool isDownloaded,PodcastDataBundle inputPodcast) : PlayPodcast(inputPodcast,0.5), Podcast(inputPodcast)
       {
         updateFunc = std::bind(&episodeActionsUI::updateBar,this,std::placeholders::_1);
@@ -73,11 +86,12 @@ void buttonStream(GtkWidget* e, gpointer data);
         gtk_box_pack_start(GTK_BOX(topBox), infoBox, false, false, 0);
         gtk_box_pack_end(GTK_BOX(topBox), buttonBox, false, false, 0);
 
+        gtk_box_pack_start(GTK_BOX(buttonBox), GTK_WIDGET(progressTracker), false, false, 0);
         gtk_box_pack_start(GTK_BOX(buttonBox), GTK_WIDGET(button1), false, false, 0);
         gtk_box_pack_start(GTK_BOX(buttonBox), GTK_WIDGET(button2), false, false, 0);
 
         gtk_widget_show_all(topBox);
-
+        gtk_widget_hide(GTK_WIDGET(progressTracker));
       }
   };
 
@@ -86,11 +100,6 @@ void buttonStream(GtkWidget* e, gpointer data);
   //  episodeActionsUI buttonSource = *reinterpret_cast<episodeActionsUI*>(data);
   //  play(buttonSource.Podcast);
   //} 
-  void buttonStream(GtkWidget* e, gpointer data){
-    episodeActionsUI* buttonSource = reinterpret_cast<episodeActionsUI*>(data);
-    //streamPodcast(buttonSource.Podcast,buttonSource.progressTracker);
-    buttonSource->StartDownload();
-  }
   //void buttonDownload(GtkWidget* e, gpointer data){
   //  episodeActionsUI buttonSource = *reinterpret_cast<episodeActionsUI*>(data);
   //  buttonSource.StartDownload();
