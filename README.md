@@ -7,6 +7,6 @@ this is my first serious application built for Linux so if you see some odd desi
 
 ![Pinecast Podcast Client](/Images/Library.png)
 
-Note the reason I use int\* varname not int \*varname because the type is int pointer not normal int which is confussing.
+Note the reason I use int\* varname not int \*varname because the type is int pointer not normal int which is confusing.
 
 when you clone the repo the docs folder should only have a doxygenConfig file in it produce the docs by running doxygen on the config
