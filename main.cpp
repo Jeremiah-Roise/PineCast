@@ -1,4 +1,4 @@
-#include <gtk/gtk.h>
+#include <gtk-3.0/gtk/gtk.h>
 #include <iostream>
 #include <stdio.h>
 #include <future>
