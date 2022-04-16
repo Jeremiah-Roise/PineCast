@@ -39,23 +39,33 @@ void buttonStream(GtkWidget* e, gpointer data);
       GtkWidget* buttonBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
       GtkWidget* titleLabel = gtk_label_new(title.c_str());
       GtkWidget* durationLabel = gtk_label_new(duration.c_str());
+
+      void downloadFinished(){
+        cout << "DOWNLOAD FINISHED" << endl;
+        gtk_widget_hide(GTK_WIDGET(progressTracker));
+        gtk_widget_show(GTK_WIDGET(button1));
+        gtk_widget_show(GTK_WIDGET(button2));
+        gtk_progress_bar_set_fraction(progressTracker,0.0f);
+        //  CALL SOME FUNCTION TO ADD THE EPISODE TO THE DOWNLOADS LIST AND GHANGE THE BUTTONS TO REFLECT THIS AND RESET THE PLAYPODCAST CLASS
+      }
       
       void updateBar(double amount){
         this->amount = amount;
         //  this jank is to prevent gtk from crashing
         gdk_threads_add_idle((GSourceFunc)&episodeActionsUI::updateBarHelper,(gpointer)this);
       }
-      static int updateBarHelper(gpointer callback){
+      static gboolean updateBarHelper(gpointer callback){
         episodeActionsUI* buttonSource = reinterpret_cast<episodeActionsUI*>(callback);
         cout << "this is the update function: " << buttonSource->amount << endl;
         gtk_progress_bar_set_fraction(buttonSource->progressTracker,buttonSource->amount);
         if (buttonSource->amount >= 1)
         {
           //  this kills all scheduled events of this type eg: the download went much faster than the ui updated and the download is finished now
-          return 0;
+          buttonSource->downloadFinished();
+          return FALSE;
         }
         
-        return 1;
+        return TRUE;
       }
 
     public:
@@ -67,6 +77,8 @@ void buttonStream(GtkWidget* e, gpointer data);
         {
           buttonSource->started = true;
           gtk_widget_show(GTK_WIDGET(buttonSource->progressTracker));
+          gtk_widget_hide(GTK_WIDGET(buttonSource->button1));
+          gtk_widget_hide(GTK_WIDGET(buttonSource->button2));
         }
         
       }

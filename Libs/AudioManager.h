@@ -46,8 +46,10 @@ public:
   int progressUpdate(double dltotal, double dlnow,double,double){
     double check = dlnow/dltotal;
     
-    if (std::isnan(check)){
-	    check = 0; return 0;
+    //  checks for validity
+    //  impoves performance only when tangible progress has been made
+    if (std::isnan(check) || check < lastUpdate + 0.01){
+	    return 0;
     }
 
     if (check >= 1 && finished == false)
