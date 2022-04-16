@@ -6,8 +6,11 @@
 #include<curlpp/Easy.hpp>
 #include<curlpp/Options.hpp>
 #include<sstream>
+#include<cmath>
 #include<gtk/gtk.h>
 #include<functional>
+#include<thread>
+#include"filepaths.h"
 #include"DataTools.h"
 #include"PodcastMetaDataLists.h"
 #include"PodcastDataBundle.h"
@@ -43,6 +46,9 @@ public:
   int progressUpdate(double dltotal, double dlnow,double,double){
     double check = dlnow/dltotal;
     
+    if (std::isnan(check)){
+	    check = 0; return 0;
+    }
 
     if (check >= 1 && finished == false)
     {
