@@ -28,7 +28,6 @@ class PlayPodcast
 private:
 
   PodcastDataBundle Podcast;
-  size_t EventPoint;
   float lastUpdate = 0;
   PodcastDataBundle empty;
   bool finished = false;
@@ -48,7 +47,7 @@ public:
     
     //  checks for validity
     //  impoves performance only when tangible progress has been made
-    if (std::isnan(check) || check < lastUpdate + 0.01){
+    if (std::isnan(check) || (check < lastUpdate + 0.01 && check != 1)){
 	    return 0;
     }
 
@@ -78,7 +77,7 @@ public:
     
   }
 
-  PlayPodcast(PodcastDataBundle podcastBundle,size_t EventPoint) : Podcast(podcastBundle), EventPoint(EventPoint){}
+  PlayPodcast(PodcastDataBundle podcastBundle) : Podcast(podcastBundle){}
 
 
 
@@ -112,7 +111,7 @@ public:
     }
   }
   /// uses system command to start podcast with default application should be able to tolerate spaces.
-  void playMp3(string path)
+  static void playMp3(string path)
   {
     string FName = "xdg-open \"" + path + "\" &";
     cout << "the command is: " << FName << endl;
@@ -120,7 +119,7 @@ public:
   }
 
   //  plays localy downloaded podcasts. should be called when a podcast is already downloaded
-   void play(PodcastDataBundle Podcast){
+   static void play(PodcastDataBundle Podcast){
     string filepath = DataTools::filePathFromEpisode(Podcast.Episode,Podcast.Podcast);
     if (filepaths::fileExists(filepath))
     {
