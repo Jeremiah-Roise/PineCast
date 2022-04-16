@@ -33,6 +33,7 @@ void buttonStream(GtkWidget* e, gpointer data);
       string title = Podcast.Episode.title;
       string duration = "<span size=\"medium\"><i>" + Podcast.Episode.duration + "</i></span>";
       bool started = false;
+      double amount = 0;
 
       GtkWidget* infoBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
       GtkWidget* buttonBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
@@ -40,8 +41,21 @@ void buttonStream(GtkWidget* e, gpointer data);
       GtkWidget* durationLabel = gtk_label_new(duration.c_str());
       
       void updateBar(double amount){
-        cout << "this is the update function: " << amount << endl;
-        gtk_progress_bar_set_fraction(progressTracker,amount);
+        this->amount = amount;
+        //  this jank is to prevent gtk from crashing
+        gdk_threads_add_idle((GSourceFunc)&episodeActionsUI::updateBarHelper,(gpointer)this);
+      }
+      static int updateBarHelper(gpointer callback){
+        episodeActionsUI* buttonSource = reinterpret_cast<episodeActionsUI*>(callback);
+        cout << "this is the update function: " << buttonSource->amount << endl;
+        gtk_progress_bar_set_fraction(buttonSource->progressTracker,buttonSource->amount);
+        if (buttonSource->amount >= 1)
+        {
+          //  this kills all scheduled events of this type eg: the download went much faster than the ui updated and the download is finished now
+          return 0;
+        }
+        
+        return 1;
       }
 
     public:
