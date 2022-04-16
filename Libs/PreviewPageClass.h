@@ -4,6 +4,7 @@
 #include"podcastEpisodeTypes.h"
 #include"PodcastMetaDataLists.h"
 #include<vector>
+#include<gtk-3.0/gtk/gtk.h>
 
 //  singleton class to track everything in the preview Page
 class PreviewPageClass
