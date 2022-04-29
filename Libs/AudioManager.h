@@ -34,6 +34,10 @@ private:
   cURLpp::Easy handle;
 
 public:
+  void reset(){
+	  lastUpdate = 0;
+	  finished = false;
+  }
   std::function<void(double)> updateFunc = nullptr;
 
 
@@ -86,6 +90,7 @@ public:
       cout << lclPodcast.Episode.mp3Link << endl;
     string filepath = DataTools::filePathFromEpisode(lclPodcast.Episode,lclPodcast.Podcast);
     cout << "downloading podcast" << endl;
+  
     try
     {
       cout << "created file" << endl;

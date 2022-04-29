@@ -79,7 +79,7 @@ void buttonPlay(GtkWidget* e, gpointer data);
         gtk_widget_show(GTK_WIDGET(button2));
         gtk_progress_bar_set_fraction(progressTracker,0.0f);
         Downloads::addToDownloads(Podcast.Episode);
-        //  CALL SOME FUNCTION TO ADD THE EPISODE TO THE DOWNLOADS
+	reset();//	reset the PlayPodcast object
       }
       
       void updateBar(double amount){
