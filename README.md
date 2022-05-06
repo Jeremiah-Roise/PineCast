@@ -3,6 +3,7 @@
 A podcast app for linux phones
 Made with c++ has very basic functionality such as itunes search, and a rudimentry Library system.
 this is my first serious application built for Linux so if you see some odd design choices (bad code) that's my inexperience at work.
+#### cmake and make should now be working but when you run the binary it must be in the same folder as the podcastWindow.glade file or it will not work.
 *when compiling for actual usage use ./compile.sh 1 for and optimized build*
 
 ![Pinecast Podcast Client](/Images/Library.png)
