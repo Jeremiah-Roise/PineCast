@@ -27,6 +27,10 @@ void buttonPlay(GtkWidget* e, gpointer data);
       PodcastDataBundle Podcast;
       GtkProgressBar* progressTracker = GTK_PROGRESS_BAR(gtk_progress_bar_new());
     private:
+      enum eventActionType {stream,download_Noplay,download_Play};
+    public:
+      eventActionType actionToPerform;
+    private:
       GtkButton* button1;
       GtkButton* button2;
 
@@ -105,6 +109,10 @@ void buttonPlay(GtkWidget* e, gpointer data);
         
         cout << "this is the update function: " << buttonSource->amount << endl;
         gtk_progress_bar_set_fraction(buttonSource->progressTracker,buttonSource->amount);
+	//	this is the section to set up events such as starting an audio player halfway through the download
+	if(buttonSource->actionToPerform == stream && buttonSource->amount >= 0.2){
+		cout << "start playing the audio" << endl;
+	}
         
         return TRUE;
       }
@@ -116,6 +124,7 @@ void buttonPlay(GtkWidget* e, gpointer data);
         buttonSource->StartDownload();
         if (buttonSource->started == false)
         {
+	  buttonSource->actionToPerform = episodeActionsUI::stream;
           buttonSource->started = true;
           gtk_widget_show(GTK_WIDGET(buttonSource->progressTracker));
           gtk_widget_hide(GTK_WIDGET(buttonSource->button1));
@@ -130,6 +139,13 @@ void buttonPlay(GtkWidget* e, gpointer data);
       friend void buttonDownload(GtkWidget* e, gpointer data){
         episodeActionsUI* buttonSource = reinterpret_cast<episodeActionsUI*>(data);
         buttonSource->StartDownload();
+        if (buttonSource->started == false)
+        {
+          buttonSource->started = true;
+          gtk_widget_show(GTK_WIDGET(buttonSource->progressTracker));
+          gtk_widget_hide(GTK_WIDGET(buttonSource->button1));
+          gtk_widget_hide(GTK_WIDGET(buttonSource->button2));
+        }
       }
 
       friend void deletePodcast(GtkWidget* e, gpointer data){
