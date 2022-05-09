@@ -30,6 +30,7 @@ void buttonPlay(GtkWidget* e, gpointer data);
       enum eventActionType {stream,download_Noplay,download_Play};
     public:
       eventActionType actionToPerform;
+      bool ranEvent = false;
     private:
       GtkButton* button1;
       GtkButton* button2;
@@ -110,8 +111,9 @@ void buttonPlay(GtkWidget* e, gpointer data);
         cout << "this is the update function: " << buttonSource->amount << endl;
         gtk_progress_bar_set_fraction(buttonSource->progressTracker,buttonSource->amount);
 	//	this is the section to set up events such as starting an audio player halfway through the download
-	if(buttonSource->actionToPerform == stream && buttonSource->amount >= 0.2){
-		cout << "start playing the audio" << endl;
+	if(buttonSource->actionToPerform == stream && buttonSource->amount >= 0.2 && buttonSource->ranEvent == false){
+		buttonSource->ranEvent = true;
+		play(buttonSource->Podcast);
 	}
         
         return TRUE;
