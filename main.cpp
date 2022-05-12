@@ -20,7 +20,7 @@ extern "C"
   void streamPodcast(PodcastEpisode podcast, GtkWidget* e);
   void DownloadAndPlayPodcast(PodcastEpisode podcast, GtkWidget* e);
   void createSearchResults(GtkWidget* container, PodcastDataList& x);
-  void returnSelectionFromSearchResults(GtkWidget*, gpointer);
+  void returnSelection(GtkWidget*, gpointer);
   void searchItunesWithText(GtkEntry* e);
   void getSelectedPodcastEpisodeButton(GtkWidget* e);
   
@@ -114,7 +114,7 @@ int main(int argc, char **argv)
     gtk_box_pack_start(GTK_BOX(topBox), titleLabel, false, false, 0);
     gtk_box_pack_end(GTK_BOX(topBox), previewButton, false, false, 0);
     podcast.index = index;
-    g_signal_connect(previewButton, "released", (GCallback)returnSelectionFromSearchResults, (gpointer) &podcast.index);
+    g_signal_connect(previewButton, "released", (GCallback)returnSelection, (gpointer) &podcast.index);
     return topBox;
   }
 
@@ -149,116 +149,83 @@ int main(int argc, char **argv)
     createSearchResults(UIsearchListBox,searchList);
     return;
   }
-
-  /// when this is called it initializes the preview page.
-  ///
-  /// when called it uses the global currentPodcast variable to get the Podcast title, image, artist, etc,
-  /// and iterates through the episodes argument to create the episodes,
-  /// should probably be updated to not use global variables.
-  void setPreviewPage(PodcastEpisodeList episodes)
-  {
-    //  hide the add to library button if in the library
-    stackPage page = (stackPage)gtk_notebook_get_current_page(GTK_NOTEBOOK(UInotebook));
-
-    if (page == 0)
-      gtk_widget_hide(UIPVaddToLibraryButton);
-
-    if (page == 1)
-      gtk_widget_show(UIPVaddToLibraryButton);
-
-    gtk_stack_set_visible_child(GTK_STACK(UImainStack), UIPVPodcastDetailsPage);
-    gtk_label_set_text(GTK_LABEL(UIPVTitle), currentPodcast.title.c_str());
-    gtk_label_set_text(GTK_LABEL(UIPVAuthor), currentPodcast.artist.c_str());
-    gtk_image_set_from_pixbuf(GTK_IMAGE(UIPVImage), webTools::createImage(currentPodcast.image600, 200, 200));
-
-    //  list episodes
-    currentepisodes = episodes;
-
-    clearContainer(GTK_CONTAINER(UIPVEpisodeList));
-    GtkWidget* singleEntry;
-    for (PodcastEpisode& episode:currentepisodes)
-    {
-      PodcastDataBundle dataBundle;
-      dataBundle.Episode = episode;
-      dataBundle.Podcast = currentPodcast;
-      if (Downloads::isEpisodeDownloaded(episode))
-      {
-      episodeActionsUI* tmp = new episodeActionsUI(true,dataBundle);
-      singleEntry = tmp->topBox;
-      gtk_container_add(GTK_CONTAINER(UIPVEpisodeList), singleEntry);
-      }
-      else
-      {
-      episodeActionsUI* tmp = new episodeActionsUI(false,dataBundle);
-      singleEntry = tmp->topBox;
-      gtk_container_add(GTK_CONTAINER(UIPVEpisodeList), singleEntry);
-      }
-    }
-  }
-
-  ///  gets the returned selection from search results
-  void returnSelectionFromSearchResults(GtkWidget* e, gpointer PodcastIndex)
-  {
-    int index = *(int*)PodcastIndex;
-    int page = (int)gtk_notebook_get_current_page(GTK_NOTEBOOK(UInotebook));
-
-    if (page == 0)
-      currentPodcast = Library.at(index);
-
-    if (page == 1)
-      currentPodcast = searchList.at(index);
-
-    if (page == 0 && deleteMode == true)
-    {
+  void deletePodcastFromLibrary(PodcastData Podcast){
       Library::removeFromLibrary(currentPodcast);
       clearContainer(GTK_CONTAINER(UILibraryUi));
       Library.clear();
       Library::loadLib(Library);
       createSearchResults(UILibraryUi, Library);
       return;
-    }
+  }
 
-    if (page == 0 && deleteMode == false)
-    {
-      string rss;
-      string fileName = currentPodcast.title + ".rss";
+  void displayPodcastDetails(PodcastData Podcast)
+  {
+    int page = (int)gtk_notebook_get_current_page(GTK_NOTEBOOK(UInotebook));
 
-      //  get RSS file if cache does not exist or is out of date.
-      bool isCacheOutOfDate = not (caching::isCacheFileValid(fileName.c_str(),oneDayInSeconds));
-      if (isCacheOutOfDate)
-      {
-        rss = webTools::getFileInMem(currentPodcast.RssFeed);
-        cout << "from web" << endl;
-        caching::createCacheFile(fileName.c_str(),rss.c_str(),rss.size());
-        //setPreviewPage(DataTools::getEpisodes(rss));
-        gtk_stack_set_visible_child(GTK_STACK(UImainStack),UIPVPodcastDetailsPage);
-        PreviewPage->setPreviewPage(DataTools::getEpisodes(rss),currentPodcast);
-        return;
-      }
-      else
-      {
-        cout << "from cache" << endl;
-        string filepath = caching::getCachePath(fileName.c_str());
-        rss = DataTools::getFile(filepath);
-        //setPreviewPage(DataTools::getEpisodes(rss));
-        gtk_stack_set_visible_child(GTK_STACK(UImainStack),UIPVPodcastDetailsPage);
-        PreviewPage->setPreviewPage(DataTools::getEpisodes(rss),currentPodcast);
-        return;
-      }
-    }
+    string rss;
+    string fileName = currentPodcast.title + ".rss";
 
+    cout << "loading ";
+    //  get RSS file if cache does not exist or is out of date.
     if (page == stackPage::LibraryPage)
     {
-      cout << "loading" << endl;
-      string rss;
+      if (PreviewPage->lastViewedPodcast.title != currentPodcast.title)
+      {
+        if (caching::isCacheFileValid(fileName.c_str(),oneDayInSeconds))
+        {
+          cout << "from cache" << endl;
+          string filepath = caching::getCachePath(fileName.c_str());
+          rss = DataTools::getFile(filepath);
+        }
+        else
+        {
+          cout << "from web" << endl;
+          rss = webTools::getFileInMem(currentPodcast.RssFeed);
+          caching::createCacheFile(fileName.c_str(),rss.c_str(),rss.size());
+        }
+        rss = webTools::getFileInMem(currentPodcast.RssFeed);
+      }
 
       //  check the state of the cachefile
-      rss = webTools::getFileInMem(currentPodcast.RssFeed);
-      setPreviewPage(DataTools::getEpisodes(rss));
+      PreviewPage->setPreviewPage(DataTools::getEpisodes(rss),currentPodcast,true);
+      gtk_stack_set_visible_child(GTK_STACK(UImainStack),UIPVPodcastDetailsPage);
       return;
     }
-    cout << "after set preview" << endl;
+
+    if (page == stackPage::SearchPage)
+    {
+      cout << "from store" << endl;
+      //  check the state of the cachefile
+      rss = webTools::getFileInMem(currentPodcast.RssFeed);
+      PreviewPage->setPreviewPage(DataTools::getEpisodes(rss),currentPodcast,false);
+      gtk_stack_set_visible_child(GTK_STACK(UImainStack),UIPVPodcastDetailsPage);
+      return;
+    }
   }
+
+  ///  gets the returned selection from search results
+  void returnSelection(GtkWidget* e, gpointer PodcastIndex)
+  {
+    int index = *(int*)PodcastIndex;
+    int page = (int)gtk_notebook_get_current_page(GTK_NOTEBOOK(UInotebook));
+
+    if (page == stackPage::LibraryPage)
+      currentPodcast = Library.at(index);
+
+    if (page == stackPage::SearchPage)
+      currentPodcast = searchList.at(index);
+
+    if (deleteMode == false)
+    {
+      displayPodcastDetails(currentPodcast);
+    }
+    if (deleteMode == true)
+    {
+      deletePodcastFromLibrary(currentPodcast);
+    }
+  }
+
+  
 
  
 
@@ -319,6 +286,4 @@ int main(int argc, char **argv)
     thread cacheThread(cache);
     cacheThread.detach();
   }
-
-
 }

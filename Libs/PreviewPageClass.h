@@ -17,12 +17,12 @@ class PreviewPageClass
         GtkWidget* UIPVAuthor =           GTK_WIDGET(gtk_builder_get_object(builder, PVAuthorName));
         GtkWidget* UIPVEpisodeList =      GTK_WIDGET(gtk_builder_get_object(builder, PVEpisodeListName));
         GtkWidget* UIPVPodcastDetailsPage = GTK_WIDGET(gtk_builder_get_object(builder, podcastDetailsPageName));
-        PodcastData lastViewedPodcast;//    to prevent reloading the current page.
         PodcastData currentPodcast;
         
         vector<episodeActionsUI*> episodeActions;// to keep track of episodes currently on the page
 
     public:
+        PodcastData lastViewedPodcast;//    to prevent reloading the current page.
         PreviewPageClass(GtkBuilder* builder) : builder(builder){}
 
 
