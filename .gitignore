@@ -1,5 +1,6 @@
 Podcasts/MyPodcasts.xml
 main.sh
+Pinecast
 # glade commmonly forgets to delete it's lock file
 PodcastWindow.glade~
 # no need to push your podcast preferences
