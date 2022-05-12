@@ -6,7 +6,9 @@
 #include<vector>
 #include<gtk-3.0/gtk/gtk.h>
 
-//  singleton class to track everything in the preview Page
+/// class to track everything in the preview Page
+///
+/// there should only be one pointer to this class type
 class PreviewPageClass
 {
     private:
@@ -28,7 +30,7 @@ class PreviewPageClass
 
         /// when this is called it initializes the preview page.
         ///
-        /// when called it uses the global currentPodcast variable to get the Podcast title, image, artist, etc,
+        /// it uses the global currentPodcast variable to get the Podcast title, image, artist, etc,
         /// and iterates through the episodes argument to create the episodes,
         /// should probably be updated to not use global variables.
         void setPreviewPage(PodcastEpisodeList episodes,PodcastData Podcast,bool libraryMode)
