@@ -13,6 +13,6 @@
 #define addToLibraryButtonName "addToLib"
 #define searchEntryName "PodcastSearch"
 enum stackPage{
-LibraryPage = 1,
-SearchPage = 0
+LibraryPage = 0,
+SearchPage = 1
 };
