@@ -60,7 +60,7 @@ class PreviewPageClass
         unsigned short int numberLoadedEpisodes = 0;
         PodcastData lastViewedPodcast;//    to prevent reloading the current page.
         PreviewPageClass(GtkBuilder* builder) : builder(builder){
-          //g_signal_connect(UIPVScrollWindow, "edge-reached", (GCallback)callbackLoadMoreEpisodes, (gpointer)nullptr);
+          g_signal_connect(UIPVScrollWindow, "edge-reached", (GCallback)callbackLoadMoreEpisodes, (gpointer)this);
           g_signal_connect(UIPVScrollWindow, "edge-overshot",(GCallback)callbackLoadMoreEpisodes, (gpointer)this);
         }
 
@@ -94,27 +94,7 @@ class PreviewPageClass
             numberLoadedEpisodes = 0;
             
             clearContainer(GTK_CONTAINER(UIPVEpisodeList));
-            for (;(numberLoadedEpisodes < 10 && numberLoadedEpisodes < episodes.size()); numberLoadedEpisodes++)
-            {
-                cout << numberLoadedEpisodes << endl;
-                cout << "printing once" << endl;
-              PodcastEpisode episode = episodes.at(numberLoadedEpisodes);
-              PodcastDataBundle dataBundle;
-              dataBundle.Episode = episode;
-              dataBundle.Podcast = currentPodcast;
-
-              if (Downloads::isEpisodeDownloaded(episode))
-              {
-                  episodeActionsUI* tmp = new episodeActionsUI(true,dataBundle);
-                  gtk_container_add(GTK_CONTAINER(UIPVEpisodeList), tmp->topBox);
-              }
-
-              else
-              {
-                  episodeActionsUI* tmp = new episodeActionsUI(false,dataBundle);
-                  gtk_container_add(GTK_CONTAINER(UIPVEpisodeList), tmp->topBox);
-              }
-            }
+            addEpisodesToList(10);
             lastViewedPodcast = Podcast;
         }
 };
