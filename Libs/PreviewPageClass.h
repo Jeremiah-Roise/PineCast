@@ -5,6 +5,7 @@
 #include"PodcastMetaDataLists.h"
 #include<vector>
 #include<gtk-3.0/gtk/gtk.h>
+void callbackLoadMoreEpisodes(GtkWidget* e,GtkPositionType, gpointer data);
 
 /// class to track everything in the preview Page
 ///
@@ -19,13 +20,49 @@ class PreviewPageClass
         GtkWidget* UIPVAuthor =           GTK_WIDGET(gtk_builder_get_object(builder, PVAuthorName));
         GtkWidget* UIPVEpisodeList =      GTK_WIDGET(gtk_builder_get_object(builder, PVEpisodeListName));
         GtkWidget* UIPVPodcastDetailsPage = GTK_WIDGET(gtk_builder_get_object(builder, podcastDetailsPageName));
+        GtkWidget* UIPVScrollWindow =       GTK_WIDGET(gtk_builder_get_object(builder, "LibraryScrolledWindow"));
         PodcastData currentPodcast;
-        
         vector<episodeActionsUI*> episodeActions;// to keep track of episodes currently on the page
+        PodcastEpisodeList currentEpisodes;
+        void addEpisodesToList(unsigned short int numberOfEpisodesToLoad){
+            cout << "add Episodes function called" << endl;
+            for (int i = 0;(i < numberOfEpisodesToLoad && numberLoadedEpisodes < currentEpisodes.size()); i++)
+            {
+                cout << "this is the callback" << endl;
+                cout << numberLoadedEpisodes << endl;
+                cout << "printing once" << endl;
+              PodcastEpisode episode = currentEpisodes.at(numberLoadedEpisodes);
+              PodcastDataBundle dataBundle;
+              dataBundle.Episode = episode;
+              dataBundle.Podcast = currentPodcast;
+
+              if (Downloads::isEpisodeDownloaded(episode))
+              {
+                  episodeActionsUI* tmp = new episodeActionsUI(true,dataBundle);
+                  gtk_container_add(GTK_CONTAINER(UIPVEpisodeList), tmp->topBox);
+              }
+
+              else
+              {
+                  episodeActionsUI* tmp = new episodeActionsUI(false,dataBundle);
+                  gtk_container_add(GTK_CONTAINER(UIPVEpisodeList), tmp->topBox);
+              }
+                numberLoadedEpisodes++;
+            }
+        }
 
     public:
+        friend void callbackLoadMoreEpisodes(GtkWidget* e,GtkPositionType, gpointer data){
+            PreviewPageClass* source = reinterpret_cast<PreviewPageClass*>(data);
+            source->addEpisodesToList(10);
+            cout << "callback subfunction called" << endl;
+        }
+        unsigned short int numberLoadedEpisodes = 0;
         PodcastData lastViewedPodcast;//    to prevent reloading the current page.
-        PreviewPageClass(GtkBuilder* builder) : builder(builder){}
+        PreviewPageClass(GtkBuilder* builder) : builder(builder){
+          //g_signal_connect(UIPVScrollWindow, "edge-reached", (GCallback)callbackLoadMoreEpisodes, (gpointer)nullptr);
+          g_signal_connect(UIPVScrollWindow, "edge-overshot",(GCallback)callbackLoadMoreEpisodes, (gpointer)this);
+        }
 
 
         /// when this is called it initializes the preview page.
@@ -36,6 +73,7 @@ class PreviewPageClass
         void setPreviewPage(PodcastEpisodeList episodes,PodcastData Podcast,bool libraryMode)
         {
             currentPodcast = Podcast;
+            currentEpisodes = episodes;
 
             //  hide the add to library button if in the library
             if (libraryMode == true)
@@ -53,11 +91,14 @@ class PreviewPageClass
             {
                 return;
             }
+            numberLoadedEpisodes = 0;
             
             clearContainer(GTK_CONTAINER(UIPVEpisodeList));
-            GtkWidget* singleEntry;
-            for (PodcastEpisode& episode:episodes)
+            for (;(numberLoadedEpisodes < 10 && numberLoadedEpisodes < episodes.size()); numberLoadedEpisodes++)
             {
+                cout << numberLoadedEpisodes << endl;
+                cout << "printing once" << endl;
+              PodcastEpisode episode = episodes.at(numberLoadedEpisodes);
               PodcastDataBundle dataBundle;
               dataBundle.Episode = episode;
               dataBundle.Podcast = currentPodcast;
@@ -65,15 +106,13 @@ class PreviewPageClass
               if (Downloads::isEpisodeDownloaded(episode))
               {
                   episodeActionsUI* tmp = new episodeActionsUI(true,dataBundle);
-                  singleEntry = tmp->topBox;
-                  gtk_container_add(GTK_CONTAINER(UIPVEpisodeList), singleEntry);
+                  gtk_container_add(GTK_CONTAINER(UIPVEpisodeList), tmp->topBox);
               }
 
               else
               {
                   episodeActionsUI* tmp = new episodeActionsUI(false,dataBundle);
-                  singleEntry = tmp->topBox;
-                  gtk_container_add(GTK_CONTAINER(UIPVEpisodeList), singleEntry);
+                  gtk_container_add(GTK_CONTAINER(UIPVEpisodeList), tmp->topBox);
               }
             }
             lastViewedPodcast = Podcast;

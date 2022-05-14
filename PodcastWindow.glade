@@ -360,7 +360,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkScrolledWindow">
+              <object class="GtkScrolledWindow" id="LibraryScrolledWindow">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="hscrollbar-policy">never</property>
