@@ -84,7 +84,7 @@ void buttonPlay(GtkWidget* e, gpointer data);
         gtk_widget_show(GTK_WIDGET(button2));
         gtk_progress_bar_set_fraction(progressTracker,0.0f);
         Downloads::addToDownloads(Podcast.Episode);
-	reset();//	reset the PlayPodcast object
+        reset();//	reset the PlayPodcast object
       }
       
       void updateBar(double amount){
@@ -110,11 +110,11 @@ void buttonPlay(GtkWidget* e, gpointer data);
         
         cout << "this is the update function: " << buttonSource->amount << endl;
         gtk_progress_bar_set_fraction(buttonSource->progressTracker,buttonSource->amount);
-	//	this is the section to set up events such as starting an audio player halfway through the download
-	if(buttonSource->actionToPerform == stream && buttonSource->amount >= 0.2 && buttonSource->ranEvent == false){
-		buttonSource->ranEvent = true;
-		play(buttonSource->Podcast);
-	}
+        //	this is the section to set up events such as starting an audio player halfway through the download
+        if(buttonSource->actionToPerform == stream && buttonSource->amount >= 0.2 && buttonSource->ranEvent == false){
+          buttonSource->ranEvent = true;
+          play(buttonSource->Podcast);
+        }
         
         return TRUE;
       }
