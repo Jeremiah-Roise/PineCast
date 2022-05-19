@@ -115,6 +115,14 @@ void buttonPlay(GtkWidget* e, gpointer data);
           buttonSource->ranEvent = true;
           play(buttonSource->Podcast);
         }
+        if(buttonSource->actionToPerform == download_Play && buttonSource->amount >= 1 && buttonSource->ranEvent == false){
+          buttonSource->ranEvent = true;
+          play(buttonSource->Podcast);
+        }
+        if(buttonSource->actionToPerform == download_Noplay && buttonSource->amount >= 1 && buttonSource->ranEvent == false){
+          buttonSource->ranEvent = true;
+          
+        }
         
         return TRUE;
       }
@@ -143,6 +151,7 @@ void buttonPlay(GtkWidget* e, gpointer data);
         buttonSource->StartDownload();
         if (buttonSource->started == false)
         {
+          buttonSource->actionToPerform = episodeActionsUI::download_Noplay;
           buttonSource->started = true;
           gtk_widget_show(GTK_WIDGET(buttonSource->progressTracker));
           gtk_widget_hide(GTK_WIDGET(buttonSource->button1));
@@ -174,7 +183,7 @@ void buttonPlay(GtkWidget* e, gpointer data);
           button1 = GTK_BUTTON (gtk_button_new_from_icon_name("media-playback-start", GTK_ICON_SIZE_BUTTON));
           button2 = GTK_BUTTON (gtk_button_new_from_icon_name("emblem-downloads", GTK_ICON_SIZE_BUTTON));
           g_signal_connect(button1, "released", (GCallback)buttonStream,(gpointer) this);
-          //g_signal_connect(button2, "released", (GCallback)buttonDownload, (gpointer) this);
+          g_signal_connect(button2, "released", (GCallback)buttonDownload, (gpointer) this);
         }
         gtk_label_set_line_wrap(GTK_LABEL(titleLabel), true);// enables line wrap
         gtk_label_set_xalign(GTK_LABEL(titleLabel), 0.0);// sets lables to left align
