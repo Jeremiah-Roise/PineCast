@@ -118,7 +118,7 @@ public:
   /// uses system command to start podcast with default application should be able to tolerate spaces.
   static void playMp3(string path)
   {
-    string FName = "xdg-open \"" + path + "\" &";
+    string FName = "ffplay \"" + path + "\" &";
     cout << "the command is: " << FName << endl;
     system(FName.data());
   }
