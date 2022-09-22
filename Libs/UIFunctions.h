@@ -8,10 +8,11 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <utime.h>
+#include <string>
 #include "podcastEpisodeTypes.h"
 #include "PodcastMetaDataLists.h"
 #include "PodcastDataBundle.h"
-#include "AudioManager.h"
+#include "PlayPodcast.h"
 #include "LibraryTools.h"
 #include "../UINAMES.h"
 //void clearContainer(GtkContainer* e);
@@ -20,6 +21,7 @@ void buttonDownload(GtkWidget* e, gpointer data);
 void buttonStream(GtkWidget* e, gpointer data);
 void buttonPlay(GtkWidget* e, gpointer data);
 
+  /// handles all the 
   class episodeActionsUI : public PlayPodcast
   {
     public:
@@ -28,6 +30,7 @@ void buttonPlay(GtkWidget* e, gpointer data);
       GtkProgressBar* progressTracker = GTK_PROGRESS_BAR(gtk_progress_bar_new());
     private:
       enum eventActionType {stream,download_Noplay,download_Play};
+      AudioPlayer* player;
     public:
       eventActionType actionToPerform;
       bool ranEvent = false;
@@ -108,7 +111,7 @@ void buttonPlay(GtkWidget* e, gpointer data);
           return FALSE;
         }
         
-        cout << "this is the update function: " << buttonSource->amount << endl;
+        cout << "this is the update function: " << buttonSource->amount << "\n";
         gtk_progress_bar_set_fraction(buttonSource->progressTracker,buttonSource->amount);
         //	this is the section to set up events such as starting an audio player halfway through the download
         if(buttonSource->actionToPerform == stream && buttonSource->amount >= 0.2 && buttonSource->ranEvent == false){
@@ -144,7 +147,15 @@ void buttonPlay(GtkWidget* e, gpointer data);
       }
       friend void buttonPlay(GtkWidget* e, gpointer data){
         episodeActionsUI* buttonSource = reinterpret_cast<episodeActionsUI*>(data);
-        PlayPodcast::play(buttonSource->Podcast);
+        std::string filepath = DataTools::filePathFromEpisode(buttonSource->Podcast.Episode,buttonSource->Podcast.Podcast);
+        if (filepaths::fileExists(filepath))
+        {
+          //playMp3(filepath);
+          buttonSource->player->load_file(filepath.c_str());
+          cout << "loaded file" << endl;
+          buttonSource->player->setPlaying(true);
+          return;
+        }
       } 
       friend void buttonDownload(GtkWidget* e, gpointer data){
         episodeActionsUI* buttonSource = reinterpret_cast<episodeActionsUI*>(data);
@@ -168,7 +179,7 @@ void buttonPlay(GtkWidget* e, gpointer data);
         gtk_widget_show(GTK_WIDGET(buttonSource->button1));
         gtk_widget_show(GTK_WIDGET(buttonSource->button2));
       } 
-      episodeActionsUI(bool isDownloaded,PodcastDataBundle inputPodcast) : PlayPodcast(inputPodcast), Podcast(inputPodcast)
+      episodeActionsUI(bool isDownloaded,PodcastDataBundle inputPodcast,AudioPlayer* playerToUse) : PlayPodcast(inputPodcast), Podcast(inputPodcast), player(playerToUse)
       {
         updateFunc = std::bind(&episodeActionsUI::updateBar,this,std::placeholders::_1);
         if (isDownloaded == true)// if true create the UI for a Podcast Episode that has been downloaded
