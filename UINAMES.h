@@ -12,6 +12,7 @@
 #define PVEpisodeListName "PVEpisodeList"
 #define addToLibraryButtonName "addToLib"
 #define searchEntryName "PodcastSearch"
+#define downloadsList "DownloadsList"
 enum stackPage{
 LibraryPage = 0,
 SearchPage = 1

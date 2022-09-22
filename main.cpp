@@ -63,20 +63,20 @@ void init(GtkBuilder* builder){
   player = new AudioPlayer();
   PreviewPage = new PreviewPageClass(builder,player);
 
-  //                                                              | these are macros|
-  //                                                              | in UINAMES.h    |
-  UIsearchListBox =      GTK_WIDGET(gtk_builder_get_object(builder, searchListBoxName));
-  UIsearchEntry =        GTK_WIDGET(gtk_builder_get_object(builder, searchEntryName));
-  UImainStack =          GTK_WIDGET(gtk_builder_get_object(builder, mainStackName));
-  UInotebook =           GTK_WIDGET(gtk_builder_get_object(builder, notebookName));
-  UIPVPodcastDetailsPage = GTK_WIDGET(gtk_builder_get_object(builder, podcastDetailsPageName));
-  UILibraryUi =          GTK_WIDGET(gtk_builder_get_object(builder, LibraryUiName));
+  //                                                              |    these are macros     |
+  //                                                              |    in UINAMES.h         |
   UIPVImage =            GTK_WIDGET(gtk_builder_get_object(builder, PVImageName));
   UIPVTitle =            GTK_WIDGET(gtk_builder_get_object(builder, PVTitleName));
+  UInotebook =           GTK_WIDGET(gtk_builder_get_object(builder, notebookName));
   UIPVAuthor =           GTK_WIDGET(gtk_builder_get_object(builder, PVAuthorName));
+  UIDownloadsList =      GTK_WIDGET(gtk_builder_get_object(builder, downloadsList));
+  UImainStack =          GTK_WIDGET(gtk_builder_get_object(builder, mainStackName));
+  UILibraryUi =          GTK_WIDGET(gtk_builder_get_object(builder, LibraryUiName));
+  UIsearchEntry =        GTK_WIDGET(gtk_builder_get_object(builder, searchEntryName));
+  UIsearchListBox =      GTK_WIDGET(gtk_builder_get_object(builder, searchListBoxName));
   UIPVEpisodeList =      GTK_WIDGET(gtk_builder_get_object(builder, PVEpisodeListName));
   UIPVaddToLibraryButton = GTK_WIDGET(gtk_builder_get_object(builder, addToLibraryButtonName));
-  UIDownloadsList =      GTK_WIDGET(gtk_builder_get_object(builder, "DownloadsList"));
+  UIPVPodcastDetailsPage = GTK_WIDGET(gtk_builder_get_object(builder, podcastDetailsPageName));
   gtk_builder_connect_signals(builder, NULL);
   g_object_unref(builder);
   Library::loadLib(Library);
