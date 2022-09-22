@@ -7,10 +7,12 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <utime.h>
+#include "Libs/AudioPlayer.h"
 #include "Libs/Libs.h"
 #include "UINAMES.h"
 #include "Libs/PreviewPageClass.h"
-#include"Libs/UIFunctions.h"
+#include "Libs/UIFunctions.h"
+#include "Libs/PodcastsStore.h"
 #define goto  //please don't.
 using namespace std;
 #define oneDayInSeconds 86400
@@ -41,6 +43,7 @@ extern "C"
   GtkWidget* UIstackPage;
   GtkWidget* UIsearchEntry;
   GtkBuilder* builder;
+  AudioPlayer* player;
   PodcastData currentPodcast;
   PodcastDataList searchList;
   PodcastDataList Library;
@@ -48,8 +51,7 @@ extern "C"
   PodcastEpisodeList currentepisodes;
   PreviewPageClass* PreviewPage;
   bool deleteMode = false;  /// whether the library is set to delete selected podcast.
-
-
+  PodcastsStore store;
 
 //  this function just sets up a bunch of global variables and checks that folders exist
 void init(GtkBuilder* builder){
@@ -58,7 +60,8 @@ void init(GtkBuilder* builder){
   {
     mkdir(lcl.c_str(),ACCESSPERMS);
   }
-  PreviewPage = new PreviewPageClass(builder);
+  player = new AudioPlayer();
+  PreviewPage = new PreviewPageClass(builder,player);
 
   //                                                              | these are macros|
   //                                                              | in UINAMES.h    |
@@ -89,6 +92,7 @@ int main(int argc, char **argv)
   builder = gtk_builder_new();
   gtk_builder_add_from_file(builder, "PodcastWindow.glade", NULL);
   UIwindow = GTK_WIDGET(gtk_builder_get_object(builder, "MainWindow"));
+  store = PodcastsStore();
 
   auto T1 = async(init, builder);
 
@@ -145,7 +149,7 @@ int main(int argc, char **argv)
   /// linked directly to the UI xml
   void searchItunesWithText(GtkEntry* e)
   {
-    searchList = webTools::itunesSearch(gtk_entry_get_text(e));
+    searchList = store.itunesSearch(gtk_entry_get_text(e));
     createSearchResults(UIsearchListBox,searchList);
     return;
   }
@@ -285,5 +289,20 @@ int main(int argc, char **argv)
 
     thread cacheThread(cache);
     cacheThread.detach();
+  }
+  //  begin audioPlayer UI to audio player class bindings
+  void playButtonPressed(GtkWidget* button){
+    player->pausePlay();
+    // set button state to inversions of it's current state
+  }
+  void forwardButtonPressed(GtkWidget* button){
+    player->seek(3);
+    // perform seek logic for more intuitive seeking behaviour
+    // perform seek
+  }
+  void rewindButtonPressed(GtkWidget* button){
+    player->seek(-3);
+    // perform seek logic for more intuitive seeking behaviour
+    // perform seek
   }
 }
