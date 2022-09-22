@@ -6,5 +6,5 @@
 #include"PodcastMetaDataLists.h"
 #include"webTools.h"
 #include"filepaths.h"
-#include"AudioManager.h"
+#include"PlayPodcast.h"
 #include"PodcastDataBundle.h"
