@@ -1,8 +1,8 @@
+#pragma once
 #include<string>
 #include<vector>
 #include"podcastEpisodeTypes.h"
 using namespace std;
-#pragma once
 //  conforms to apple podcast search api
 struct PodcastData
 {
