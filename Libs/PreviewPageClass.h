@@ -14,12 +14,12 @@ class PreviewPageClass
 {
     private:
         GtkBuilder* builder;
-        GtkWidget* UIPVaddToLibraryButton = GTK_WIDGET(gtk_builder_get_object(builder, addToLibraryButtonName));
-        GtkWidget* UIPVImage =            GTK_WIDGET(gtk_builder_get_object(builder, PVImageName));
-        GtkWidget* UIPVTitle =            GTK_WIDGET(gtk_builder_get_object(builder, PVTitleName));
-        GtkWidget* UIPVAuthor =           GTK_WIDGET(gtk_builder_get_object(builder, PVAuthorName));
-        GtkWidget* UIPVEpisodeList =      GTK_WIDGET(gtk_builder_get_object(builder, PVEpisodeListName));
-        GtkWidget* UIPVPodcastDetailsPage = GTK_WIDGET(gtk_builder_get_object(builder, podcastDetailsPageName));
+        GtkWidget* UIPVImage =              GTK_WIDGET(gtk_builder_get_object(builder, "PVimage"));
+        GtkWidget* UIPVTitle =              GTK_WIDGET(gtk_builder_get_object(builder, "PVTitle"));
+        GtkWidget* UIPVAuthor =             GTK_WIDGET(gtk_builder_get_object(builder, "PVAuthor"));
+        GtkWidget* UIPVaddToLibraryButton = GTK_WIDGET(gtk_builder_get_object(builder, "addToLib"));
+        GtkWidget* UIPVEpisodeList =        GTK_WIDGET(gtk_builder_get_object(builder, "PVEpisodeList"));
+        GtkWidget* UIPVPodcastDetailsPage = GTK_WIDGET(gtk_builder_get_object(builder, "PodcastDetails"));
         GtkWidget* UIPVScrollWindow =       GTK_WIDGET(gtk_builder_get_object(builder, "LibraryScrolledWindow"));
         AudioPlayer* player;
         PodcastData currentPodcast;
