@@ -10,9 +10,6 @@ class PodcastsStore
 private:
     /* data */
 public:
-    PodcastsStore(/* args */);
-    ~PodcastsStore();
-
     /// Searches Itunes Database of podcasts and parses the results into: Podcast name; artist; feedurl; image url.
     PodcastDataList itunesSearch(string search = ""){
       if(search == "" || search.c_str() == NULL){PodcastDataList test;return test;}// catch if search string is empty
@@ -55,12 +52,4 @@ public:
       }
       return tmp;
     }
-    };
-
-PodcastsStore::PodcastsStore(/* args */)
-{
-}
-
-PodcastsStore::~PodcastsStore()
-{
-}
+};
