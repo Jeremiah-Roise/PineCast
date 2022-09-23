@@ -424,7 +424,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkBox">
+          <object class="GtkBox" id="Current_Episode_UI">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <child>
@@ -478,7 +478,6 @@
                     <property name="receives-default">True</property>
                     <property name="use-stock">True</property>
                     <property name="always-show-image">True</property>
-                    <signal name="released" handler="rewindButtonPressed" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -493,7 +492,6 @@
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
                     <property name="use-stock">True</property>
-                    <signal name="released" handler="playButtonPressed" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -508,7 +506,6 @@
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
                     <property name="use-stock">True</property>
-                    <signal name="released" handler="forwardButtonPressed" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
