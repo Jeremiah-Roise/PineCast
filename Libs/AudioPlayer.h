@@ -1,7 +1,6 @@
 #pragma once
 #define MINIAUDIO_IMPLEMENTATION
 #include "miniaudio.h"
-
 #include <stdio.h>
 /// The AudioPlayer class nicely encapsulates the primary functionallity needed in the application
 class AudioPlayer {
