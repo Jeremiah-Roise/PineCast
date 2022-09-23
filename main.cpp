@@ -7,10 +7,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <utime.h>
-#include "Libs/AudioPlayer.h"
 #include "Libs/Libs.h"
-#include "UINAMES.h"
+#include "Libs/AudioPlayer.h"
 #include "Libs/PreviewPageClass.h"
+#include "Libs/Current_Episode_UI.h"
 #include "Libs/UIFunctions.h"
 #include "Libs/PodcastsStore.h"
 #define goto  //please don't.
@@ -41,9 +41,11 @@ extern "C"
   GtkWidget* UIPVaddToLibraryButton;
   GtkWidget* UIDownloadsList;
   GtkWidget* UIstackPage;
+  GtkWidget* Episode_Information_Image;
   GtkWidget* UIsearchEntry;
   GtkBuilder* builder;
   AudioPlayer* player;
+  Current_Episode_UI* Episode_UI;
   PodcastData currentPodcast;
   PodcastDataList searchList;
   PodcastDataList Library;
@@ -62,23 +64,23 @@ void init(GtkBuilder* builder){
   }
   player = new AudioPlayer();
   PreviewPage = new PreviewPageClass(builder,player);
+  Episode_UI = new Current_Episode_UI(builder,player);
 
   //                                                              |    these are macros     |
   //                                                              |    in UINAMES.h         |
-  UIPVImage =            GTK_WIDGET(gtk_builder_get_object(builder, PVImageName));
-  UIPVTitle =            GTK_WIDGET(gtk_builder_get_object(builder, PVTitleName));
-  UInotebook =           GTK_WIDGET(gtk_builder_get_object(builder, notebookName));
-  UIPVAuthor =           GTK_WIDGET(gtk_builder_get_object(builder, PVAuthorName));
-  UIDownloadsList =      GTK_WIDGET(gtk_builder_get_object(builder, downloadsList));
-  UImainStack =          GTK_WIDGET(gtk_builder_get_object(builder, mainStackName));
-  UILibraryUi =          GTK_WIDGET(gtk_builder_get_object(builder, LibraryUiName));
-  UIsearchEntry =        GTK_WIDGET(gtk_builder_get_object(builder, searchEntryName));
-  UIsearchListBox =      GTK_WIDGET(gtk_builder_get_object(builder, searchListBoxName));
-  UIPVEpisodeList =      GTK_WIDGET(gtk_builder_get_object(builder, PVEpisodeListName));
-  UIPVaddToLibraryButton = GTK_WIDGET(gtk_builder_get_object(builder, addToLibraryButtonName));
-  UIPVPodcastDetailsPage = GTK_WIDGET(gtk_builder_get_object(builder, podcastDetailsPageName));
+  UIPVImage =            GTK_WIDGET(gtk_builder_get_object(builder, "PVimage"));
+  UIPVTitle =            GTK_WIDGET(gtk_builder_get_object(builder, "PVTitle"));
+  UInotebook =           GTK_WIDGET(gtk_builder_get_object(builder, "Lib/Search"));
+  UIPVAuthor =           GTK_WIDGET(gtk_builder_get_object(builder, "PVAuthor"));
+  UIDownloadsList =      GTK_WIDGET(gtk_builder_get_object(builder, "DownloadsList"));
+  UImainStack =          GTK_WIDGET(gtk_builder_get_object(builder, "PageSelector"));
+  UILibraryUi =          GTK_WIDGET(gtk_builder_get_object(builder, "Library"));
+  UIsearchEntry =        GTK_WIDGET(gtk_builder_get_object(builder, "PodcastSearch"));
+  UIsearchListBox =      GTK_WIDGET(gtk_builder_get_object(builder, "SearchListBox"));
+  UIPVEpisodeList =      GTK_WIDGET(gtk_builder_get_object(builder, "PVEpisodeList"));
+  UIPVaddToLibraryButton = GTK_WIDGET(gtk_builder_get_object(builder, "addToLib"));
+  UIPVPodcastDetailsPage = GTK_WIDGET(gtk_builder_get_object(builder, "PodcastDetails"));
   gtk_builder_connect_signals(builder, NULL);
-  g_object_unref(builder);
   Library::loadLib(Library);
   DownloadedEpisodes = Downloads::getDownloads();
   createSearchResults(UILibraryUi, Library);
@@ -98,9 +100,11 @@ int main(int argc, char **argv)
 
   gtk_widget_show(UIwindow);
   T1.wait();
+  g_object_unref(builder);
   gtk_main();
   return 0;
 }
+
 
   /// minor UI builder function that creates the Podcast result widget in the library and search pages.
   ///
@@ -171,7 +175,7 @@ int main(int argc, char **argv)
 
     cout << "loading ";
     //  get RSS file if cache does not exist or is out of date.
-    if (page == stackPage::LibraryPage)
+    if (page == 0)
     {
       if (PreviewPage->lastViewedPodcast.title != currentPodcast.title)
       {
@@ -196,7 +200,7 @@ int main(int argc, char **argv)
       return;
     }
 
-    if (page == stackPage::SearchPage)
+    if (page == 1)
     {
       cout << "from store" << endl;
       //  check the state of the cachefile
@@ -213,10 +217,10 @@ int main(int argc, char **argv)
     int index = *(int*)PodcastIndex;
     int page = (int)gtk_notebook_get_current_page(GTK_NOTEBOOK(UInotebook));
 
-    if (page == stackPage::LibraryPage)
+    if (page == 0)
       currentPodcast = Library.at(index);
 
-    if (page == stackPage::SearchPage)
+    if (page == 1)
       currentPodcast = searchList.at(index);
 
     if (deleteMode == false)
@@ -256,7 +260,7 @@ int main(int argc, char **argv)
   ///  simply goes to the main page.
   void goMainPage()
   {
-    gtk_stack_set_visible_child_name(GTK_STACK(UImainStack), (const gchar *)mainPageName);
+    gtk_stack_set_visible_child_name(GTK_STACK(UImainStack), (const gchar *)"page0");
   }
 
   ///  monitors for when tabs change in the main UInotebook.
@@ -264,7 +268,7 @@ int main(int argc, char **argv)
     cout << page_num << endl;
 
     //  if the page is equal to the search page focus the search bar.
-    if (page_num == stackPage::LibraryPage)
+    if (page_num == 0)
     {
       gtk_widget_grab_focus(UIsearchEntry);
       cout << "setting focus to search bar" << endl;
@@ -290,19 +294,9 @@ int main(int argc, char **argv)
     thread cacheThread(cache);
     cacheThread.detach();
   }
-  //  begin audioPlayer UI to audio player class bindings
-  void playButtonPressed(GtkWidget* button){
-    player->pausePlay();
-    // set button state to inversions of it's current state
-  }
-  void forwardButtonPressed(GtkWidget* button){
-    player->seek(3);
-    // perform seek logic for more intuitive seeking behaviour
-    // perform seek
-  }
-  void rewindButtonPressed(GtkWidget* button){
-    player->seek(-3);
-    // perform seek logic for more intuitive seeking behaviour
-    // perform seek
-  }
+}
+void setCurrentPodcastEpisode(PodcastDataBundle* Podcast)
+{
+  Episode_UI->setEpisodeInfoUI(Podcast);
+  
 }

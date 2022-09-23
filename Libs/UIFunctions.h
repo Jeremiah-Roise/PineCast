@@ -14,12 +14,13 @@
 #include "PodcastDataBundle.h"
 #include "PlayPodcast.h"
 #include "LibraryTools.h"
-#include "../UINAMES.h"
 //void clearContainer(GtkContainer* e);
 void deletePodcast(GtkWidget*, gpointer);
 void buttonDownload(GtkWidget* e, gpointer data);
 void buttonStream(GtkWidget* e, gpointer data);
 void buttonPlay(GtkWidget* e, gpointer data);
+ 
+extern void setCurrentPodcastEpisode(PodcastDataBundle* Podcast);
 
   /// handles all the 
   class episodeActionsUI : public PlayPodcast
@@ -152,8 +153,8 @@ void buttonPlay(GtkWidget* e, gpointer data);
         {
           //playMp3(filepath);
           buttonSource->player->load_file(filepath.c_str());
-          cout << "loaded file" << endl;
           buttonSource->player->setPlaying(true);
+          setCurrentPodcastEpisode(&buttonSource->Podcast);
           return;
         }
       } 
