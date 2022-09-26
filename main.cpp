@@ -298,5 +298,4 @@ int main(int argc, char **argv)
 void setCurrentPodcastEpisode(PodcastDataBundle* Podcast)
 {
   Episode_UI->setEpisodeInfoUI(Podcast);
-  
 }
