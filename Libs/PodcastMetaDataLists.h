@@ -1,6 +1,7 @@
 #pragma once
 #include<string>
 #include<vector>
+#include <gtk-3.0/gtk/gtk.h>
 #include"podcastEpisodeTypes.h"
 using namespace std;
 //  conforms to apple podcast search api
@@ -12,6 +13,7 @@ string image30 = "";
 string image60 = "";
 string image100 = "";
 string image600 = "";
+GdkPixbuf* thumbnail;
 string RssFeed = "";
 size_t index = 0;
 };
