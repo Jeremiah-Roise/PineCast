@@ -118,26 +118,4 @@ public:
       cout << "no connection" << endl;
     }
   }
-  /// uses system command to start podcast with default application should be able to tolerate spaces.
-  static void playMp3(string path)
-  {
-    string FName = "ffplay \"" + path + "\" &";
-    cout << "the command is: " << FName << endl;
-    system(FName.data());
-  }
-
-  //  plays localy downloaded podcasts. should be called when a podcast is already downloaded
-   static void play(PodcastDataBundle Podcast){
-    string filepath = DataTools::filePathFromEpisode(Podcast.Episode,Podcast.Podcast);
-    if (filepaths::fileExists(filepath))
-    {
-      //playMp3(filepath);
-      //player->load_file(filepath.c_str());
-      //player->setPlaying(true);
-      return;
-    }
-    return;
-  }
-
-
 };
