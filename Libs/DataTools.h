@@ -76,7 +76,7 @@ namespace DataTools
 
         MostRecent.mp3Link = GetField(aRSSFile,"<enclosure url=\"","\"");
 
-        MostRecent.thumbnailLink = GetField(aRSSFile,"<itunes:image href=\"","\"/>");
+        //MostRecent.thumbnailLink = GetField(aRSSFile,"<itunes:image href=\"","\"/>");
 
         return MostRecent;
     }
