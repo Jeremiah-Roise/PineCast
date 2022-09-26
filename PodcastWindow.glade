@@ -427,6 +427,7 @@
           <object class="GtkBox" id="Current_Episode_UI">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="orientation">vertical</property>
             <child>
               <object class="GtkBox" id="Episode_Information">
                 <property name="visible">True</property>
@@ -448,6 +449,11 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">some episode name</property>
+                    <property name="wrap">True</property>
+                    <property name="ellipsize">end</property>
+                    <property name="width-chars">13</property>
+                    <property name="max-width-chars">0</property>
+                    <property name="lines">2</property>
                     <attributes>
                       <attribute name="style" value="italic"/>
                     </attributes>
