@@ -11,7 +11,7 @@ private:
     PodcastDataBundle currentPodcast;
     GtkBuilder* builder;
     AudioPlayer* player;
-    GtkWidget* Audio_Controls_Rewind =     GTK_WIDGET(gtk_builder_get_object(builder, "Audio_Controls_Reverse"));
+    GtkWidget* Audio_Controls_Rewind =      GTK_WIDGET(gtk_builder_get_object(builder, "Audio_Controls_Reverse"));
     GtkWidget* Audio_Controls_forward =     GTK_WIDGET(gtk_builder_get_object(builder, "Audio_Controls_forward"));
     GtkWidget* Audio_Controls_Pause_Play =  GTK_WIDGET(gtk_builder_get_object(builder, "Audio_Controls_Pause_Play"));
     GtkWidget* Episode_Information_Image =  GTK_WIDGET(gtk_builder_get_object(builder, "Episode_Information_Image"));
