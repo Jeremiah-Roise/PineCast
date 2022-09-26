@@ -23,8 +23,8 @@ class PreviewPageClass
         GtkWidget* UIPVScrollWindow =       GTK_WIDGET(gtk_builder_get_object(builder, "LibraryScrolledWindow"));
         AudioPlayer* player;
         PodcastData currentPodcast;
-        vector<episodeActionsUI*> episodeActions;// to keep track of episodes currently on the page
         PodcastEpisodeList currentEpisodes;
+        vector<episodeActionsUI*> episodeActions;// to keep track of episodes currently on the page
         void addEpisodesToList(unsigned short int numberOfEpisodesToLoad){
             for (int i = 0;(i < numberOfEpisodesToLoad && numberLoadedEpisodes < currentEpisodes.size()); i++)
             {
@@ -82,7 +82,8 @@ class PreviewPageClass
 
             gtk_label_set_text(GTK_LABEL(UIPVTitle), currentPodcast.title.c_str());
             gtk_label_set_text(GTK_LABEL(UIPVAuthor), currentPodcast.artist.c_str());
-            gtk_image_set_from_pixbuf(GTK_IMAGE(UIPVImage), webTools::createImage(currentPodcast.image600, 200, 200));
+            Podcast.thumbnail = webTools::createImage(currentPodcast.image600, 200, 200);
+            gtk_image_set_from_pixbuf(GTK_IMAGE(UIPVImage), Podcast.thumbnail);
 
 
             if (lastViewedPodcast.title == Podcast.title)
