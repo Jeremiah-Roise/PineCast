@@ -203,12 +203,13 @@ extern void setCurrentPodcastEpisode(PodcastDataBundle* Podcast);
           g_signal_connect(button1, "released", (GCallback)buttonStream,(gpointer) this);
           g_signal_connect(button2, "released", (GCallback)buttonDownload, (gpointer) this);
         }
-        gtk_label_set_max_width_chars(GTK_LABEL(titleLabel),12);
+        gtk_label_set_max_width_chars(GTK_LABEL(titleLabel),50);
         gtk_label_set_line_wrap_mode(GTK_LABEL(titleLabel),PANGO_WRAP_WORD);
         gtk_label_set_ellipsize(GTK_LABEL(titleLabel),PANGO_ELLIPSIZE_END);
         gtk_label_set_lines(GTK_LABEL(titleLabel),2);
         gtk_label_set_line_wrap(GTK_LABEL(titleLabel), true);// enables line wrap
         gtk_label_set_xalign(GTK_LABEL(titleLabel), 0.0);// sets lables to left align
+        gtk_widget_set_tooltip_text(titleLabel,title.c_str());
 
         gtk_label_set_line_wrap(GTK_LABEL(durationLabel), true);// enables line wrap
         gtk_label_set_xalign(GTK_LABEL(durationLabel), 0.0);// sets lables to left align
