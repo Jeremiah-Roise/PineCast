@@ -448,11 +448,11 @@
                   <object class="GtkLabel" id="Episode_Information_Title">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">some episode name</property>
+                    <property name="label" translatable="yes">some episode name that is really long to enable testing and there should be some numbers to imitate a podcast 1230248345394</property>
                     <property name="wrap">True</property>
                     <property name="ellipsize">end</property>
-                    <property name="width-chars">13</property>
-                    <property name="max-width-chars">0</property>
+                    <property name="width-chars">11</property>
+                    <property name="max-width-chars">50</property>
                     <property name="lines">2</property>
                     <attributes>
                       <attribute name="style" value="italic"/>
