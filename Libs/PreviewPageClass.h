@@ -25,8 +25,12 @@ class PreviewPageClass
         PodcastData currentPodcast;
         PodcastEpisodeList currentEpisodes;
         vector<episodeActionsUI*> episodeActions;// to keep track of episodes currently on the page
+
         void addEpisodesToList(unsigned short int numberOfEpisodesToLoad){
-            for (int i = 0;(i < numberOfEpisodesToLoad && numberLoadedEpisodes < currentEpisodes.size()); i++)
+            if (numberLoadedEpisodes >= currentEpisodes.size()) {
+                return;
+            }
+            for (int i = 0;(i < numberOfEpisodesToLoad); i++)
             {
               PodcastEpisode episode = currentEpisodes.at(numberLoadedEpisodes);
               PodcastDataBundle dataBundle;
@@ -54,6 +58,7 @@ class PreviewPageClass
             source->addEpisodesToList(10);
             cout << "callback subfunction called" << endl;
         }
+
         unsigned short int numberLoadedEpisodes = 0;
         PodcastData lastViewedPodcast;//    to prevent reloading the current page.
         PreviewPageClass(GtkBuilder* builder,AudioPlayer* playerToUse) : builder(builder), player(playerToUse)
@@ -93,7 +98,7 @@ class PreviewPageClass
             numberLoadedEpisodes = 0;
             
             clearContainer(GTK_CONTAINER(UIPVEpisodeList));
-            addEpisodesToList(10);
+            addEpisodesToList(15);
             lastViewedPodcast = Podcast;
         }
 };

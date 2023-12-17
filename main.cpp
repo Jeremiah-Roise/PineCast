@@ -21,12 +21,13 @@ extern "C"
 {
   void streamPodcast(PodcastEpisode podcast, GtkWidget* e);
   void DownloadAndPlayPodcast(PodcastEpisode podcast, GtkWidget* e);
-  void createSearchResults(GtkWidget* container, PodcastDataList& x);
+  void createResults(GtkWidget* container, PodcastDataList& x);
   void returnSelection(GtkWidget*, gpointer);
   void searchItunesWithText(GtkEntry* e);
   void getSelectedPodcastEpisodeButton(GtkWidget* e);
   
   GtkWidget* UIsearchListBox;
+  GtkWidget* UIsearchScrolledWindow;
   GtkWidget* UIwindow;
   GtkWidget* UImainStack;
   GtkWidget* UInotebook;
@@ -66,8 +67,6 @@ void init(GtkBuilder* builder){
   PreviewPage = new PreviewPageClass(builder,player);
   Episode_UI = new Current_Episode_UI(builder,player);
 
-  //                                                              |    these are macros     |
-  //                                                              |    in UINAMES.h         |
   UIPVImage =            GTK_WIDGET(gtk_builder_get_object(builder, "PVimage"));
   UIPVTitle =            GTK_WIDGET(gtk_builder_get_object(builder, "PVTitle"));
   UInotebook =           GTK_WIDGET(gtk_builder_get_object(builder, "Lib/Search"));
@@ -77,13 +76,14 @@ void init(GtkBuilder* builder){
   UILibraryUi =          GTK_WIDGET(gtk_builder_get_object(builder, "Library"));
   UIsearchEntry =        GTK_WIDGET(gtk_builder_get_object(builder, "PodcastSearch"));
   UIsearchListBox =      GTK_WIDGET(gtk_builder_get_object(builder, "SearchListBox"));
+  UIsearchScrolledWindow = GTK_WIDGET(gtk_builder_get_object(builder, "SearchScrolledWindow"));
   UIPVEpisodeList =      GTK_WIDGET(gtk_builder_get_object(builder, "PVEpisodeList"));
   UIPVaddToLibraryButton = GTK_WIDGET(gtk_builder_get_object(builder, "addToLib"));
   UIPVPodcastDetailsPage = GTK_WIDGET(gtk_builder_get_object(builder, "PodcastDetails"));
   gtk_builder_connect_signals(builder, NULL);
   Library::loadLib(Library);
   DownloadedEpisodes = Downloads::getDownloads();
-  createSearchResults(UILibraryUi, Library);
+  createResults(UILibraryUi, Library);
 }
 
 ///  GUI setup.
@@ -121,13 +121,12 @@ int main(int argc, char **argv)
     gtk_box_pack_start(GTK_BOX(topBox), thumbImage, false, false, 0);
     gtk_box_pack_start(GTK_BOX(topBox), titleLabel, false, false, 0);
     gtk_box_pack_end(GTK_BOX(topBox), previewButton, false, false, 0);
-    podcast.index = index;
     g_signal_connect(previewButton, "released", (GCallback)returnSelection, (gpointer) &podcast.index);
     return topBox;
   }
 
   /// for listing search results in a GtkListBox or GtkFlowbox.
-  void createSearchResults(GtkWidget *container, PodcastDataList& podcastWidgetsToCreate)
+  void createResults(GtkWidget *container, PodcastDataList& podcastWidgetsToCreate)
   {
     int size = podcastWidgetsToCreate.size();
     if (size == 0)
@@ -137,15 +136,75 @@ int main(int argc, char **argv)
     //deleting old search results
     clearContainer(GTK_CONTAINER(container));
 
-    for (PodcastData& i:podcastWidgetsToCreate)
-    {
-      GtkWidget *result = createResultWidget(i,i.index);
+    for (size_t i = 0; i < podcastWidgetsToCreate.size(); i++) {
+        
+      GtkWidget *result = createResultWidget(podcastWidgetsToCreate.at(i), podcastWidgetsToCreate.at(i).index);
 
       gtk_container_add(GTK_CONTAINER(container), result);
       gtk_widget_show_all(result);
     }
   }
   
+  PodcastDataList currentResults;
+  GtkWidget *resultsContainer = nullptr;
+
+  size_t start = 0;
+  bool debounce = false;
+
+  void searchResultsLoadMore(size_t resultsToLoad);
+ void addFromThread(GtkWidget* result){
+      gtk_container_add(GTK_CONTAINER(resultsContainer), result);
+      gtk_widget_show_all(result);
+ }
+    gulong reachedSig = 0;
+    gulong overshotSig = 0;
+    
+
+  void createSearchResults(GtkWidget *container, PodcastDataList& podcastWidgetsToCreate)
+  {
+    int size = podcastWidgetsToCreate.size();
+    if (size == 0)
+    {
+      return;
+    } //  User Input Filtering
+    //deleting old search results
+    clearContainer(GTK_CONTAINER(container));
+    start = 0;
+    currentResults = podcastWidgetsToCreate;
+    resultsContainer = container;
+    thread initialLoad(searchResultsLoadMore, 15);
+    initialLoad.detach();
+    auto load = [](){
+        thread load(searchResultsLoadMore,10);
+        load.detach();
+    };
+      g_signal_connect(UIsearchScrolledWindow, "edge-reached", (GCallback)load, NULL);
+      g_signal_connect(UIsearchScrolledWindow, "edge-overshot",(GCallback)load, NULL);
+  }
+
+
+ void searchResultsLoadMore(size_t resultsToLoad){
+          if (currentResults.size() <= 0 || resultsContainer == nullptr || debounce == true) {
+         return;
+     }
+     debounce = true;
+     g_signal_handler_block(UIsearchScrolledWindow, reachedSig);
+     g_signal_handler_block(UIsearchScrolledWindow, overshotSig);
+     size_t i = 0;
+     size_t count = 0;
+     for (i = start; i < currentResults.size() && i < (resultsToLoad + start); i++) {
+         count++;
+        
+         
+      GtkWidget *result = createResultWidget(currentResults.at(i), currentResults.at(i).index);
+
+      gdk_threads_add_idle(G_SOURCE_FUNC(addFromThread), (gpointer)result);
+     }
+     start += count;
+     g_signal_handler_unblock(UIsearchScrolledWindow, reachedSig);
+     g_signal_handler_unblock(UIsearchScrolledWindow, overshotSig);
+     debounce = false;
+ }
 
 
   /// get search text and give it to the itunes search function
@@ -157,12 +216,13 @@ int main(int argc, char **argv)
     createSearchResults(UIsearchListBox,searchList);
     return;
   }
+
   void deletePodcastFromLibrary(PodcastData Podcast){
       Library::removeFromLibrary(currentPodcast);
       clearContainer(GTK_CONTAINER(UILibraryUi));
       Library.clear();
       Library::loadLib(Library);
-      createSearchResults(UILibraryUi, Library);
+      createResults(UILibraryUi, Library);
       return;
   }
 
@@ -173,26 +233,19 @@ int main(int argc, char **argv)
     string rss;
     string fileName = currentPodcast.title + ".rss";
 
-    cout << "loading ";
     //  get RSS file if cache does not exist or is out of date.
     if (page == 0)
     {
-      if (PreviewPage->lastViewedPodcast.title != currentPodcast.title)
-      {
         if (caching::isCacheFileValid(fileName.c_str(),oneDayInSeconds))
         {
-          cout << "from cache" << endl;
           string filepath = caching::getCachePath(fileName.c_str());
           rss = DataTools::getFile(filepath);
         }
         else
         {
-          cout << "from web" << endl;
           rss = webTools::getFileInMem(currentPodcast.RssFeed);
           caching::createCacheFile(fileName.c_str(),rss.c_str(),rss.size());
         }
-        rss = webTools::getFileInMem(currentPodcast.RssFeed);
-      }
 
       //  check the state of the cachefile
       PreviewPage->setPreviewPage(DataTools::getEpisodes(rss),currentPodcast,true);
@@ -202,7 +255,6 @@ int main(int argc, char **argv)
 
     if (page == 1)
     {
-      cout << "from store" << endl;
       //  check the state of the cachefile
       rss = webTools::getFileInMem(currentPodcast.RssFeed);
       PreviewPage->setPreviewPage(DataTools::getEpisodes(rss),currentPodcast,false);
@@ -265,13 +317,11 @@ int main(int argc, char **argv)
 
   ///  monitors for when tabs change in the main UInotebook.
   void tabChanged(  GtkNotebook* self, GtkWidget* page, guint page_num, gpointer user_data){
-    cout << page_num << endl;
 
     //  if the page is equal to the search page focus the search bar.
     if (page_num == 0)
     {
       gtk_widget_grab_focus(UIsearchEntry);
-      cout << "setting focus to search bar" << endl;
     }
   }
 
@@ -282,7 +332,7 @@ int main(int argc, char **argv)
     clearContainer(GTK_CONTAINER(UILibraryUi));
     Library.clear();
     Library::loadLib(Library);
-    createSearchResults(UILibraryUi, Library);
+    createResults(UILibraryUi, Library);
 
     auto cache = [](){
       string name = currentPodcast.title + ".rss";

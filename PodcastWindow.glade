@@ -20,6 +20,7 @@
           <object class="GtkStack" id="PageSelector">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="transition-type">crossfade</property>
             <child>
               <object class="GtkNotebook" id="Lib/Search">
                 <property name="visible">True</property>
@@ -69,18 +70,7 @@
                         <property name="column-spacing">5</property>
                         <property name="row-spacing">5</property>
                         <property name="min-children-per-line">1</property>
-                        <property name="max-children-per-line">3</property>
-                        <child>
-                          <object class="GtkFlowBoxChild">
-                            <property name="width-request">100</property>
-                            <property name="height-request">80</property>
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <child>
-                              <placeholder/>
-                            </child>
-                          </object>
-                        </child>
+                        <property name="max-children-per-line">2</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -127,7 +117,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkScrolledWindow">
+                      <object class="GtkScrolledWindow" id="SearchScrolledWindow">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="vscrollbar-policy">always</property>
@@ -145,8 +135,10 @@
                                   <object class="GtkFlowBox" id="SearchListBox">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
+                                    <property name="column-spacing">5</property>
+                                    <property name="row-spacing">5</property>
                                     <property name="min-children-per-line">1</property>
-                                    <property name="max-children-per-line">3</property>
+                                    <property name="max-children-per-line">1</property>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
@@ -389,7 +381,7 @@
                                 <property name="column-spacing">5</property>
                                 <property name="row-spacing">5</property>
                                 <property name="min-children-per-line">1</property>
-                                <property name="max-children-per-line">3</property>
+                                <property name="max-children-per-line">1</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -436,7 +428,7 @@
                   <object class="GtkImage" id="Episode_Information_Image">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="stock">gtk-dialog-error</property>
+                    <property name="stock">gtk-zoom-fit</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -448,11 +440,10 @@
                   <object class="GtkLabel" id="Episode_Information_Title">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">some episode name that is really long to enable testing and there should be some numbers to imitate a podcast 1230248345394</property>
                     <property name="wrap">True</property>
                     <property name="ellipsize">end</property>
                     <property name="width-chars">11</property>
-                    <property name="max-width-chars">50</property>
+                    <property name="max-width-chars">77</property>
                     <property name="lines">2</property>
                     <attributes>
                       <attribute name="style" value="italic"/>

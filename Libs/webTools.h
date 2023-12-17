@@ -67,6 +67,7 @@ class webTools
   /// create's an image from a url
   static GdkPixbuf* createImage(string imageUrl, int scaleX, int scaleY)
   {
+    cout << imageUrl << std::endl;
     string imagedata = webTools::getFileInMem(imageUrl); //  getting image data from web
 
     GdkPixbufLoader *test = gdk_pixbuf_loader_new();
